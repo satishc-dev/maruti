@@ -1,22 +1,41 @@
 # Assistant-Wizard — Claude Code variant
 
-Installable form of Assistant-Wizard for use in Claude Code. Packaged as a Claude Code plugin that bundles the Assistant-Wizard **skill**.
+Installable Claude Code plugin bundling the Assistant-Wizard **skill** plus two helper subagents:
 
-Assistant-Wizard is implemented as a skill (not a subagent) because its workflow is interview-driven and iterative — the right primitive shape for that pattern.
+- **`assistant-wizard`** (skill) — orchestrator + intent interview.
+- **`wizard-builder`** (subagent) — writes the generated package files from a structured design brief.
+- **`wizard-reviewer`** (subagent) — read-only gate that scores the output against a prompt-engineering rubric and returns `go` / `no-go`.
+
+The skill auto-iterates builder ↔ reviewer up to **3 iterations** on `no-go`. This separates the interview context (rich, multi-turn) from generation (clean, brief-driven) and validation (cold, rubric-driven), which produces more effective `SKILL.md` / `agent.md` outputs than a single context could.
 
 ## Install
 
-### Option A — as a Claude Code plugin (recommended)
+### Option A — via the maruti marketplace (recommended)
 
-From a Claude Code session:
+Two-step flow from a Claude Code session in the target repo, no local checkout required:
+
+```
+/plugin marketplace add satishc2437/maruti
+/plugin install assistant-wizard@maruti
+```
+
+The marketplace manifest lives at `.claude-plugin/marketplace.json` in the maruti repo root and registers all available plugins. The first command is one-time per machine; the marketplace stays registered across sessions.
+
+To pin the marketplace to a specific tag or branch (rather than the default branch), add a ref suffix:
+
+```
+/plugin marketplace add satishc2437/maruti@<tag-or-branch>
+```
+
+### Option B — from a local checkout
+
+If you already have maruti cloned:
 
 ```
 /plugin install <absolute-path>/packages/assistant-wizard/claude-code
 ```
 
-This registers the plugin (defined in `.claude-plugin/plugin.json`) and exposes the bundled skill.
-
-### Option B — as a project-local skill (single directory)
+### Option C — project-local skill (single directory)
 
 ```bash
 mkdir -p .claude/skills
