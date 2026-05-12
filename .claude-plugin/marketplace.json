@@ -39,6 +39,15 @@
         "path": "packages/mcp-tool-architect/claude-code"
       },
       "description": "Designs decision-ready MCP tool architectures and emits durable spec/guardrails/success-criteria docs."
+    },
+    {
+      "name": "marketing-guru",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/satishc2437/maruti.git",
+        "path": "packages/marketing-guru/claude-code"
+      },
+      "description": "Proactive MBA-grade marketing advisor for an MBA bike-company simulation; weighs in on strategy, performance, and competitive positioning."
     }
   ]
 }
