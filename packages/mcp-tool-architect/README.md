@@ -12,6 +12,22 @@ When invoked, MCP-Tool-Architect runs a focused requirements interview, picks ar
 
 It does **not** implement the tool. It produces the artifacts an implementer (or implementation-planner subagent) needs to proceed without ambiguity.
 
+## Install
+
+**Claude Code** — from a Claude Code session in the target repo:
+
+```
+/plugin marketplace add satishc2437/maruti
+/plugin install mcp-tool-architect@maruti
+```
+
+**GitHub Copilot CLI** — from a Copilot CLI session in the target repo:
+
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install mcp-tool-architect@maruti
+```
+
 ## Layout of this package
 
 ```
@@ -24,11 +40,9 @@ packages/mcp-tool-architect/
 │   │   └── mcp-tool-architect/
 │   │       └── SKILL.md
 │   └── README.md
-└── github-copilot/        # installable Copilot payload (chat mode)
-    ├── packages/
+└── github-copilot/        # installable Copilot CLI plugin (chat mode)
+    ├── agents/
     │   └── mcp-tool-architect.agent.md
-    ├── install.sh
-    ├── install.ps1
     └── README.md
 ```
 

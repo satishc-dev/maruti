@@ -23,9 +23,8 @@ You will be told:
    2. `packages/<name>/claude-code/.claude-plugin/plugin.json` — if Claude Code is a target.
    3. `packages/<name>/claude-code/<primitive files>` — agents, skills, commands.
    4. `packages/<name>/claude-code/README.md` — Claude Code install (marketplace + local + project-local).
-   5. `packages/<name>/github-copilot/<primitive files>` — chat modes, prompt files — if Copilot is a target.
-   6. `packages/<name>/github-copilot/install.sh` and `install.ps1` — always both, if Copilot is a target.
-   7. `packages/<name>/github-copilot/README.md` — Copilot install (curl direct + install script + manual).
+   5. `packages/<name>/github-copilot/<primitive files>` — chat modes, skills, prompt files — if Copilot is a target.
+   6. `packages/<name>/github-copilot/README.md` — Copilot install (plugin marketplace + manual vendor).
 5. If revising: edit **only** the files the reviewer flagged. Do not touch passing files. Do not rewrite untouched sections inside flagged files unless the reviewer's feedback explicitly required it.
 6. **Self-check against the rubric.** Re-read each artifact you wrote and verify every item under the brief's `Success criteria` section. Where a criterion can be mechanically checked (frontmatter present, path matches brief, file is non-empty), check it. Where it requires judgment (trigger clarity, instruction specificity), read with a critical eye and ask "would a fresh user know exactly what this does and when?".
 7. **Report back** with a structured summary. The skill will hand this directly to the reviewer.
@@ -93,6 +92,17 @@ model: GPT-5.2
 <body>
 ```
 
+### Copilot skill — `github-copilot/skills/<name>/SKILL.md`
+
+```markdown
+---
+name: <kebab-name>
+description: A description of what the skill does, and when Copilot should use it.
+---
+
+<body — instructions Copilot loads when the skill activates>
+```
+
 ### Copilot prompt file — `github-copilot/prompts/<name>.prompt.md`
 
 ```markdown
@@ -106,84 +116,6 @@ description: <one-sentence description>
 
 `mode:` is one of `ask`, `edit`, or `agent`.
 
-### Copilot install scripts (emit verbatim — generic, auto-discover subdirectories)
-
-Both scripts must be emitted any time the package targets Copilot, even if only one platform variant is in use. They auto-discover `agents/` and `prompts/` subdirectories — never customize per package.
-
-#### `github-copilot/install.sh`
-
-```bash
-#!/usr/bin/env bash
-# Deploys this Copilot payload into a target repository's .github/ tree.
-# Usage: ./install.sh [target-repo-path]   (defaults to current directory)
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="${1:-$(pwd)}"
-
-if [ ! -d "$TARGET" ]; then
-  echo "Target directory does not exist: $TARGET" >&2
-  exit 1
-fi
-
-installed=0
-for sub in agents prompts; do
-  if [ -d "$SCRIPT_DIR/$sub" ]; then
-    mkdir -p "$TARGET/.github/$sub"
-    cp -R "$SCRIPT_DIR/$sub/." "$TARGET/.github/$sub/"
-    installed=$((installed + 1))
-    echo "Installed $sub/ into $TARGET/.github/$sub/"
-  fi
-done
-
-if [ "$installed" -eq 0 ]; then
-  echo "Nothing to install (payload is empty)." >&2
-  exit 1
-fi
-```
-
-#### `github-copilot/install.ps1`
-
-```powershell
-<#
-.SYNOPSIS
-Deploys this Copilot payload into a target repository's .github/ tree.
-
-.PARAMETER Target
-Path to the target repo. Defaults to the current directory.
-#>
-param(
-    [string]$Target = (Get-Location).Path
-)
-
-$ErrorActionPreference = 'Stop'
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-if (-not (Test-Path -PathType Container $Target)) {
-    Write-Error "Target directory does not exist: $Target"
-    exit 1
-}
-
-$installed = 0
-foreach ($sub in @('agents', 'prompts')) {
-    $source = Join-Path $ScriptDir $sub
-    if (Test-Path -PathType Container $source) {
-        $dest = Join-Path $Target ".github\$sub"
-        New-Item -ItemType Directory -Force -Path $dest | Out-Null
-        Copy-Item -Recurse -Force "$source\*" $dest
-        $installed++
-        Write-Host "Installed $sub/ into $dest"
-    }
-}
-
-if ($installed -eq 0) {
-    Write-Error "Nothing to install (payload is empty)."
-    exit 1
-}
-```
-
-> If the skill's `File templates` section ever drifts from these embedded copies, the skill is the source of truth for the *interview-time* descriptions; these embedded scripts are the source of truth at *render time*. Keep them in sync when changes affect both.
-
 ## Cross-cutting requirements (always apply)
 
 - **Naming:** kebab-case for package name, folder names, and filenames.
@@ -195,7 +127,12 @@ if ($installed -eq 0) {
   /plugin marketplace add satishc2437/maruti
   /plugin install <name>@maruti
   ```
-  …and a curl/Invoke-WebRequest direct-download snippet in the Copilot variant (mirroring `packages/assistant-wizard/github-copilot/README.md`).
+  …and the equivalent Copilot CLI plugin-install snippet in the Copilot variant:
+  ```
+  copilot plugin marketplace add satishc2437/maruti
+  copilot plugin install <name>@maruti
+  ```
+  Both variants may also describe the manual-vendor fallback (copy the file directly into the target repo's `.claude/` or `.github/` tree).
 - **Layout block in the top-level README** must match the actual files you wrote — no aspirational entries.
 
 ## Reporting format
@@ -247,5 +184,5 @@ If you cannot meet DoD (e.g., the brief is internally inconsistent), report **fa
 - Do not write `# TODO`, `# TBD`, or placeholder text in emitted files. If a section can't be filled, the brief is incomplete — fail and report.
 - Do not add files not in the brief's output-paths list. No "bonus" docs, no `CHANGELOG.md`, no `.gitignore` unless explicitly required.
 - Do not commit or push. The user (or the skill) handles git.
-- Do not modify files outside `packages/<name>/`. Specifically: do not touch the root `marketplace.json` — that's a separate, user-driven step.
+- Do not modify files outside `packages/<name>/`. Specifically: do not touch the root `.claude-plugin/marketplace.json` or `.github/plugin/marketplace.json` — those are separate, user-driven steps.
 - Do not approve your own work without re-reading each file. The self-check is mandatory, not ceremonial.

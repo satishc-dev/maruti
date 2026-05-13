@@ -17,9 +17,8 @@ commands, etc.):
     │   └── README.md
     └── github-copilot/
         ├── agents/*.agent.md                 # zero or more chat modes
+        ├── skills/*/SKILL.md                 # zero or more skills
         ├── prompts/*.prompt.md               # zero or more prompt files
-        ├── install.sh
-        ├── install.ps1
         └── README.md
 
 This script publishes one symlink per artifact found, preserving the source
@@ -30,6 +29,7 @@ Claude Code and Copilot can pick the agents up:
     .claude/skills/<dir>                 -> ../../packages/<name>/claude-code/skills/<dir>
     .claude/commands/<file>.md          -> ../../packages/<name>/claude-code/commands/<file>.md
     .github/agents/<file>.agent.md      -> ../../packages/<name>/github-copilot/agents/<file>.agent.md
+    .github/skills/<dir>                 -> ../../packages/<name>/github-copilot/skills/<dir>
     .github/prompts/<file>.prompt.md    -> ../../packages/<name>/github-copilot/prompts/<file>.prompt.md
 
 If two packages declare artifacts with the same filename in the same primitive
@@ -168,6 +168,15 @@ def discover_mirrors() -> list[Mirror]:
                     link=GITHUB_ROOT / "agents" / src.name,
                     rel_target=(
                         f"../../packages/{name}/github-copilot/agents/{src.name}"
+                    ),
+                )
+            for src in _glob_subdirs(copilot_root / "skills"):
+                _add_dir_mirror(
+                    mirrors,
+                    src=src,
+                    link=GITHUB_ROOT / "skills" / src.name,
+                    rel_target=(
+                        f"../../packages/{name}/github-copilot/skills/{src.name}"
                     ),
                 )
             for src in _glob_files(copilot_root / "prompts", "*.prompt.md"):

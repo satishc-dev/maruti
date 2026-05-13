@@ -1,0 +1,1 @@
+../../packages/pm-team/github-copilot/agents/pm-team.agent.md

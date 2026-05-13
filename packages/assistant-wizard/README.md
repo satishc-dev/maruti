@@ -12,20 +12,23 @@ It picks the right primitive for the job rather than defaulting to "an agent". E
 - **Single-shot research / analysis task** → Subagent (Claude Code) + Chat mode (Copilot)
 - **Reusable prompt template / shortcut** → Slash command (Claude Code) + Prompt file (Copilot)
 
-## Install (Claude Code)
+## Install
 
-From a Claude Code session in the target repo (no local checkout required):
+**Claude Code** — from a Claude Code session in the target repo:
 
 ```
 /plugin marketplace add satishc2437/maruti
 /plugin install assistant-wizard@maruti
 ```
 
-The first line is one-time per machine; subsequent installs from the same marketplace only need the second.
+**GitHub Copilot CLI** — from a Copilot CLI session in the target repo:
 
-For local-checkout and project-local-copy options, see [`claude-code/README.md`](claude-code/README.md#install).
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install assistant-wizard@maruti
+```
 
-For GitHub Copilot install steps, see [`github-copilot/README.md`](github-copilot/README.md).
+For each platform, the marketplace-add line is one-time per machine; subsequent installs only need the install line. For local-checkout and project-local-copy alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and [`github-copilot/README.md`](github-copilot/README.md).
 
 ## Roles
 
@@ -52,11 +55,9 @@ packages/assistant-wizard/
 │   │   ├── wizard-builder.md
 │   │   └── wizard-reviewer.md
 │   └── README.md
-└── github-copilot/        # installable Copilot payload
+└── github-copilot/        # installable Copilot CLI plugin
     ├── agents/
     │   └── assistant-wizard.agent.md
-    ├── install.sh
-    ├── install.ps1
     └── README.md
 ```
 
@@ -79,9 +80,8 @@ packages/<new-name>/
 │   └── README.md
 └── github-copilot/                       # only if target includes github-copilot
     ├── agents/<new-name>.agent.md        # if chat mode
+    ├── skills/<new-name>/SKILL.md        # if skill
     ├── prompts/<new-name>.prompt.md      # if prompt file
-    ├── install.sh
-    ├── install.ps1
     └── README.md
 ```
 

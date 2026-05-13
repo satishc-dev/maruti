@@ -1,11 +1,17 @@
 # Custom agent packages
 
 This directory is the canonical source for the custom agent packages that
-Maruti produces — bundles of Claude Code and GitHub Copilot customizations.
+Maruti produces — bundles of Claude Code and GitHub Copilot CLI customizations.
 Each package lives in its own folder under `packages/<name>/` with a
 **platform-bifurcated** layout. Each platform may host any combination of
 primitives — Claude Code supports subagents, skills, and slash commands;
-GitHub Copilot supports chat modes and prompt files.
+GitHub Copilot CLI supports custom agents (chat modes), skills, and prompt files.
+
+Both platform variants are installable as **plugins** via the corresponding
+maruti marketplace manifest at the repo root
+([`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) for
+Claude Code, [`.github/plugin/marketplace.json`](../.github/plugin/marketplace.json)
+for Copilot CLI).
 
 ```
 packages/<name>/
@@ -16,11 +22,10 @@ packages/<name>/
 │   ├── skills/*/SKILL.md                # zero or more skills
 │   ├── commands/*.md                    # zero or more slash commands
 │   └── README.md                        # install / usage
-└── github-copilot/                      # installable Copilot payload
-    ├── agents/*.agent.md                # zero or more chat modes
+└── github-copilot/                      # installable Copilot CLI plugin
+    ├── agents/*.agent.md                # zero or more custom agents (chat modes)
+    ├── skills/*/SKILL.md                # zero or more skills
     ├── prompts/*.prompt.md              # zero or more prompt files
-    ├── install.sh                       # always (Bash deploy script)
-    ├── install.ps1                      # always (PowerShell deploy script)
     └── README.md                        # install / usage
 ```
 
@@ -98,7 +103,7 @@ drift from the source, the build fails.
 /plugin install <name>@maruti
 ```
 
-Where `<name>` is one of `pm-team`, `dev-team`, `assistant-wizard`, `mcp-tool-architect`. The first command is one-time per machine; subsequent installs only need the second line.
+Where `<name>` is one of `pm-team`, `dev-team`, `assistant-wizard`, `mcp-tool-architect`, `marketing-guru`. The first command is one-time per machine; subsequent installs only need the second line.
 
 If you already have maruti cloned locally, you can install a single plugin from the path instead:
 
@@ -106,34 +111,43 @@ If you already have maruti cloned locally, you can install a single plugin from 
 /plugin install <absolute-path>/packages/<name>/claude-code
 ```
 
-**GitHub Copilot** — run the install script in your target repo:
+**GitHub Copilot CLI** — install via the [marketplace manifest](../.github/plugin/marketplace.json) at the repo root. Two-step flow, both run from a Copilot CLI session in the target repo:
 
-```bash
-# Linux / macOS
-/path/to/maruti/packages/<name>/github-copilot/install.sh /path/to/target-repo
-
-# Windows
-powershell /path/to/maruti/packages/<name>/github-copilot/install.ps1 -Target C:\path\to\target-repo
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install <name>@maruti
 ```
 
+The first command is one-time per machine; subsequent installs only need the second line.
+
 You can also vendor by direct copy — copy the platform variant you need into
-the consumer's expected location (e.g. `.github/agents/<name>.agent.md` or
-`.claude/skills/<name>/`).
+the consumer's expected location (e.g. `.github/agents/<name>.agent.md`,
+`.github/skills/<name>/SKILL.md`, or `.claude/skills/<name>/`).
 
 ## Currently authored agents
 
+All five packages ship variants for both Claude Code and GitHub Copilot CLI.
+The Claude Code variant typically uses multiple subagents fanned out by an
+orchestrator; the Copilot CLI variant collapses that orchestration into a
+single chat-mode agent (or skill) since Copilot's primitive model is flatter.
+
 - [`assistant-wizard/`](assistant-wizard/) — designs and generates new custom
   packages (subagent / skill / slash command / chat mode / prompt file) for
-  Claude Code, GitHub Copilot, or both.
+  Claude Code, GitHub Copilot CLI, or both.
 - [`mcp-tool-architect/`](mcp-tool-architect/) — turns a problem statement
   into a decision-ready MCP tool architecture and writes the durable
   spec/guardrails/success-criteria docs.
 - [`dev-team/`](dev-team/) — multi-agent software development team
   (`team-lead`, `software-developer`, `code-reviewer` subagents plus a
-  `/dev-team` slash command) that drives an Azure DevOps work item or GitHub
-  issue from intake through parallel implementation, code review, and PR.
+  `/dev-team` slash command on Claude Code; a single `Dev-Team` chat agent on
+  Copilot CLI) that drives an Azure DevOps work item or GitHub issue from
+  intake through implementation, review, and PR.
 - [`pm-team/`](pm-team/) — multi-agent product management team
   (`pm-team` skill + `requirements-analyst`, `spec-reviewer`, `board-manager`
-  subagents + `/pm-team` and `/board-manager` slash commands) that gathers
-  intent, produces feature specs in parallel, opens a spec PR, and on
-  approval seeds the Kanban board with WIs ready for `dev-team`.
+  subagents + `/pm-team` and `/board-manager` slash commands on Claude Code;
+  a single `PM-Team` chat agent on Copilot CLI) that gathers intent, produces
+  feature specs, opens a spec PR, and on approval seeds the Kanban board with
+  WIs ready for `dev-team`.
+- [`marketing-guru/`](marketing-guru/) — proactive MBA-grade marketing advisor
+  for an MBA bike-company simulation; ships as a skill on both platforms with a
+  byte-identical body.

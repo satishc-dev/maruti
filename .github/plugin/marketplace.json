@@ -1,0 +1,43 @@
+{
+  "name": "maruti",
+  "owner": {
+    "name": "satishc2437",
+    "email": "satishc@microsoft.com"
+  },
+  "metadata": {
+    "description": "Maruti plugin marketplace for GitHub Copilot CLI — installable agent packages for product management, software delivery, MCP tool architecture, marketing strategy, and assistant authoring.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "pm-team",
+      "description": "Multi-agent product management team that gathers intent, produces feature specs, gates them through a reviewer, opens a spec PR, and on approval seeds the Azure DevOps or GitHub Kanban board with work items for handoff to dev-team.",
+      "version": "0.1.0",
+      "source": "./packages/pm-team/github-copilot"
+    },
+    {
+      "name": "dev-team",
+      "description": "Multi-agent software development team that drives a work item from Azure DevOps or GitHub through design, parallel implementation, code review, and PR creation.",
+      "version": "0.1.0",
+      "source": "./packages/dev-team/github-copilot"
+    },
+    {
+      "name": "assistant-wizard",
+      "description": "Designs and generates new custom subagents, skills, slash commands, chat modes, and prompt files for Claude Code and GitHub Copilot.",
+      "version": "0.4.0",
+      "source": "./packages/assistant-wizard/github-copilot"
+    },
+    {
+      "name": "mcp-tool-architect",
+      "description": "Designs decision-ready MCP tool architectures and emits durable spec/guardrails/success-criteria docs.",
+      "version": "0.3.0",
+      "source": "./packages/mcp-tool-architect/github-copilot"
+    },
+    {
+      "name": "marketing-guru",
+      "description": "Proactive MBA-grade marketing advisor for an MBA bike-company simulation; weighs in on strategy, performance, and competitive positioning.",
+      "version": "0.1.0",
+      "source": "./packages/marketing-guru/github-copilot"
+    }
+  ]
+}

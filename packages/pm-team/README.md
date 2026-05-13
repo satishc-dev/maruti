@@ -13,16 +13,23 @@ A multi-agent product management team for Claude Code. Takes a one-line user int
 
 ## Install
 
-From a Claude Code session in the target repo (no local checkout required):
+**Claude Code** — from a Claude Code session in the target repo:
 
 ```
 /plugin marketplace add satishc2437/maruti
 /plugin install pm-team@maruti
 ```
 
-The first line is one-time per machine; subsequent installs from the same marketplace only need the second.
+**GitHub Copilot CLI** — from a Copilot CLI session in the target repo:
 
-For local-checkout and project-local-copy options, see [`claude-code/README.md`](claude-code/README.md#install).
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install pm-team@maruti
+```
+
+For each platform, the marketplace-add line is one-time per machine; subsequent installs only need the install line. For local-checkout and project-local-copy alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and [`github-copilot/README.md`](github-copilot/README.md).
+
+> The Copilot variant collapses the `pm-team` skill + `requirements-analyst` + `spec-reviewer` + `board-manager` subagents into a single orchestrator chat agent that runs the interview, drafts and self-reviews specs, and seeds the board in-line. The multi-subagent fan-out and the `/board-manager` standalone slash command are Claude Code-only.
 
 ## Platform detection
 
@@ -105,19 +112,23 @@ You re-review and either comment again (loop) or approve.
 ```
 packages/pm-team/
 ├── README.md                                    # this file
-└── claude-code/
-    ├── .claude-plugin/plugin.json
-    ├── README.md                                # install / usage
-    ├── skills/
-    │   └── pm-team/
-    │       └── SKILL.md
+├── claude-code/                                 # installable Claude Code plugin
+│   ├── .claude-plugin/plugin.json
+│   ├── README.md                                # install / usage
+│   ├── skills/
+│   │   └── pm-team/
+│   │       └── SKILL.md
+│   ├── agents/
+│   │   ├── requirements-analyst.md
+│   │   ├── spec-reviewer.md
+│   │   └── board-manager.md
+│   └── commands/
+│       ├── pm-team.md
+│       └── board-manager.md
+└── github-copilot/                              # installable Copilot CLI plugin
     ├── agents/
-    │   ├── requirements-analyst.md
-    │   ├── spec-reviewer.md
-    │   └── board-manager.md
-    └── commands/
-        ├── pm-team.md
-        └── board-manager.md
+    │   └── pm-team.agent.md
+    └── README.md
 ```
 
 ## Future extensions (not built)

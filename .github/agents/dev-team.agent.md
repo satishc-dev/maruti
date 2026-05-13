@@ -1,0 +1,1 @@
+../../packages/dev-team/github-copilot/agents/dev-team.agent.md

@@ -156,8 +156,6 @@ Use exactly this structure. Every field is required; fill any genuinely-N/A fiel
 - packages/<name>/claude-code/<primitive-specific paths>
 - packages/<name>/claude-code/README.md
 - packages/<name>/github-copilot/<primitive-specific paths, if applicable>
-- packages/<name>/github-copilot/install.sh
-- packages/<name>/github-copilot/install.ps1
 - packages/<name>/github-copilot/README.md
 ```
 
@@ -203,10 +201,13 @@ Next steps (Claude Code):
     /plugin install <name>@<marketplace-name>.
 
 Next steps (GitHub Copilot, if emitted):
-  - Install locally: ./packages/<name>/github-copilot/install.sh
-    (or install.ps1 on Windows)
-  - Share with another repo: see packages/<name>/github-copilot/README.md
-    for the curl/Invoke-WebRequest direct-download snippet.
+  - Publish via the maruti marketplace: add an entry under "plugins" in
+    .github/plugin/marketplace.json (sibling of the Claude one), then
+    consumers run `copilot plugin marketplace add <owner>/<repo>` followed
+    by `copilot plugin install <name>@<marketplace-name>`.
+  - Vendor directly: copy github-copilot/agents/<name>.agent.md (or
+    skills/<name>/SKILL.md) into the target repo's .github/agents/ or
+    .github/skills/.
 
 Maruti-internal note: if this package is being generated inside the maruti
 repo itself, also run `python3 scripts/link_packages.py sync` to publish the
@@ -241,9 +242,8 @@ packages/<name>/
 │   └── README.md                          # always (install instructions)
 └── github-copilot/                        # if target includes github-copilot
     ├── agents/<name>.agent.md             # if primitive includes chat mode
+    ├── skills/<name>/SKILL.md             # if primitive includes skill
     ├── prompts/<name>.prompt.md           # if primitive includes prompt file
-    ├── install.sh                         # always (Bash deploy script)
-    ├── install.ps1                        # always (PowerShell deploy script)
     └── README.md                          # always (install instructions)
 ```
 
@@ -312,6 +312,17 @@ model: GPT-5.2
 <body>
 ```
 
+### Copilot skill — `github-copilot/skills/<name>/SKILL.md`
+
+```markdown
+---
+name: <kebab-name>
+description: A description of what the skill does, and when Copilot should use it.
+---
+
+<body — instructions Copilot loads when the skill activates>
+```
+
 ### Copilot prompt file — `github-copilot/prompts/<name>.prompt.md`
 
 ```markdown
@@ -324,82 +335,6 @@ description: <one-sentence description>
 ```
 
 `mode:` is one of `ask`, `edit`, or `agent`.
-
-### Copilot install scripts
-
-These are **generic** — they copy whatever subdirectories are present in the payload into the target repo's `.github/` tree. Emit both scripts even if only one platform is in use.
-
-#### `github-copilot/install.sh`
-
-```bash
-#!/usr/bin/env bash
-# Deploys this Copilot payload into a target repository's .github/ tree.
-# Usage: ./install.sh [target-repo-path]   (defaults to current directory)
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="${1:-$(pwd)}"
-
-if [ ! -d "$TARGET" ]; then
-  echo "Target directory does not exist: $TARGET" >&2
-  exit 1
-fi
-
-installed=0
-for sub in agents prompts; do
-  if [ -d "$SCRIPT_DIR/$sub" ]; then
-    mkdir -p "$TARGET/.github/$sub"
-    cp -R "$SCRIPT_DIR/$sub/." "$TARGET/.github/$sub/"
-    installed=$((installed + 1))
-    echo "Installed $sub/ into $TARGET/.github/$sub/"
-  fi
-done
-
-if [ "$installed" -eq 0 ]; then
-  echo "Nothing to install (payload is empty)." >&2
-  exit 1
-fi
-```
-
-#### `github-copilot/install.ps1`
-
-```powershell
-<#
-.SYNOPSIS
-Deploys this Copilot payload into a target repository's .github/ tree.
-
-.PARAMETER Target
-Path to the target repo. Defaults to the current directory.
-#>
-param(
-    [string]$Target = (Get-Location).Path
-)
-
-$ErrorActionPreference = 'Stop'
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-if (-not (Test-Path -PathType Container $Target)) {
-    Write-Error "Target directory does not exist: $Target"
-    exit 1
-}
-
-$installed = 0
-foreach ($sub in @('agents', 'prompts')) {
-    $source = Join-Path $ScriptDir $sub
-    if (Test-Path -PathType Container $source) {
-        $dest = Join-Path $Target ".github\$sub"
-        New-Item -ItemType Directory -Force -Path $dest | Out-Null
-        Copy-Item -Recurse -Force "$source\*" $dest
-        $installed++
-        Write-Host "Installed $sub/ into $dest"
-    }
-}
-
-if ($installed -eq 0) {
-    Write-Error "Nothing to install (payload is empty)."
-    exit 1
-}
-```
 
 ---
 
@@ -448,7 +383,6 @@ Apply **least privilege**: read-only by default; only grant write or execute acc
 - **Never bypass the review loop.** Even on a tiny package, run at least one builder + reviewer round before declaring done.
 - **Never write outside `packages/<name>/`.**
 - Use **kebab-case** for the package name and folder.
-- For Copilot, always emit `install.sh` AND `install.ps1`.
 - Body content of narrative primitives (skill, chat mode) must be byte-identical when both variants of the same logical package are emitted.
 - Emit only the files specified in the design brief's `Output paths`. No analysis, no alternative drafts, no meta-commentary in the package itself.
 - The design brief is the single source of truth for the builder and reviewer. If you realize mid-loop that the brief is wrong, stop, fix the brief with the user, and restart the loop from iteration 1.

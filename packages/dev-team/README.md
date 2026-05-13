@@ -11,16 +11,23 @@ A multi-agent software development team for Claude Code. Drives a single work it
 
 ## Install
 
-From a Claude Code session in the target repo (no local checkout required):
+**Claude Code** — from a Claude Code session in the target repo:
 
 ```
 /plugin marketplace add satishc2437/maruti
 /plugin install dev-team@maruti
 ```
 
-The first line is one-time per machine; subsequent installs from the same marketplace only need the second.
+**GitHub Copilot CLI** — from a Copilot CLI session in the target repo:
 
-For local-checkout and project-local-copy options, see [`claude-code/README.md`](claude-code/README.md#install).
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install dev-team@maruti
+```
+
+For each platform, the marketplace-add line is one-time per machine; subsequent installs only need the install line. For local-checkout and project-local-copy alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and [`github-copilot/README.md`](github-copilot/README.md).
+
+> The Copilot variant collapses `team-lead` + `software-developer` + `code-reviewer` into a single orchestrator chat agent that does design, implementation, and self-review in-line. The multi-subagent fan-out is Claude Code-only.
 
 ## Workflow
 
@@ -62,15 +69,19 @@ For local-checkout and project-local-copy options, see [`claude-code/README.md`]
 ```
 packages/dev-team/
 ├── README.md                                    # this file
-└── claude-code/
-    ├── .claude-plugin/plugin.json
-    ├── README.md                                # install / usage
+├── claude-code/                                 # installable Claude Code plugin
+│   ├── .claude-plugin/plugin.json
+│   ├── README.md                                # install / usage
+│   ├── agents/
+│   │   ├── team-lead.md
+│   │   ├── software-developer.md
+│   │   └── code-reviewer.md
+│   └── commands/
+│       └── dev-team.md
+└── github-copilot/                              # installable Copilot CLI plugin
     ├── agents/
-    │   ├── team-lead.md
-    │   ├── software-developer.md
-    │   └── code-reviewer.md
-    └── commands/
-        └── dev-team.md
+    │   └── dev-team.agent.md
+    └── README.md
 ```
 
 ## Future extensions (not built)

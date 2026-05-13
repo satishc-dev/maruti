@@ -1,20 +1,35 @@
 # MCP-Tool-Architect — GitHub Copilot variant
 
-Installable form of MCP-Tool-Architect for use as a GitHub Copilot agent mode.
+Installable form of MCP-Tool-Architect for use in GitHub Copilot CLI as a custom agent.
 
 ## Install
 
-```bash
-mkdir -p .github/agents
-cp packages/mcp-tool-architect/github-copilot/agents/mcp-tool-architect.agent.md .github/agents/
+From a Copilot CLI session in the target repository:
+
+```
+copilot plugin marketplace add satishc2437/maruti
+copilot plugin install mcp-tool-architect@maruti
 ```
 
-In VS Code with GitHub Copilot Chat, the agent will appear in the chat-mode picker as **MCP-Tool-Architect**.
+The first command is one-time per machine; subsequent installs only need the second line.
+
+## Manual install
+
+If you prefer to vendor the agent directly into a repo (no plugin system):
+
+```bash
+mkdir -p .github/agents
+cp agents/mcp-tool-architect.agent.md .github/agents/mcp-tool-architect.agent.md
+```
+
+Copilot CLI also reads `~/.copilot/agents/` for personal-scope agents if you want it available across all your projects.
 
 ## Usage
 
-1. Open Copilot Chat.
-2. Switch the chat mode to **MCP-Tool-Architect**.
-3. State the problem the new MCP tool should solve.
+Once installed, switch to the **MCP-Tool-Architect** agent in your Copilot CLI session and state the problem the new MCP tool should solve.
 
-The architect will run a focused requirements interview and write the three primary docs under `mcp-tools/<tool-name>/specs/product-docs/`.
+The architect will run a focused requirements interview and write the three primary docs under `mcp-tools/<tool-name>/specs/product-docs/`:
+
+- `requirements.md`
+- `engineering-guardrails.md`
+- `success-criteria.md`
