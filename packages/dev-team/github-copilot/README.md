@@ -30,10 +30,25 @@ Once installed, switch to the **Dev-Team** agent in your Copilot CLI session and
 
 ```
 @dev-team Drive work item 1234
+@dev-team Drive work item 1234 --cycles 16
 ```
 
-Dev-Team will detect whether the tracker is Azure DevOps or GitHub from `git remote get-url origin`, fetch the work item, design the implementation, execute it (decomposing into independent units when worthwhile), self-review against the acceptance criteria, and open the PR.
+Dev-Team will detect whether the tracker is Azure DevOps or GitHub from `git remote get-url origin`, then run the Scrum workflow:
+
+1. **Phase 0:** read `.scrum/lessons.md` (cross-project lessons memory, 5 KB FIFO) into planning context.
+2. **Phase 1:** fetch the work item via `azure-devops` MCP server or `gh issue view`.
+3. **Phase 2:** derive a project slug, write a structured plan to `.scrum/<slug>/plan.md`, and **HALT for explicit user signoff** before dispatching anyone.
+4. **Phase 3:** initialize the journal (`.scrum/<slug>/agents/team-lead.md`), create the feature branch, and one worktree per task.
+5. **Phase 4:** run the Scrum cycle loop. Each cycle Dev-Team dispatches `software-developer-N` agents in parallel via the `agent` tool, then dispatches `code-reviewer-1` after they return. Each `agent` dispatch is one round-trip — no live polling; if work isn't done, the subagent returns `status: in-progress` and Dev-Team re-dispatches next cycle. Default cycle budget is **12** (overridable with `--cycles N`, minimum 3). Warn at cycle `budget-2`, HALT at `budget` with continue/abort/finalize choice.
+6. **Phase 5:** write `.scrum/<slug>/retrospective.md` and distill 1–3 project-agnostic lessons into `.scrum/lessons.md` (newest on top, 5 KB FIFO trim, whole-lesson eviction).
+7. **Phase 6:** on `go`: merge worktrees → push branch → open PR via `az repos pr create` (ADO) or `gh pr create` (GitHub) → delete worktrees.
+8. **Phase 7:** final report with outcome, PR URL, cycle count consumed, retrospective path, and lessons added.
+
+The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO rule, and retrospective format are documented in [`../SCRUM-SCHEMA.md`](../SCRUM-SCHEMA.md).
 
 ## Notes vs. the Claude Code variant
 
-The Claude Code variant of `dev-team` fans out work to a `team-lead` orchestrator plus parallel `software-developer` and `code-reviewer` subagents. Copilot CLI's chat-mode model collapses this into one orchestrator agent that does design, implementation, and self-review in-line. Use the `agent` tool inside Dev-Team to delegate genuinely independent units when worthwhile.
+The Claude Code and Copilot variants share the same Scrum semantics (Phase 0 through 7), the same `.scrum/` schema, the same work-log entry format, the same cycle budget contract, and the same retrospective + lessons mechanics. The only mechanical differences:
+
+- Claude Code dispatches subagents via `TaskCreate` and can live-poll with `TaskList` / `TaskGet` / `TaskOutput` / `TaskStop` mid-cycle.
+- Copilot dispatches subagents via the `agent` tool one round-trip per cycle; if a subagent doesn't finish in its turn budget, it returns `status: in-progress` and Dev-Team re-dispatches it on the next cycle.

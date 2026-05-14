@@ -51,9 +51,10 @@ Kick off a run via the slash command:
 
 ```
 /dev-team 1234
+/dev-team 1234 --cycles 16
 ```
 
-The `team-lead` subagent auto-detects whether `1234` is an Azure DevOps work item or a GitHub issue from `git remote get-url origin`. Override with `--platform <ado|gh>` if your repo has remotes pointing at both.
+The `team-lead` subagent auto-detects whether `1234` is an Azure DevOps work item or a GitHub issue from `git remote get-url origin`. Override with `--platform <ado|gh>` if your repo has remotes pointing at both. `--cycles N` overrides the default Scrum cycle budget (default 12, minimum 3).
 
 Or invoke the team lead directly:
 
@@ -63,11 +64,13 @@ team-lead, please pick up work item 1234
 
 The `team-lead` subagent will:
 
-1. Fetch the work item (title, description, acceptance criteria).
-2. Read the repo's `CLAUDE.md` / `README.md` and recent history.
-3. Produce a brief design and decompose it into independent tasks.
-4. Create a feature branch `users/satishc/feature/<work-item-id>-<slug>` and one worktree per task under `.worktrees/<work-item-id>/`.
-5. Spawn `software-developer` subagents in parallel, one per task.
-6. Gate the combined result through `code-reviewer` — auto-iterate up to **3 times** on no-go.
-7. On go: merge worktrees → push branch → open PR via `az repos pr create` (ADO) or `gh pr create` (GitHub) → delete worktrees.
-8. On 3-iteration failure: report back to you with the diff, the reviewer's feedback, and worktrees left in place.
+1. **Phase 0:** read `.scrum/lessons.md` (cross-project lessons memory, 5 KB FIFO) into planning context.
+2. **Phase 1:** fetch the work item (title, description, acceptance criteria).
+3. **Phase 2:** read the repo's `CLAUDE.md` / `README.md` and recent history, derive a project slug, write a structured plan to `.scrum/<slug>/plan.md`, and **HALT for explicit user signoff** before dispatching anyone.
+4. **Phase 3:** initialize the journal (`.scrum/<slug>/agents/team-lead.md`), create the feature branch `users/<you>/feature/<work-item-id>-<slug>`, and one worktree per task under `.worktrees/<work-item-id>/`.
+5. **Phase 4:** run the Scrum cycle loop (cycle = 1..budget). Each cycle: dispatch all `software-developer-N` agents in parallel (via `TaskCreate`), then dispatch `code-reviewer-1` after they return. Prepend each subagent's schema-d work-log entry to `.scrum/<slug>/agents/<agentId>.md`. Warn the user at cycle `budget-2`, HALT at `budget` with continue/abort/finalize choice. Answer mid-loop status queries by reading the TOP entry of each agent's log.
+6. **Phase 5:** write `.scrum/<slug>/retrospective.md` and distill 1–3 project-agnostic lessons into `.scrum/lessons.md` (newest on top, 5 KB FIFO trim, whole-lesson eviction).
+7. **Phase 6:** on `go`: merge worktrees → push branch → open PR via `az repos pr create` (ADO) or `gh pr create` (GitHub) → delete worktrees.
+8. **Phase 7:** final report with outcome, PR URL, cycle count consumed, retrospective path, and lessons added.
+
+The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO rule, and retrospective format are documented in [`../SCRUM-SCHEMA.md`](../SCRUM-SCHEMA.md).

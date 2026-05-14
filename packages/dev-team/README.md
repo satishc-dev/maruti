@@ -4,10 +4,10 @@ A multi-agent software development team for Claude Code. Drives a single work it
 
 ## Roles
 
-- **`team-lead`** (subagent) — orchestrator. Fetches the work item, designs the implementation, decomposes it into independent tasks, creates a feature branch and per-task worktrees, fans out to `software-developer` subagents in parallel, gates the result through `code-reviewer`, and opens the PR.
-- **`software-developer`** (subagent) — implementer. Works inside a single git worktree on one task. Definition-of-done is **strict**: tests + linters must pass before reporting completion.
-- **`code-reviewer`** (subagent) — read-only reviewer. Re-runs the test/lint gates and produces a structured **go/no-go** verdict with actionable feedback.
-- **`/dev-team`** (slash command) — kickoff shortcut: `/dev-team <work-item-id>`. Platform (ADO vs GitHub) is auto-detected from `git remote get-url origin`.
+- **`team-lead`** (subagent) — orchestrator. Reads cross-project lessons, fetches the work item, writes a structured plan and gets explicit user signoff before dispatching anyone, runs a Scrum cycle loop dispatching `software-developer` and `code-reviewer` subagents, writes a retrospective at the end, and opens the PR.
+- **`software-developer`** (subagent) — implementer. Works inside a single git worktree on one task. Definition-of-done is **strict**: tests + linters must pass before reporting completion. Bounded by a per-turn budget; emits a schema-d work-log entry every cycle.
+- **`code-reviewer`** (subagent) — read-only reviewer. Re-runs the test/lint gates and produces a structured **go/no-go** verdict with actionable feedback, emitted inside a schema-d work-log entry.
+- **`/dev-team`** (slash command) — kickoff shortcut: `/dev-team <work-item-id> [--cycles <N>]`. Platform (ADO vs GitHub) is auto-detected from `git remote get-url origin`.
 
 ## Install
 
@@ -27,33 +27,50 @@ copilot plugin install dev-team@maruti
 
 For each platform, the marketplace-add line is one-time per machine; subsequent installs only need the install line. For local-checkout and project-local-copy alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and [`github-copilot/README.md`](github-copilot/README.md).
 
-> The Copilot variant collapses `team-lead` + `software-developer` + `code-reviewer` into a single orchestrator chat agent that does design, implementation, and self-review in-line. The multi-subagent fan-out is Claude Code-only.
+> The Copilot variant uses the same Scrum cadence — orchestrator chat mode dispatches `software-developer` and `code-reviewer` via the `agent` tool one round-trip per cycle (no live polling). See `github-copilot/README.md` for the mechanics.
+
+## Scrum cadence
+
+Dev-Team runs under a Scrum loop. The orchestrator MUST:
+
+1. **Read cross-project lessons** from `.scrum/lessons.md` (a FIFO 5 KB scratch-pad accumulated across past projects) and use them when planning.
+2. **Write a plan and get user signoff** before dispatching any subagent. The plan covers project slug, objective, team composition (persistent agent identities like `software-developer-1`, `code-reviewer-1`), task breakdown, cycle budget, project-level DoD, anticipated risks, and lessons applied. It is written to `.scrum/<project-slug>/plan.md` and presented in chat; nothing dispatches until the user approves.
+3. **Run a cycle loop** with a hard cap (default 12, configurable via `--cycles N`, minimum 3). The orchestrator warns the user at cycle `cap-2` and HALTS at the cap, offering: continue (+N), abort, or finalize-with-current-state. Each subagent has a per-turn budget and emits a schema-d work-log entry as the final block of its response; the orchestrator (sole writer) prepends each entry to `.scrum/<project-slug>/agents/<agentId>.md`. Mid-loop status queries are answered by reading the top entry of each agent's log without dispatching new work.
+4. **Write a retrospective + distill lessons** at project end. The retrospective lives at `.scrum/<project-slug>/retrospective.md`; 1–3 project-agnostic lessons are prepended to `.scrum/lessons.md`, which is FIFO-trimmed to 5 KB (whole-lesson eviction; no mid-content splits).
+
+The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO rule, and retrospective format are documented in [`SCRUM-SCHEMA.md`](SCRUM-SCHEMA.md).
 
 ## Workflow
 
 ```
-/dev-team 42
+/dev-team 42 [--cycles 12]
   └─► main agent
         └─► team-lead subagent
-              ├── detect platform from `git remote get-url origin`
-              ├── fetch work item (ADO MCP or `gh`)
-              ├── analyze + design + decompose into N tasks
-              ├── create feature branch + N worktrees
-              ├── parallel fan-out:
-              │     ├─► software-developer (task 1) ─┐
-              │     ├─► software-developer (task 2) ─┤
-              │     └─► software-developer (task N) ─┘
-              ├── code-reviewer (go / no-go)
-              │     └── on no-go: dispatch fixes back, repeat (max 3 iterations)
-              └── on go: merge → push → open PR
+              ├── Phase 0: read .scrum/lessons.md
+              ├── Phase 1: detect platform + fetch work item
+              ├── Phase 2: write .scrum/<slug>/plan.md and HALT for user signoff
+              ├── Phase 3: init journal + feature branch + per-task worktrees
+              ├── Phase 4: Scrum cycle loop (cycle = 1..budget)
+              │     ├── dispatch software-developer-N in parallel
+              │     ├── dispatch code-reviewer-1 after devs return
+              │     ├── prepend each subagent's work-log entry to agents/<agentId>.md
+              │     ├── observation entry into agents/team-lead.md
+              │     ├── handle blockers / answer mid-loop status queries
+              │     └── budget check (warn at cap-2; halt at cap)
+              ├── Phase 5: write retrospective + distill lessons (FIFO 5 KB)
+              ├── Phase 6: merge → push → open PR → teardown
+              └── Phase 7: final report (PR URL, cycles used, retrospective path)
 ```
 
 ## Operational policies
 
-- **Loop:** auto-iterate developer ↔ reviewer up to **3 iterations**, then escalate to the human with a structured failure report.
+- **Cycle budget:** default 12, configurable via `--cycles N` (N >= 3). Warn at `N-2`, halt at `N` with continue/abort/finalize choice. The previous 3-iteration cap is REPLACED by this contract.
+- **Plan signoff:** mandatory and explicit. Even on small projects, the orchestrator presents the plan and waits for `yes` / `change` / `abort`.
+- **Persistent agent identities:** the same `software-developer-1` is re-dispatched cycle after cycle and accumulates history in its own work-log file under `.scrum/<slug>/agents/`. The orchestrator is the SOLE writer to every file under `agents/`.
+- **Lessons memory:** `.scrum/lessons.md` is cross-project, 5 KB FIFO, prepended on write, trimmed whole-lesson at boundary.
 - **Worktrees:** `.worktrees/<work-item-id>/<task-id>/` inside the repo, auto-added to `.gitignore`. **Auto-deleted on success**, kept on failure for forensics.
 - **DoD (strict):** developers run the project's tests + linters; reviewer **re-runs** them. Red tests/linters = automatic no-go.
-- **Branch template:** `users/satishc/feature/<work-item-id>-<slug>`
+- **Branch template:** `users/<you>/feature/<work-item-id>-<slug>`
 - **PR template:** title `[<work-item-id>] <work-item-title>`, body links back to the originating work item.
 
 ## External dependencies
@@ -69,6 +86,7 @@ For each platform, the marketplace-add line is one-time per machine; subsequent 
 ```
 packages/dev-team/
 ├── README.md                                    # this file
+├── SCRUM-SCHEMA.md                              # .scrum/ layout, schema, cycle budget, lessons FIFO
 ├── claude-code/                                 # installable Claude Code plugin
 │   ├── .claude-plugin/plugin.json
 │   ├── README.md                                # install / usage
