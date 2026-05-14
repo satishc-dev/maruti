@@ -1,1 +1,0 @@
-../../packages/dev-team/claude-code/agents/team-lead.md

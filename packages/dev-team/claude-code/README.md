@@ -1,6 +1,6 @@
 # Dev Team — Claude Code variant
 
-Installable Claude Code plugin bundling three subagents (`team-lead`, `software-developer`, `code-reviewer`) and one slash command (`/dev-team`).
+Installable Claude Code plugin bundling one skill (`dev-team`, the orchestrator), two subagents (`software-developer`, `code-reviewer`), and one slash command (`/dev-team`).
 
 ## Install
 
@@ -32,16 +32,17 @@ If you already have maruti cloned:
 ### Option C — project-local copy
 
 ```bash
-mkdir -p .claude/agents .claude/commands
-cp packages/dev-team/claude-code/agents/*.md   .claude/agents/
-cp packages/dev-team/claude-code/commands/*.md .claude/commands/
+mkdir -p .claude/agents .claude/commands .claude/skills/dev-team
+cp packages/dev-team/claude-code/agents/*.md             .claude/agents/
+cp packages/dev-team/claude-code/commands/*.md           .claude/commands/
+cp packages/dev-team/claude-code/skills/dev-team/SKILL.md .claude/skills/dev-team/
 ```
 
 ## Prerequisites
 
 | Integration | Setup |
 |---|---|
-| Azure DevOps | Install the `azure-devops-mcp` server and configure it with a PAT. The `team-lead` subagent will use `mcp__azure-devops-mcp__*` tools. |
+| Azure DevOps | Install the `azure-devops-mcp` server and configure it with a PAT. The `dev-team` skill will use `mcp__azure-devops-mcp__*` tools. |
 | GitHub | `gh auth login` (or sandbox credential injection) for the org/repo you'll be raising PRs against. |
 | Git worktrees | `git` ≥ 2.5 (any modern install). |
 
@@ -54,15 +55,15 @@ Kick off a run via the slash command:
 /dev-team 1234 --cycles 16
 ```
 
-The `team-lead` subagent auto-detects whether `1234` is an Azure DevOps work item or a GitHub issue from `git remote get-url origin`. Override with `--platform <ado|gh>` if your repo has remotes pointing at both. `--cycles N` overrides the default Scrum cycle budget (default 12, minimum 3).
+The `dev-team` skill auto-detects whether `1234` is an Azure DevOps work item or a GitHub issue from `git remote get-url origin`. Override with `--platform <ado|gh>` if your repo has remotes pointing at both. `--cycles N` overrides the default Scrum cycle budget (default 12, minimum 3).
 
-Or invoke the team lead directly:
+Or describe the work directly:
 
 ```
-team-lead, please pick up work item 1234
+Drive work item 1234 through the dev-team
 ```
 
-The `team-lead` subagent will:
+The `dev-team` skill will:
 
 1. **Phase 0:** read `.scrum/lessons.md` (cross-project lessons memory, 5 KB FIFO) into planning context.
 2. **Phase 1:** fetch the work item (title, description, acceptance criteria).

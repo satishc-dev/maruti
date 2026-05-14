@@ -4,7 +4,7 @@ A multi-agent software development team for Claude Code. Drives a single work it
 
 ## Roles
 
-- **`team-lead`** (subagent) — orchestrator. Reads cross-project lessons, fetches the work item, writes a structured plan and gets explicit user signoff before dispatching anyone, runs a Scrum cycle loop dispatching `software-developer` and `code-reviewer` subagents, writes a retrospective at the end, and opens the PR.
+- **`dev-team`** (skill) — orchestrator. Loaded into the main agent's context (where the `Task` tool is available) by the `/dev-team` slash command. Reads cross-project lessons, fetches the work item, writes a structured plan and gets explicit user signoff before dispatching anyone, runs a Scrum cycle loop dispatching `software-developer` and `code-reviewer` subagents (via `Task` + `run_in_background: true` for parallel fan-out), writes a retrospective at the end, and opens the PR.
 - **`software-developer`** (subagent) — implementer. Works inside a single git worktree on one task. Definition-of-done is **strict**: tests + linters must pass before reporting completion. Bounded by a per-turn budget; emits a schema-d work-log entry every cycle.
 - **`code-reviewer`** (subagent) — read-only reviewer. Re-runs the test/lint gates and produces a structured **go/no-go** verdict with actionable feedback, emitted inside a schema-d work-log entry.
 - **`/dev-team`** (slash command) — kickoff shortcut: `/dev-team <work-item-id> [--cycles <N>]`. Platform (ADO vs GitHub) is auto-detected from `git remote get-url origin`.
@@ -44,22 +44,22 @@ The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO ru
 
 ```
 /dev-team 42 [--cycles 12]
-  └─► main agent
-        └─► team-lead subagent
-              ├── Phase 0: read .scrum/lessons.md
-              ├── Phase 1: detect platform + fetch work item
-              ├── Phase 2: write .scrum/<slug>/plan.md and HALT for user signoff
-              ├── Phase 3: init journal + feature branch + per-task worktrees
-              ├── Phase 4: Scrum cycle loop (cycle = 1..budget)
-              │     ├── dispatch software-developer-N in parallel
-              │     ├── dispatch code-reviewer-1 after devs return
-              │     ├── prepend each subagent's work-log entry to agents/<agentId>.md
-              │     ├── observation entry into agents/team-lead.md
-              │     ├── handle blockers / answer mid-loop status queries
-              │     └── budget check (warn at cap-2; halt at cap)
-              ├── Phase 5: write retrospective + distill lessons (FIFO 5 KB)
-              ├── Phase 6: merge → push → open PR → teardown
-              └── Phase 7: final report (PR URL, cycles used, retrospective path)
+  └─► dev-team skill (loaded into main agent context — Task tool available)
+        ├── Phase 0: read .scrum/lessons.md
+        ├── Phase 1: detect platform + fetch work item
+        ├── Phase 2: write .scrum/<slug>/plan.md and HALT for user signoff
+        ├── Phase 3: init journal + feature branch + per-task worktrees
+        ├── Phase 4: Scrum cycle loop (cycle = 1..budget)
+        │     ├── dispatch software-developer-N via Task + run_in_background=true (parallel)
+        │     ├── await each via TaskOutput(block=true) or auto-notification
+        │     ├── dispatch code-reviewer-1 after devs return
+        │     ├── prepend each subagent's work-log entry to agents/<agentId>.md
+        │     ├── observation entry into agents/team-lead.md
+        │     ├── handle blockers / answer mid-loop status queries
+        │     └── budget check (warn at cap-2; halt at cap)
+        ├── Phase 5: write retrospective + distill lessons (FIFO 5 KB)
+        ├── Phase 6: merge → push → open PR → teardown
+        └── Phase 7: final report (PR URL, cycles used, retrospective path)
 ```
 
 ## Operational policies
