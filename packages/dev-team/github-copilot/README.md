@@ -50,5 +50,5 @@ The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO ru
 
 The Claude Code and Copilot variants share the same Scrum semantics (Phase 0 through 7), the same `.scrum/` schema, the same work-log entry format, the same cycle budget contract, and the same retrospective + lessons mechanics. The only mechanical differences:
 
-- Claude Code dispatches subagents via `TaskCreate` and can live-poll with `TaskList` / `TaskGet` / `TaskOutput` / `TaskStop` mid-cycle.
-- Copilot dispatches subagents via the `agent` tool one round-trip per cycle; if a subagent doesn't finish in its turn budget, it returns `status: in-progress` and Dev-Team re-dispatches it on the next cycle.
+- Claude Code dispatches subagents via the `Task` tool with `run_in_background: true` so a cycle's tasks run in parallel; waits on each via `TaskOutput(task_id, block=true)` or auto-notifications; terminates runaways via `TaskStop(task_id)`. Subagents are atomic from the orchestrator's view (no in-flight transcript peek — that would overflow context); cycle-level visibility is via the standup files in `.scrum/<slug>/agents/`.
+- Copilot dispatches subagents via the `agent` tool one round-trip per cycle (no parallel fan-out); if a subagent doesn't finish in its turn budget, it returns `status: in-progress` and Dev-Team re-dispatches it on the next cycle.

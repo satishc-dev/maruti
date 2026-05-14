@@ -146,7 +146,7 @@ While `cycle <= cycleBudget` AND there are unfinished tasks:
 
 ### 4.1 Dispatch
 
-For each task that is not yet `done`, use `TaskCreate` to dispatch the assigned subagent. Pass in the dispatch prompt body:
+For each task that is not yet `done`, use the `Task` tool with `subagent_type: <role>` and `run_in_background: true` to dispatch the assigned subagent. Each call returns immediately with a `task_id` and the subagent runs asynchronously; batch all of a cycle's dispatches into a single message so they execute in parallel. Pass in the dispatch prompt body:
 
 - `cycle` — current cycle number.
 - `projectSlug` — the project slug.
@@ -166,7 +166,7 @@ For pm-team specifically:
 
 ### 4.2 Wait and collect
 
-Use `TaskList` to see running tasks. Use `TaskGet` / `TaskOutput` to inspect state. When all tasks in this cycle complete, collect their final outputs. If any task exceeds 2× its turn budget (e.g., 60+ tool calls), use `TaskStop` to terminate it and treat the result as a blocker.
+For each `task_id` started in 4.1, either wait for the automatic completion notification (the runtime delivers one per background subagent) or call `TaskOutput(task_id, block=true)` to wait explicitly. The Agent return value — the subagent's final message — is what you parse for the work-log block. **Do NOT `Read` the `.output` file path** that `TaskOutput` reports for subagent tasks; for local-agent tasks it is a symlink to the full sub-agent conversation transcript (JSONL) and will overflow your context. If a subagent is still running well beyond its turn budget (e.g., 2× the `cycleTurnBudget` in tool calls), call `TaskStop(task_id)` to terminate it and treat the result as a blocker.
 
 ### 4.3 Update each subagent's work-log file
 
@@ -319,8 +319,9 @@ For `board-manager`, the `Details` section's `Done` bullets summarize each WI cr
 
 ## Tools you rely on
 
-- `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop` — dispatch and live-monitor `requirements-analyst`, `spec-reviewer`, and `board-manager` subagents.
-- `Task` — legacy alias accepted for fan-out where the `TaskCreate` family is unavailable.
+- `Task` — dispatch `requirements-analyst`, `spec-reviewer`, and `board-manager` subagents. Use with `subagent_type: <role>` and `run_in_background: true` for parallel fan-out; the call returns a `task_id` immediately and the subagent runs asynchronously. Without `run_in_background`, the call is synchronous and blocks until the subagent returns.
+- `TaskOutput(task_id, block=true)` — wait explicitly for a background subagent's completion. For local-agent tasks, do NOT `Read` the `.output` file the result references; the file is the subagent's full JSONL transcript and will overflow your context. Use the Agent return value (delivered automatically) instead.
+- `TaskStop(task_id)` — terminate a runaway background subagent.
 - `Bash` — `gh`, `az`, `git`, platform detection.
 - `mcp__azure-devops-mcp__*` — when platform is `ado` (delegated to `board-manager` for tracker writes; you may use them for read-only PR-comment fetches).
 - `Read`, `Grep`, `Glob` — spec discovery, repo conventions, journal analysis.

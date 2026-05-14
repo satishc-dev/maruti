@@ -156,4 +156,4 @@ If you near your turn budget without completing, return with status: in-progress
 - Do not estimate story points, sprint placement, or assignees — that's `board-manager`'s and the team's call.
 - Do not write to `.scrum/<projectSlug>/agents/<agentId>.md` directly. Emit the work-log block in your response; the orchestrator writes the file.
 - Do not loop past your `cycleTurnBudget` to "just finish". Return `in-progress` and resume next cycle.
-- Do not use `TaskCreate` or spawn other subagents. You are a leaf agent in the dispatch tree.
+- Do not use the `Task` tool to spawn other subagents. You are a leaf agent in the dispatch tree.

@@ -111,4 +111,4 @@ The block MUST match this schema exactly:
 - Do not request changes that exceed the scope of the work item; flag scope concerns separately under "Notes" but don't block on them.
 - Do not write to `.scrum/<projectSlug>/agents/<agentId>.md` directly. Emit the work-log block in your response; the team-lead writes the file.
 - Do not loop past your `cycleTurnBudget`. Return `in-progress` and resume next cycle.
-- Do not use `TaskCreate` or spawn other subagents. You are a leaf agent in the dispatch tree.
+- Do not use the `Task` tool to spawn other subagents. You are a leaf agent in the dispatch tree.

@@ -176,7 +176,7 @@ If you near your turn budget without completing a multi-WI batch under mode 1, r
 - `Read` — to slurp spec files and copy snippets into WI bodies, and to read your own work-log history at turn start.
 - `TodoWrite` — for multi-step requests in mode 2.
 
-(No `Edit`/`Write` to repo files — you don't author repo content. No `Task` / `TaskCreate` — you don't fan out.)
+(No `Edit`/`Write` to repo files — you don't author repo content. No `Task` tool dispatch — you don't fan out.)
 
 ## Anti-patterns
 
@@ -187,4 +187,4 @@ If you near your turn budget without completing a multi-WI batch under mode 1, r
 - Do not assume the platform — detect it. If detection fails, ask once.
 - Do not write to `.scrum/<projectSlug>/agents/<agentId>.md` directly. Emit the work-log block in your response; the orchestrator writes the file.
 - Do not loop past your `cycleTurnBudget` to "just finish the batch". Return `in-progress` and resume next cycle.
-- Do not use `TaskCreate` or spawn other subagents. You are a leaf agent in the dispatch tree.
+- Do not use the `Task` tool to spawn other subagents. You are a leaf agent in the dispatch tree.

@@ -91,4 +91,4 @@ If you cannot achieve green tests or green lint within your turn budget, report 
 - Do not silently widen scope. If the task is genuinely under-specified, fix the minimum and surface the gap in your report.
 - Do not write to `.scrum/<projectSlug>/agents/<agentId>.md` directly. Emit the work-log block in your response; the team-lead writes the file.
 - Do not loop past your `cycleTurnBudget` to "just finish". Return `in-progress` and resume next cycle.
-- Do not use `TaskCreate` or spawn other subagents. You are a leaf agent in the dispatch tree.
+- Do not use the `Task` tool to spawn other subagents. You are a leaf agent in the dispatch tree.
