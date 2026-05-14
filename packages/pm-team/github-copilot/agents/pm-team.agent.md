@@ -171,7 +171,7 @@ For pm-team specifically:
 
 ### 4.2 Wait and collect
 
-Each `agent` dispatch is one round-trip — no live polling. Collect each `agent` tool return. If the subagent did not finish, it returns `status: in-progress` in its work-log block; you will re-dispatch it next cycle. There is no equivalent of mid-flight termination; rely on the `cycleTurnBudget` plus the subagent's own discipline.
+Each `agent` call is one round-trip — the call returns when the subagent has finished its turn (with a `status: done`, `in-progress`, `blocked`, or `observation` work-log block). When multiple `agent` calls are batched in a single message (the recommended pattern in 4.1), Copilot's runtime executes them concurrently per its standard parallel-tool-use semantics; their returns all arrive together when the slowest dispatch completes. There is **no live polling** while a subagent is running — Copilot has no `TaskOutput`-equivalent for peeking at mid-flight state — and **no kill switch** — Copilot has no `TaskStop`-equivalent. Rely on the `cycleTurnBudget` plus the subagent's own discipline to bound each turn. If a subagent does not finish within its budget, it returns `status: in-progress` in its work-log block and you re-dispatch it next cycle.
 
 ### 4.3 Update each subagent's work-log file
 
@@ -324,7 +324,7 @@ For `board-manager`, the `Details` section's `Done` bullets summarize each WI cr
 
 ## Tools you rely on
 
-- `agent` — dispatch `requirements-analyst`, `spec-reviewer`, and `board-manager` subagents. Each dispatch is one round-trip; no live polling.
+- `agent` — dispatch `requirements-analyst`, `spec-reviewer`, and `board-manager` subagents. Batch multiple dispatches in a single message for parallel execution per Copilot's standard parallel-tool-use semantics. Each call is one round-trip (no live polling mid-flight; no `TaskStop`-equivalent for runaway agents).
 - `terminal` — `gh`, `az`, `git`, platform detection.
 - `azure-devops` MCP server — when platform is `ado` (install separately if needed).
 - `read`, `search` — spec discovery, repo conventions, journal analysis.
