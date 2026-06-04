@@ -11,6 +11,7 @@ The schema lives in the **consumer repo's working directory** (the repo where th
 ├── lessons.md                              # cross-project, 5KB FIFO
 └── <project-slug>/
     ├── plan.md                             # frozen plan after user signoff
+    ├── design.md                           # OPTIONAL — written only if design review is enabled
     ├── retrospective.md                    # written at project end
     └── agents/
         ├── team-lead.md                    # orchestrator's journal
@@ -118,3 +119,38 @@ Required sections:
 - **Lessons applied** — zero or more bullets from `.scrum/lessons.md` that influenced this plan, each linked with `[[<source-project-slug>]]`.
 
 The plan is presented to the user IN CHAT before any subagent is dispatched. The orchestrator MUST NOT proceed until the user explicitly approves.
+
+## Design review mode
+
+Some changes are large enough to justify a Dev Design review and signoff BEFORE implementation kicks off; others (typos, isolated bug fixes, copy tweaks) are not. The orchestrator MUST honor a per-invocation **design-review mode** that controls whether a Dev Design Doc is produced and gated on user signoff.
+
+- **Modes** (passed via `--design <mode>` on invocation; default `auto`):
+  - `auto` — orchestrator evaluates complexity signals during planning and RECOMMENDS `yes` or `no`, then asks the user to confirm before either authoring the doc or skipping. The user has the final say.
+  - `required` — design doc + signoff are mandatory regardless of complexity signals.
+  - `skip` — design doc is never produced; the orchestrator proceeds straight from plan signoff to journal init.
+- **Complexity signals** the orchestrator weighs in `auto` mode (RECOMMEND `yes` if any two or more fire):
+  1. Task count `>= 3` in the approved plan.
+  2. New modules / components / public interfaces (vs. only edits to existing code paths).
+  3. Schema or data-model changes (DB migration, API contract change, on-disk format change).
+  4. Ambiguity in the work item's acceptance criteria that required orchestrator inference.
+  5. Cross-cutting change touching more than one subsystem or package boundary.
+  6. Security, auth, or concurrency surface area touched.
+- The orchestrator MUST state which signals fired (or "none") when it surfaces its `auto`-mode recommendation.
+
+## Design document format (`.scrum/<project-slug>/design.md`)
+
+Written only when design review is enabled. Frozen after user signoff. Re-signoff is required if the orchestrator amends the design during execution.
+
+Required sections (in order):
+
+1. **Project slug + work-item reference** — slug and a back-link to the work item id/title.
+2. **Architectural overview** — 1–3 paragraphs summarizing the approach. Inline a small component / data-flow sketch where useful (ASCII or fenced mermaid).
+3. **Components touched** — list of modules / files / services that will be created, modified, or deleted. Mark each as `[new]`, `[edit]`, or `[delete]`.
+4. **Interfaces & contracts** — function signatures, API endpoints, message schemas, CLI flags, or other public surfaces being added or changed. Backward-compatibility notes where relevant.
+5. **Data model / schema changes** — DB tables, migration steps, on-disk formats, or "n/a".
+6. **Alternatives considered** — 1–3 alternative approaches and the one-line reason each was rejected.
+7. **Testing strategy** — unit / integration / e2e split; new test files; how the reviewer will verify each acceptance criterion.
+8. **Risks & mitigations** — design-level risks (NOT execution risks — those live in `plan.md`).
+9. **Open questions** — explicit asks for the user. If non-empty, signoff cannot complete until these are resolved.
+
+The design doc is presented to the user IN CHAT (full content, not just a path) before Phase 3 begins. The orchestrator MUST NOT initialize the Scrum journal, create the feature branch, or dispatch any subagent until the user explicitly approves the design (or chooses `skip` after the orchestrator's `auto` recommendation).

@@ -31,6 +31,8 @@ Once installed, switch to the **Dev-Team** agent in your Copilot CLI session and
 ```
 @dev-team Drive work item 1234
 @dev-team Drive work item 1234 --cycles 16
+@dev-team Drive work item 1234 --design required
+@dev-team Drive work item 1234 --cycles 16 --design skip
 ```
 
 Dev-Team will detect whether the tracker is Azure DevOps or GitHub from `git remote get-url origin`, then run the Scrum workflow:
@@ -38,11 +40,12 @@ Dev-Team will detect whether the tracker is Azure DevOps or GitHub from `git rem
 1. **Phase 0:** read `.scrum/lessons.md` (cross-project lessons memory, 5 KB FIFO) into planning context.
 2. **Phase 1:** fetch the work item via `azure-devops` MCP server or `gh issue view`.
 3. **Phase 2:** derive a project slug, write a structured plan to `.scrum/<slug>/plan.md`, and **HALT for explicit user signoff** before dispatching anyone.
-4. **Phase 3:** initialize the journal (`.scrum/<slug>/agents/team-lead.md`), create the feature branch, and one worktree per task.
-5. **Phase 4:** run the Scrum cycle loop. Each cycle Dev-Team dispatches `software-developer-N` agents in parallel via the `agent` tool, then dispatches `code-reviewer-1` after they return. Each `agent` dispatch is one round-trip — no live polling; if work isn't done, the subagent returns `status: in-progress` and Dev-Team re-dispatches next cycle. Default cycle budget is **12** (overridable with `--cycles N`, minimum 3). Warn at cycle `budget-2`, HALT at `budget` with continue/abort/finalize choice.
-6. **Phase 5:** write `.scrum/<slug>/retrospective.md` and distill 1–3 project-agnostic lessons into `.scrum/lessons.md` (newest on top, 5 KB FIFO trim, whole-lesson eviction).
-7. **Phase 6:** on `go`: merge worktrees → push branch → open PR via `az repos pr create` (ADO) or `gh pr create` (GitHub) → delete worktrees.
-8. **Phase 7:** final report with outcome, PR URL, cycle count consumed, retrospective path, and lessons added.
+4. **Phase 2.5 (OPTIONAL — gated by `--design <auto|required|skip>`, default `auto`):** when design review is enabled (always for `required`; in `auto` if the orchestrator's complexity recommendation is confirmed by the user), write a Dev Design Doc to `.scrum/<slug>/design.md` covering architectural overview, components touched, interfaces & contracts, data model changes, alternatives considered, testing strategy, risks, and open questions; present it in chat and **HALT for explicit signoff** before any worktree is created or subagent is dispatched. `skip` bypasses this phase entirely.
+5. **Phase 3:** initialize the journal (`.scrum/<slug>/agents/team-lead.md`), create the feature branch, and one worktree per task.
+6. **Phase 4:** run the Scrum cycle loop. Each cycle Dev-Team dispatches `software-developer-N` agents in parallel via the `agent` tool, then dispatches `code-reviewer-1` after they return. Each `agent` dispatch is one round-trip — no live polling; if work isn't done, the subagent returns `status: in-progress` and Dev-Team re-dispatches next cycle. Default cycle budget is **12** (overridable with `--cycles N`, minimum 3). Warn at cycle `budget-2`, HALT at `budget` with continue/abort/finalize choice.
+7. **Phase 5:** write `.scrum/<slug>/retrospective.md` (including a design-accuracy assessment if Phase 2.5 ran) and distill 1–3 project-agnostic lessons into `.scrum/lessons.md` (newest on top, 5 KB FIFO trim, whole-lesson eviction).
+8. **Phase 6:** on `go`: merge worktrees → push branch → open PR via `az repos pr create` (ADO) or `gh pr create` (GitHub) → delete worktrees.
+9. **Phase 7:** final report with outcome, PR URL, cycle count consumed, retrospective path, and lessons added.
 
 The full on-disk layout, work-log schema, cycle budget contract, lessons FIFO rule, and retrospective format are documented in [`../SCRUM-SCHEMA.md`](../SCRUM-SCHEMA.md).
 
