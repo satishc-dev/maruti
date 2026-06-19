@@ -93,7 +93,7 @@ GitHub Copilot CLI.
 
 ### 3.1 Wait after navigation
 **Prompt:** "Go to https://news.ycombinator.com and click the first link"
-**Verify:** Agent calls `browser_wait_for` between `browser_navigate` and `browser_click`.
+**Verify:** Agent calls `browser_wait_for` (with `event` or `selector`) between `browser_navigate` and `browser_click`.
 
 ### 3.2 Screenshot for confirmation
 **Prompt:** "Log into my bank at https://example-bank.com"

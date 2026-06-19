@@ -17,7 +17,7 @@ You have access to the `browser-pilot` MCP server which controls a real Chrome b
 | `browser_screenshot` | Capture screenshot (params: optional `selector` for element, `fullPage` boolean) |
 | `browser_get_text` | Extract text content (params: optional `selector`; omit for full page) |
 | `browser_scroll` | Scroll the page (params: `direction`: up/down/left/right, optional `amount` px) |
-| `browser_wait_for` | Wait for condition (params: `selector` or `state`: load/domcontentloaded/networkidle, optional `timeout` ms) |
+| `browser_wait_for` | Wait for condition (params: `selector` for element, or `event`: load/domcontentloaded/networkidle; optional `timeout` ms, `state`: visible/hidden/attached/detached for selectors) |
 | `browser_evaluate` | Run JavaScript in page (params: `script` string) |
 | `browser_select` | Select dropdown option (params: `selector`, `value` or `label`) |
 | `browser_upload` | Upload file (params: `selector`, `filePath`) |
@@ -34,7 +34,7 @@ You have access to the `browser-pilot` MCP server which controls a real Chrome b
 ### Browse and capture
 
 ```
-browser_navigate(url) -> browser_wait_for(state: "networkidle") -> browser_screenshot()
+browser_navigate(url) -> browser_wait_for(event: "networkidle") -> browser_screenshot()
 ```
 
 Always wait after navigation before taking a screenshot or interacting.
@@ -48,7 +48,7 @@ browser_click(selector: "#email-field")
 browser_type(selector: "#email-field", text: "user@example.com")
 browser_type(selector: "#password-field", text: "***")
 browser_click(selector: "button[type=submit]")
-browser_wait_for(state: "networkidle")
+browser_wait_for(event: "networkidle")
 browser_screenshot()  // confirm result
 ```
 
@@ -75,7 +75,7 @@ browser_get_text()
 
 ## Best practices
 
-1. **Always wait after navigation.** Pages need time to load. Use `browser_wait_for` with a selector or `networkidle` before interacting.
+1. **Always wait after navigation.** Pages need time to load. Use `browser_wait_for` with `event: "networkidle"` or a `selector` for a key element before interacting.
 
 2. **Take screenshots to confirm state.** After important actions (form submit, page load, click), capture a screenshot so you and the user can verify what happened.
 
