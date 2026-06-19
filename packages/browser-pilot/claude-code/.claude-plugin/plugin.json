@@ -1,0 +1,8 @@
+{
+  "name": "browser-pilot",
+  "version": "1.0.0",
+  "description": "Skill that teaches agents how to effectively use the browser-pilot MCP server for Chrome automation.",
+  "author": {
+    "name": "satishc2437"
+  }
+}
