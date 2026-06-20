@@ -1,8 +1,8 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { IChromeLauncher, ChromeLaunchOptions, IChromeLocator } from "../interfaces/index.js";
-import { ChromeLocatorFactory } from "./ChromeLocatorFactory.js";
+import type { IChromeLauncher, ChromeLaunchOptions, IBrowserLocator } from "../interfaces/index.js";
+import { BrowserLocatorFactory } from "./BrowserLocatorFactory.js";
 
 const DEFAULT_PORT = 9222;
 const STARTUP_WAIT_MS = 2000;
@@ -17,10 +17,10 @@ export class ChromeLauncher implements IChromeLauncher {
   private process: ChildProcess | null = null;
   private port: number = DEFAULT_PORT;
   private running: boolean = false;
-  private readonly locator: IChromeLocator;
+  private readonly locator: IBrowserLocator;
 
-  public constructor(locator?: IChromeLocator) {
-    this.locator = locator ?? ChromeLocatorFactory.create();
+  public constructor(locator?: IBrowserLocator) {
+    this.locator = locator ?? BrowserLocatorFactory.create();
   }
 
   public async launch(options?: ChromeLaunchOptions): Promise<void> {
@@ -35,15 +35,17 @@ export class ChromeLauncher implements IChromeLauncher {
       return;
     }
 
-    const chromePath = options?.chromePath ?? await this.locator.locate();
-    if (!chromePath) {
+    const browserInfo = options?.chromePath
+      ? { path: options.chromePath, name: "Custom" }
+      : await this.locator.locate();
+    if (!browserInfo) {
       throw new Error(
-        "Chrome executable not found. Please install Google Chrome or provide a custom path via the 'chromePath' option."
+        "No Chromium-based browser found. Please install Chrome, Edge, Brave, or Chromium, or provide a custom path via the 'chromePath' option."
       );
     }
 
     const args = this.buildLaunchArgs(options);
-    this.process = spawn(chromePath, args, {
+    this.process = spawn(browserInfo.path, args, {
       detached: true,
       stdio: "ignore",
     });

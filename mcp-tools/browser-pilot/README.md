@@ -1,10 +1,11 @@
 # Browser Pilot MCP Server
 
-An MCP (Model Context Protocol) server that launches Chrome in remote debugging mode and provides full Playwright-based browser automation through a unified interface. Simply say "open fidelity.com and check my watchlist" — no separate Chrome launch or Playwright configuration needed.
+An MCP (Model Context Protocol) server that launches a Chromium-based browser in remote debugging mode and provides full Playwright-based browser automation through a unified interface. Simply say "open fidelity.com and check my watchlist" — no separate browser launch or Playwright configuration needed.
 
 ## Features
 
-- **Auto-launches Chrome** with remote debugging (or connects to an existing instance)
+- **Auto-detects browsers** — Chrome, Edge, Brave, or Chromium (in priority order)
+- **Auto-launches** with remote debugging (or connects to an existing instance)
 - **Headed mode by default** — watch the browser in action
 - **Existing user profile** — stay logged in to your sites
 - **17 browser automation tools** exposed via MCP
@@ -92,17 +93,17 @@ Add to `.vscode/mcp.json`:
 
 The server uses sensible defaults but can be customized per-tool-call:
 
-- **Chrome profile**: Uses your existing Chrome profile by default (stay logged in). Pass `useExistingProfile: false` to use a temporary profile.
+- **Browser**: Auto-detected in priority order: Chrome > Edge > Brave > Chromium. Override with `chromePath` parameter.
+- **Browser profile**: Uses your existing browser profile by default (stay logged in). Pass `useExistingProfile: false` to use a temporary profile.
 - **Display**: Headed (visible) by default. Pass `headless: true` for headless mode.
 - **Port**: Uses `9222` by default for Chrome DevTools Protocol.
-- **Chrome path**: Auto-detected on all platforms. Override with `chromePath` parameter.
 
 ## Architecture
 
 The codebase follows strict OOP principles:
 
-- **Interfaces** (`IChromeLocator`, `IChromeLauncher`, `IBrowserManager`, `ITool`) define contracts
-- **Strategy pattern** for cross-platform Chrome discovery
+- **Interfaces** (`IBrowserLocator`, `IChromeLauncher`, `IBrowserManager`, `ITool`) define contracts
+- **Strategy pattern** for cross-platform browser discovery (Chrome, Edge, Brave, Chromium)
 - **Singleton** `BrowserManager` for shared Playwright connection
 - **Template Method** in `BaseTool` — subclasses implement `runImpl()`
 - **Dependency Injection** — tools receive `IBrowserManager` via constructor
@@ -130,5 +131,5 @@ npm run build
 ## Requirements
 
 - Node.js >= 18
-- Google Chrome installed (auto-detected)
-- No `playwright install` needed — connects to your existing Chrome via CDP
+- A Chromium-based browser installed (Chrome, Edge, Brave, or Chromium — auto-detected)
+- No `playwright install` needed — connects to your existing browser via CDP

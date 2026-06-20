@@ -1,5 +1,5 @@
 export { ChromeLauncher } from "./ChromeLauncher.js";
-export { ChromeLocatorFactory } from "./ChromeLocatorFactory.js";
-export { WindowsChromeLocator } from "./WindowsChromeLocator.js";
-export { MacChromeLocator } from "./MacChromeLocator.js";
-export { LinuxChromeLocator } from "./LinuxChromeLocator.js";
+export { BrowserLocatorFactory } from "./BrowserLocatorFactory.js";
+export { WindowsBrowserLocator } from "./WindowsBrowserLocator.js";
+export { MacBrowserLocator } from "./MacBrowserLocator.js";
+export { LinuxBrowserLocator } from "./LinuxBrowserLocator.js";

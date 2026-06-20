@@ -5,7 +5,7 @@ description: Use when the user wants to interact with a web page, browse a websi
 
 # Browser Pilot
 
-You have access to the `browser-pilot` MCP server which controls a real Chrome browser via Playwright CDP. Chrome launches automatically on first use (headed, with the user's existing profile so they stay logged in).
+You have access to the `browser-pilot` MCP server which controls a real Chromium-based browser via Playwright CDP. The server auto-detects the best available browser (Chrome > Edge > Brave > Chromium) and launches it automatically on first use (headed, with the user's existing profile so they stay logged in).
 
 ## Available tools
 
@@ -94,7 +94,7 @@ browser_get_text()
 - **Element not found**: Verify the page loaded correctly (screenshot), try a broader selector, or wait longer.
 - **Timeout**: Increase the timeout parameter or wait for a less specific condition (e.g., `load` instead of `networkidle`).
 - **Page changed unexpectedly**: Take a screenshot to see current state, then adapt.
-- **Chrome not responding**: The MCP server handles Chrome lifecycle automatically. If tools fail, try `browser_navigate` to a fresh URL -- it will reconnect or relaunch Chrome.
+- **Browser not responding**: The MCP server handles browser lifecycle automatically. If tools fail, try `browser_navigate` to a fresh URL -- it will reconnect or relaunch the browser.
 
 ## When NOT to use browser-pilot
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { IChromeLocator } from "../src/interfaces/index.js";
+import type { IBrowserLocator, BrowserInfo } from "../src/interfaces/index.js";
 import { ChromeLauncher } from "../src/chrome/ChromeLauncher.js";
 
 // Mock fetch globally
@@ -16,13 +16,13 @@ vi.mock("node:child_process", () => ({
   }),
 }));
 
-class MockChromeLocator implements IChromeLocator {
-  private readonly path: string | null;
-  public constructor(path: string | null = "/usr/bin/google-chrome") {
-    this.path = path;
+class MockBrowserLocator implements IBrowserLocator {
+  private readonly info: BrowserInfo | null;
+  public constructor(path: string | null = "/usr/bin/google-chrome", name: string = "Chrome") {
+    this.info = path ? { path, name } : null;
   }
-  public async locate(): Promise<string | null> {
-    return this.path;
+  public async locate(): Promise<BrowserInfo | null> {
+    return this.info;
   }
 }
 
@@ -31,7 +31,7 @@ describe("ChromeLauncher", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    launcher = new ChromeLauncher(new MockChromeLocator());
+    launcher = new ChromeLauncher(new MockBrowserLocator());
   });
 
   afterEach(async () => {
@@ -48,11 +48,11 @@ describe("ChromeLauncher", () => {
       expect(launcher.getProcess()).toBeNull(); // didn't spawn
     });
 
-    it("should throw if Chrome is not found and no custom path", async () => {
-      const noChromeLauncher = new ChromeLauncher(new MockChromeLocator(null));
+    it("should throw if no browser is found and no custom path", async () => {
+      const noChromeLauncher = new ChromeLauncher(new MockBrowserLocator(null));
       mockFetch.mockRejectedValue(new Error("connection refused"));
 
-      await expect(noChromeLauncher.launch()).rejects.toThrow("Chrome executable not found");
+      await expect(noChromeLauncher.launch()).rejects.toThrow("No Chromium-based browser found");
     });
 
     it("should spawn Chrome when debug port is not active", async () => {
