@@ -85,6 +85,25 @@ cd mcp-tools/<tool> && uv run pytest --cov --cov-fail-under=95
 - Coverage ≥ 95% on that tool.
 - Public MCP surface (tool names, parameters, outputs) is documented and treated as a stable contract — prefer backward-compatible changes.
 
+## Project Lead
+
+This repo is run by the **Project-Lead** agent (the stakeholder-facing delivery
+lead). Two surfaces are kept current and in sync:
+
+- **`.project-memory/`** — the markdown/Obsidian wiki that is the Lead's durable
+  brain (`overview.md`, `requirements-register.md`, `project-link.md`, `log.md`,
+  and the `wiki/` subfolders). Start at `.project-memory/index.md`.
+- **`docs/requirements/`** — the canonical, versioned, PR-reviewable stakeholder
+  requirement documents (`REQ-NNN-<slug>.md`), authored from `_template.md` and
+  tracked in `docs/requirements/README.md`.
+
+Workflow: requirements are captured (intake) → approved via a requirement PR
+(the approval gate) → handed off to **PM-Team** for specs → handed off to
+**Dev-Team** for implementation. A requirement MUST NOT go to PM-Team until its
+status is `approved`. The linked GitHub Project board is **"maruti Delivery"**
+(see `.project-memory/project-link.md`). Schema of record:
+`packages/project-lead/MEMORY-SCHEMA.md`.
+
 ## Governance
 
 `docs/Constitution.md` is the binding source of truth for principles and quality gates. When a constitution rule and this file disagree, the constitution wins — update this file to match.
