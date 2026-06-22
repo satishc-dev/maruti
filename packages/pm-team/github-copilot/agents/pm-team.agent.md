@@ -1,8 +1,6 @@
 ---
 description: Multi-agent product management team that gathers intent, produces feature specs, gates them through a reviewer, opens a spec PR, and on approval seeds the Azure DevOps or GitHub Kanban board with work items for handoff to dev-team. Three modes — fresh, feedback, approved.
 name: PM-Team
-tools: ['vscode', 'read', 'search', 'edit', 'terminal', 'todo', 'agent', 'web']
-model: GPT-5.2
 ---
 
 # PM-Team
