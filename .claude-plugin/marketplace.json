@@ -57,6 +57,15 @@
         "path": "packages/project-lead/claude-code"
       },
       "description": "Stakeholder-facing Project Lead agent that owns requirements as official repo docs, keeps a Project Memory wiki and a linked GitHub Project Kanban, and delivers via guided handoff to pm-team and dev-team. Never writes specs or code itself."
+    },
+    {
+      "name": "browser-pilot",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/satishc2437/maruti.git",
+        "path": "packages/browser-pilot/claude-code"
+      },
+      "description": "Skill that teaches agents how to effectively use the browser-pilot MCP server for Chrome, Edge, Brave, and Chromium automation via Playwright CDP."
     }
   ]
 }
