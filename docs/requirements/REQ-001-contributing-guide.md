@@ -1,13 +1,13 @@
 ---
 id: REQ-001
 title: Top-level CONTRIBUTING.md for new contributors
-status: in-review        # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
+status: approved         # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
 priority: P2             # P0 | P1 | P2 | P3
-version: 1
+version: 2
 created: 2026-06-21
 updated: 2026-06-21
-approved_at:             # set when the requirement PR merges (or express signoff)
-approved_by:             # stakeholder identity
+approved_at: 2026-06-21   # set when the requirement PR merges (or express signoff)
+approved_by: satishc-dev (e2e-test operator)   # stakeholder identity
 requirement_issue:       # GitHub Requirement issue URL
 links:
   requirement_pr:        # the PR that introduced/changed this doc
@@ -183,3 +183,7 @@ criteria:
 ## Change log
 - [2026-06-21] v1 — created (draft), then advanced to in-review after Definition
   of Ready was satisfied during intake.
+- [2026-06-21] v2 — approval gate passed. Requirement PR opened and merged into
+  `pl-e2e-test`; status advanced in-review → approved; `approved_by`
+  satishc-dev (e2e-test operator), `approved_at` 2026-06-21. Requirement issue
+  created and board item moved to Ready for Spec.
