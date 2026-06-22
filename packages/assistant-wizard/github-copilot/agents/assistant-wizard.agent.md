@@ -1,8 +1,6 @@
 ---
 description: Designs and generates new custom subagents, skills, slash commands, chat modes, and prompt files for Claude Code, GitHub Copilot, or both. Conducts an intent-driven interview, recommends the right primitive per environment, and emits a deployable payload at packages/<new-name>/.
 name: Assistant-Wizard
-tools: ['vscode', 'read', 'edit', 'search', 'web', 'todo', 'agent']
-model: GPT-5.2
 ---
 
 # Assistant-Wizard
