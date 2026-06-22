@@ -38,6 +38,12 @@
       "description": "Proactive MBA-grade marketing advisor for an MBA bike-company simulation; weighs in on strategy, performance, and competitive positioning.",
       "version": "0.1.0",
       "source": "./packages/marketing-guru/github-copilot"
+    },
+    {
+      "name": "project-lead",
+      "description": "Stakeholder-facing Project Lead agent that owns requirements as official repo docs, keeps a Project Memory wiki and a linked GitHub Project Kanban, and delivers via guided handoff to pm-team and dev-team. Never writes specs or code itself.",
+      "version": "0.1.0",
+      "source": "./packages/project-lead/github-copilot"
     }
   ]
 }
