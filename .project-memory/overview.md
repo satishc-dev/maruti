@@ -33,20 +33,21 @@ and the linked GitHub Project board **"maruti Delivery"** is live with the full
 Status funnel (see [project-link.md](project-link.md)).
 
 **REQ-001** is the first captured requirement — a top-level `CONTRIBUTING.md`,
-currently `in-review` (Definition of Ready met) and awaiting the approval gate.
+now **`approved`** (approval gate passed via [PR #6], Requirement [issue #7]
+created, board item moved to **Ready for Spec**). Eligible for PM-Team handoff.
 See [requirements-register.md](requirements-register.md).
 
 ## Active initiatives
 
-- **REQ-001 — Top-level CONTRIBUTING.md** (`in-review`). First stakeholder
+- **REQ-001 — Top-level CONTRIBUTING.md** (`approved`). First stakeholder
   requirement: a root `CONTRIBUTING.md` documenting the `uv` workspace, Python
   3.14 standard, adding MCP tools / agent packages, the four CI quality gates,
-  running tests with `uv`, and PR conventions. Definition of Ready met; awaiting
-  the approval gate. See
+  running tests with `uv`, and PR conventions. Approval gate passed; Requirement
+  issue #7 on the board at **Ready for Spec**. See
   [docs/requirements/REQ-001-contributing-guide.md](../docs/requirements/REQ-001-contributing-guide.md).
 
 ## Near-term plan
 
-1. Run **approve** on REQ-001 (requirement PR → stakeholder signoff → create the
-   Requirement issue + board item).
-2. On approval, guided handoff to `pm-team` for the spec.
+1. **Guided handoff to `pm-team`** for the REQ-001 spec (next, separate step).
+2. On spec PR merge, make the seeded Feature/Story issues sub-issues of
+   Requirement issue #7; advance REQ-001 → `specced`; move board to Ready for Dev.

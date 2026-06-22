@@ -49,3 +49,31 @@ where `<event>` ∈ `ingest | requirement | approval | handoff | sync | delivery
   `.project-memory/requirements-register.md`).
 - Per the test-run scope: **no** PR, **no** GitHub issue, **no** board item, no
   commit/push — intake stops at the doc + registers. Approval is a separate step.
+
+## [2026-06-21] approval | REQ-001 approved — top-level CONTRIBUTING.md
+
+- Re-checked Definition of Ready: still satisfied (clear problem + outcome,
+  testable acceptance criteria, explicit scope in/out, two **non-blocking** open
+  questions with default assumptions). Gate passed.
+- Guardrail confirmed: PM-Team was **not** engaged at any point before the
+  `approved` stamp — no spec work, no Feature/Story seeding.
+- Requirement PR: branch `users/satishc-dev/requirements/REQ-001-contributing-guide`
+  off **`pl-e2e-test`** (integration base for this test, not `main`) →
+  [PR #6](https://github.com/satishc-dev/maruti/pull/6), base `pl-e2e-test`.
+  Advanced `status: in-review → approved`, stamped `approved_by`
+  "satishc-dev (e2e-test operator)" + `approved_at` 2026-06-21, bumped `version`
+  1 → 2 with a Change-log entry. Stakeholder signoff was **pre-authorized for
+  this e2e test**, so the PR was self-merged to represent signoff.
+- Requirement issue: custom "Requirement" issue type unavailable → created
+  `requirement`-labeled [issue #7](https://github.com/satishc-dev/maruti/issues/7)
+  (problem + acceptance criteria + doc link). URL recorded in the doc frontmatter
+  (`requirement_issue`) and both registers.
+- Board: added issue #7 to Project **#5 "maruti Delivery"**
+  (item `PVTI_lAHOANBnPM4BbTjQzgwamCk`) and set **Status → Ready for Spec**
+  (option `74659340`).
+- Updated `docs/requirements/REQ-001-contributing-guide.md` (status, stamps,
+  links), `docs/requirements/README.md`, and
+  `.project-memory/requirements-register.md`. Committed onto `pl-e2e-test` via the
+  merged PR #6.
+- **Next, separate step:** guided handoff to `pm-team` for the spec — not done in
+  this step.
