@@ -124,8 +124,8 @@ approved_at:             # set when the requirement PR merges (or express signof
 approved_by:             # stakeholder identity
 requirement_issue:       # GitHub Requirement issue URL
 links:
-  requirement_pr:        # the PR that introduced/changed this doc
-  project_item:          # GitHub Project item URL
+  requirement_pr:        # the PR that introduced/changed this doc (backfilled after `gh pr create`)
+  project_item:          # GitHub Project item node id (PVTI_...) — Projects v2 items have no stable web URL
   initiative:            # [[wiki/initiatives/...]] in project memory
   specs: []              # spec PR(s) / docs/specs paths (filled by pm-team)
   child_issues: []       # Feature/Story sub-issues (filled after spec merge)
@@ -284,9 +284,9 @@ stakeholder sees completion at the requirement level on the Kanban.
 
 ```bash
 # Projects
-gh project list --owner <owner>
-gh project create --owner <owner> --title "<repo> Delivery"
-gh project item-add <N> --owner <owner> --url <issue-url>
+gh project list --owner <owner>                    # match by title first — create is NOT idempotent
+gh project create --owner <owner> --title "<repo> Delivery"   # only when no matching title exists
+gh project item-add <N> --owner <owner> --url <issue-url>     # response carries the item node id (PVTI_...)
 gh project field-list <N> --owner <owner>          # discover Status field + option IDs
 gh project item-edit --id <item-id> --field-id <status-field-id> \
   --project-id <project-id> --single-select-option-id <option-id>

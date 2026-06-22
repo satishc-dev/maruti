@@ -77,14 +77,20 @@ was created vs. already present.
    distilled copy of MEMORY-SCHEMA's conventions), `index.md`, `log.md`,
    `overview.md`, `requirements-register.md`, and the `wiki/` subfolders
    (`initiatives/ decisions/ architecture/ stakeholders/ risks/ glossary/`).
-   Seed `overview.md` with a short interview about the project's purpose.
+   Seed `overview.md` from a short interview about the project's purpose, and
+   seed `index.md` so its Requirements section **points at the registers**
+   (`docs/requirements/README.md` + `requirements-register.md`) rather than a
+   hard-coded "none yet" line that goes stale after the first requirement.
 2. **Requirements area.** Create `docs/requirements/` with `_template.md` (the
    requirement doc template from MEMORY-SCHEMA §2) and an empty `README.md`
    register table.
 3. **GitHub Project (v2).** Detect an existing linked Project from
-   `project-link.md`, else `gh project list --owner <owner>`. If none, offer to
-   create one: `gh project create --owner <owner> --title "<repo> Delivery"`.
-   Ensure the **Status** single-select field has the funnel options (Intake, In
+   `project-link.md`, else `gh project list --owner <owner>` and **match by
+   title** (`<repo> Delivery`). `gh project create` is **not idempotent** — it
+   silently creates a duplicate board on every run and may exit 0 without
+   printing a URL, so create one **only** when no matching title exists, and
+   capture the command output to confirm the new number/URL. Ensure the
+   **Status** single-select field has the funnel options (Intake, In
    Review, Ready for Spec, In Spec, Ready for Dev, In Dev, In Review (Dev), Done,
    Parked). Discover field + option IDs (`gh project field-list`) and persist
    everything to `.project-memory/project-link.md`.
@@ -140,17 +146,24 @@ PM-Team's and Dev-Team's job.
    - Branch `users/<you>/requirements/REQ-NNN-<slug>`, commit the doc + register
      update, push, and open a PR titled `[REQ-NNN] <title>` whose body
      summarizes problem + acceptance criteria and asks for stakeholder approval.
+   - The PR URL does not exist until the PR is opened, so backfill
+     `links.requirement_pr` in a **follow-up commit on the same branch** after
+     `gh pr create` returns the URL — do not block the first commit on it.
    - The stakeholder **reviews and approves/merges**. That merge is the official
      signoff. (For tiny edits, accept an **express in-chat approval** instead,
      but still stamp the doc.)
 3. On approval:
    - Set `status: approved`; stamp `approved_at` / `approved_by`; bump the
      Change log and `version`.
-   - **Create the Requirement issue** — custom issue type "Requirement" if
+   - **Create the Requirement issue** — only **after** the PR merges (or the
+     express signoff) so its body links the merged doc on the default branch,
+     not a transient branch blob. Use the custom issue type "Requirement" if
      supported, else a `requirement`-labeled issue. Title `[REQ-NNN] <title>`,
      body links the doc + PR. Record its URL in the doc frontmatter
      (`requirement_issue`).
    - Add/convert the Project item to that issue and move it to **Ready for Spec**.
+     Record the Project **item node id** (`PVTI_...`, from the add/list response)
+     in `links.project_item` — Projects v2 items have no stable per-item web URL.
    - Update `docs/requirements/README.md` and
      `.project-memory/requirements-register.md`; append a `log.md` `approval`
      entry.
@@ -160,6 +173,12 @@ PM-Team's and Dev-Team's job.
 ---
 
 ## Guided handoff to the teams
+
+> **Branch hygiene (critical).** Dispatching `PM-Team` or `Dev-Team` via the
+> `agent` tool can leave the worktree checked out on the sub-agent's own branch.
+> Before you make any commit of your own after a dispatch, **re-checkout your
+> working/integration branch** and confirm with `git branch --show-current` —
+> otherwise your reconcile commit lands on the wrong branch.
 
 ### To PM-Team (spec)
 
@@ -190,7 +209,10 @@ and move the board through **In Dev → In Review (Dev)**. Ingest notable outcom
 
 When all children are delivered, verify against the requirement's acceptance
 criteria, offer the optional **acceptance signoff**, set `status: delivered`,
-move the board item to **Done**, and append a `log.md` `delivery` entry.
+move the board item to **Done**, and append a `log.md` `delivery` entry. Close
+the Requirement issue and its sub-issues — GitHub only auto-closes `Closes #`
+references when a PR merges into the **default** branch, so when work merges onto
+a non-default base you must close the issues explicitly.
 
 ---
 

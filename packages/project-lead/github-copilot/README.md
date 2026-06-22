@@ -42,6 +42,9 @@ it available across all your projects.
 ## Usage
 
 Once installed, switch to the **Project-Lead** agent in your Copilot CLI session.
+(When dispatching headlessly via `copilot -p ... --agent <id>`, the agent id is
+plugin-namespaced: `project-lead:project-lead` — likewise `pm-team:pm-team` and
+`dev-team:dev-team`.)
 
 ```
 # One-time per repo
