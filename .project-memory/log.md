@@ -77,3 +77,29 @@ where `<event>` ∈ `ingest | requirement | approval | handoff | sync | delivery
   merged PR #6.
 - **Next, separate step:** guided handoff to `pm-team` for the spec — not done in
   this step.
+
+## [2026-06-21] handoff | REQ-001 spec handoff to PM-Team — CONTRIBUTING.md
+
+- Guardrail confirmed: REQ-001 was `approved` before engaging PM-Team. Built the
+  handoff brief from `docs/requirements/REQ-001-contributing-guide.md` (approved
+  problem + 9 acceptance criteria + scope in/out + doc path + Requirement issue
+  #7) and moved board item `PVTI_lAHOANBnPM4BbTjQzgwamCk` **Ready for Spec → In
+  Spec** (`8edf51ce`).
+- Dispatched **PM-Team** (approved mode, autonomous) with explicit instructions:
+  base branch is **`pl-e2e-test`** (not `main`), parent Requirement is **#7**,
+  deliverable is a single top-level `CONTRIBUTING.md` (right-size the spec).
+- PM-Team returned: spec `docs/specs/contributing-guide/contributing-guide.md`;
+  **spec [PR #8](https://github.com/satishc-dev/maruti/pull/8)** with base
+  **`pl-e2e-test`** (verified via `gh pr view --json baseRefName`); seeded
+  Feature [#9](https://github.com/satishc-dev/maruti/issues/9) and Stories
+  [#11](https://github.com/satishc-dev/maruti/issues/11) (orientation &
+  cross-refs) / [#10](https://github.com/satishc-dev/maruti/issues/10)
+  (workflows, gates, tests & PR conventions). PM-Team created `feature`/`story`
+  labels as none existed.
+- Reconciliation: linked **#9, #11, #10 as sub-issues of #7**
+  (`gh issue edit 7 --add-sub-issue`; verified `subIssuesSummary.total = 3`).
+  Updated REQ-001 doc (`status: approved → specced`, `version` 2 → 3, `links.specs`
+  + `links.child_issues`, Change-log v3), both registers, and moved the board item
+  **In Spec → Ready for Dev** (`98927679`).
+- **Dev-Team NOT engaged** (per instruction). REQ-001 is now eligible for build:
+  Stories #11 and #10 are the next dev hand-offs once PR #8 is reviewed/merged.

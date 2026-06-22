@@ -1,9 +1,9 @@
 ---
 id: REQ-001
 title: Top-level CONTRIBUTING.md for new contributors
-status: approved         # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
+status: specced          # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
 priority: P2             # P0 | P1 | P2 | P3
-version: 2
+version: 3
 created: 2026-06-21
 updated: 2026-06-21
 approved_at: 2026-06-21   # set when the requirement PR merges (or express signoff)
@@ -13,8 +13,13 @@ links:
   requirement_pr: https://github.com/satishc-dev/maruti/pull/6        # the PR that introduced/changed this doc
   project_item: https://github.com/users/satishc-dev/projects/5          # GitHub Project item URL
   initiative:            # [[wiki/initiatives/...]] in project memory
-  specs: []              # spec PR(s) / docs/specs paths (filled by pm-team)
-  child_issues: []       # Feature/Story sub-issues (filled after spec merge)
+  specs:                 # spec PR(s) / docs/specs paths (filled by pm-team)
+    - https://github.com/satishc-dev/maruti/pull/8   # spec PR (base pl-e2e-test)
+    - docs/specs/contributing-guide/contributing-guide.md
+  child_issues:          # Feature/Story sub-issues of #7 (filled after spec)
+    - https://github.com/satishc-dev/maruti/issues/9    # Feature
+    - https://github.com/satishc-dev/maruti/issues/11   # Story A
+    - https://github.com/satishc-dev/maruti/issues/10   # Story B
   prs: []                # dev-team PRs
 ---
 
@@ -187,3 +192,11 @@ criteria:
   `pl-e2e-test`; status advanced in-review → approved; `approved_by`
   satishc-dev (e2e-test operator), `approved_at` 2026-06-21. Requirement issue
   created and board item moved to Ready for Spec.
+- [2026-06-21] v3 — guided handoff to PM-Team. Spec PR
+  [#8](https://github.com/satishc-dev/maruti/pull/8) (base `pl-e2e-test`) with
+  spec `docs/specs/contributing-guide/contributing-guide.md`. Seeded Feature
+  [#9](https://github.com/satishc-dev/maruti/issues/9) and Stories
+  [#11](https://github.com/satishc-dev/maruti/issues/11) /
+  [#10](https://github.com/satishc-dev/maruti/issues/10), all linked as
+  sub-issues of Requirement #7. Status approved → specced; board item In Spec →
+  Ready for Dev. Dev-Team not yet engaged.
