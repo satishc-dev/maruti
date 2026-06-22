@@ -33,21 +33,25 @@ and the linked GitHub Project board **"maruti Delivery"** is live with the full
 Status funnel (see [project-link.md](project-link.md)).
 
 **REQ-001** is the first captured requirement — a top-level `CONTRIBUTING.md`,
-now **`approved`** (approval gate passed via [PR #6], Requirement [issue #7]
-created, board item moved to **Ready for Spec**). Eligible for PM-Team handoff.
-See [requirements-register.md](requirements-register.md).
+now **`delivered`**. The full lifecycle is complete: approved (PR #6, Requirement
+[issue #7]), specced by PM-Team (spec PR #8; Feature #9 + Stories #11/#10), built
+by Dev-Team (code PR [#12] merged into `pl-e2e-test`), and reviewed against all 9
+acceptance criteria (**all PASS**). Requirement #7 and all sub-issues are closed;
+the board item is **Done**. See [requirements-register.md](requirements-register.md).
 
 ## Active initiatives
 
-- **REQ-001 — Top-level CONTRIBUTING.md** (`approved`). First stakeholder
+- **REQ-001 — Top-level CONTRIBUTING.md** (`delivered`). First stakeholder
   requirement: a root `CONTRIBUTING.md` documenting the `uv` workspace, Python
   3.14 standard, adding MCP tools / agent packages, the four CI quality gates,
-  running tests with `uv`, and PR conventions. Approval gate passed; Requirement
-  issue #7 on the board at **Ready for Spec**. See
+  running tests with `uv`, and PR conventions. End-to-end complete — code PR
+  [#12](https://github.com/satishc-dev/maruti/pull/12) merged into `pl-e2e-test`,
+  all acceptance criteria verified, board item **Done**. See
   [docs/requirements/REQ-001-contributing-guide.md](../docs/requirements/REQ-001-contributing-guide.md).
 
 ## Near-term plan
 
-1. **Guided handoff to `pm-team`** for the REQ-001 spec (next, separate step).
-2. On spec PR merge, make the seeded Feature/Story issues sub-issues of
-   Requirement issue #7; advance REQ-001 → `specced`; move board to Ready for Dev.
+1. **REQ-001 is closed out.** No further action unless the stakeholder requests
+   follow-ups (e.g. a PR template, `CODE_OF_CONDUCT`, or deeper Node/`browser-pilot`
+   contribution docs — explicit non-goals of REQ-001).
+2. Capture the next stakeholder requirement via **intake** when one arrives.

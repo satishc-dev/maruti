@@ -103,3 +103,31 @@ where `<event>` ∈ `ingest | requirement | approval | handoff | sync | delivery
   **In Spec → Ready for Dev** (`98927679`).
 - **Dev-Team NOT engaged** (per instruction). REQ-001 is now eligible for build:
   Stories #11 and #10 are the next dev hand-offs once PR #8 is reviewed/merged.
+
+## [2026-06-22] delivery | REQ-001 CONTRIBUTING.md delivered via Dev-Team (PR #12)
+
+- **Guided handoff to Dev-Team.** Moved Stories #11 & #10 board items Ready for
+  Dev → **In Dev**, then dispatched the `dev-team` agent to author the top-level
+  `CONTRIBUTING.md` per the merged spec (`docs/specs/contributing-guide/contributing-guide.md`)
+  and REQ-001 acceptance criteria. Instructed: base branch **`pl-e2e-test`** (not
+  `main`), one code PR (single docs file) referencing #11 and #10, operate
+  autonomously, no invented commands.
+- **Dev-Team delivered** code PR [#12](https://github.com/satishc-dev/maruti/pull/12)
+  (head `docs/contributing-md-req-001`, base **`pl-e2e-test`** ✅), adding
+  `CONTRIBUTING.md` (190 lines, docs-only). Re-checked out `pl-e2e-test` after the
+  sub-agent run before any local commits.
+- **Reconcile.** Recorded PR #12 in the REQ-001 doc (`links.prs`), both registers,
+  and moved Story board items to **In Review (Dev)** (`bb136f20`).
+- **Review (operator pre-authorized).** Verified the deliverable against all **9**
+  REQ-001 acceptance criteria — every command/path/threshold checked against
+  `.github/workflows/ci.yml` (4 gate steps, `uv python install 3.14`,
+  `uv sync --dev --all-packages`), root `pyproject.toml` (members =
+  agent-memory/pdf-reader/xlsx-reader, `requires-python ">=3.14"`), `.pylintrc`,
+  each tool's `--cov-fail-under=95`, `scripts/new_mcp_tool.py`,
+  `scripts/link_packages.py` (sync/check/repair), `templates/mcp-tool/`, and the
+  `browser-pilot` Node exception. **All 9 PASS.**
+- **Finalize.** Merged PR #12 into `pl-e2e-test` (merge `b56850d`). Closed Stories
+  #11 & #10, Feature #9, and Requirement #7 (closed **manually** — the PR targeted
+  `pl-e2e-test`, not the default branch, so `Closes #` keywords did not auto-fire).
+  Moved all four board items to **Done** (`30f35057`). REQ-001 `status: specced →
+  delivered`, `version` 3 → 4, Change-log v4.

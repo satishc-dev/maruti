@@ -1,9 +1,9 @@
 ---
 id: REQ-001
 title: Top-level CONTRIBUTING.md for new contributors
-status: specced          # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
+status: delivered        # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
 priority: P2             # P0 | P1 | P2 | P3
-version: 3
+version: 4
 created: 2026-06-21
 updated: 2026-06-21
 approved_at: 2026-06-21   # set when the requirement PR merges (or express signoff)
@@ -20,7 +20,8 @@ links:
     - https://github.com/satishc-dev/maruti/issues/9    # Feature
     - https://github.com/satishc-dev/maruti/issues/11   # Story A
     - https://github.com/satishc-dev/maruti/issues/10   # Story B
-  prs: []                # dev-team PRs
+  prs:                   # dev-team PRs
+    - https://github.com/satishc-dev/maruti/pull/12   # code PR (base pl-e2e-test, MERGED) — top-level CONTRIBUTING.md
 ---
 
 ## Problem / Context
@@ -200,3 +201,16 @@ criteria:
   [#10](https://github.com/satishc-dev/maruti/issues/10), all linked as
   sub-issues of Requirement #7. Status approved → specced; board item In Spec →
   Ready for Dev. Dev-Team not yet engaged.
+- [2026-06-22] v4 — guided handoff to Dev-Team. Stories
+  [#11](https://github.com/satishc-dev/maruti/issues/11) and
+  [#10](https://github.com/satishc-dev/maruti/issues/10) implemented by Dev-Team
+  as code PR [#12](https://github.com/satishc-dev/maruti/pull/12) (base
+  `pl-e2e-test`), authoring top-level `CONTRIBUTING.md`. Project-Lead reviewed the
+  deliverable against all 9 acceptance criteria (every command/path/threshold
+  verified accurate against `.github/workflows/ci.yml`, `pyproject.toml`,
+  `.pylintrc`, `scripts/new_mcp_tool.py`, `scripts/link_packages.py`,
+  `docs/development.md`); **all 9 criteria PASS**. PR #12 merged into
+  `pl-e2e-test`; Stories #11/#10, Feature #9, and Requirement #7 closed; board
+  items moved to Done. Status specced → delivered. (Note: because the PR targeted
+  `pl-e2e-test` rather than the default branch, the "Closes #11/#10" keywords did
+  not auto-close — issues were closed manually.)
