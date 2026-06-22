@@ -38,6 +38,12 @@
       "description": "Proactive MBA-grade marketing advisor for an MBA bike-company simulation; weighs in on strategy, performance, and competitive positioning.",
       "version": "0.1.0",
       "source": "./packages/marketing-guru/github-copilot"
+    },
+    {
+      "name": "browser-pilot",
+      "description": "Skill that teaches agents how to effectively use the browser-pilot MCP server for Chrome, Edge, Brave, and Chromium automation via Playwright CDP.",
+      "version": "1.0.0",
+      "source": "./packages/browser-pilot/github-copilot"
     }
   ]
 }

@@ -48,6 +48,15 @@
         "path": "packages/marketing-guru/claude-code"
       },
       "description": "Proactive MBA-grade marketing advisor for an MBA bike-company simulation; weighs in on strategy, performance, and competitive positioning."
+    },
+    {
+      "name": "browser-pilot",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/satishc2437/maruti.git",
+        "path": "packages/browser-pilot/claude-code"
+      },
+      "description": "Skill that teaches agents how to effectively use the browser-pilot MCP server for Chrome, Edge, Brave, and Chromium automation via Playwright CDP."
     }
   ]
 }
