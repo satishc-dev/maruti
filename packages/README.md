@@ -103,7 +103,7 @@ drift from the source, the build fails.
 /plugin install <name>@maruti
 ```
 
-Where `<name>` is one of `pm-team`, `dev-team`, `assistant-wizard`, `mcp-tool-architect`, `marketing-guru`. The first command is one-time per machine; subsequent installs only need the second line.
+Where `<name>` is one of `pm-team`, `dev-team`, `assistant-wizard`, `mcp-tool-architect`, `marketing-guru`, `project-lead`. The first command is one-time per machine; subsequent installs only need the second line.
 
 If you already have maruti cloned locally, you can install a single plugin from the path instead:
 
@@ -126,7 +126,7 @@ the consumer's expected location (e.g. `.github/agents/<name>.agent.md`,
 
 ## Currently authored agents
 
-All five packages ship variants for both Claude Code and GitHub Copilot CLI.
+All six packages ship variants for both Claude Code and GitHub Copilot CLI.
 The Claude Code variant typically uses multiple subagents fanned out by an
 orchestrator; the Copilot CLI variant collapses that orchestration into a
 single chat-mode agent (or skill) since Copilot's primitive model is flatter.
@@ -151,3 +151,10 @@ single chat-mode agent (or skill) since Copilot's primitive model is flatter.
 - [`marketing-guru/`](marketing-guru/) — proactive MBA-grade marketing advisor
   for an MBA bike-company simulation; ships as a skill on both platforms with a
   byte-identical body.
+- [`project-lead/`](project-lead/) — stakeholder-facing Project Lead
+  (`project-lead` skill + `/project-lead` slash command on Claude Code; a single
+  `Project-Lead` chat agent on Copilot CLI) that owns requirements as official
+  `docs/requirements/` docs behind an approval gate, maintains a Project Memory
+  wiki (`.project-memory/`) plus a linked GitHub Project Kanban, and delivers by
+  guided handoff to `pm-team` and `dev-team` — never writing specs or code
+  itself.
