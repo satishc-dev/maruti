@@ -44,6 +44,12 @@
       "description": "Stakeholder-facing Project Lead agent that owns requirements as official repo docs, keeps a Project Memory wiki and a linked GitHub Project Kanban, and delivers via guided handoff to pm-team and dev-team. Never writes specs or code itself.",
       "version": "0.1.0",
       "source": "./packages/project-lead/github-copilot"
+    },
+    {
+      "name": "browser-pilot",
+      "description": "Skill that teaches agents how to effectively use the browser-pilot MCP server for Chrome, Edge, Brave, and Chromium automation via Playwright CDP.",
+      "version": "1.0.0",
+      "source": "./packages/browser-pilot/github-copilot"
     }
   ]
 }
