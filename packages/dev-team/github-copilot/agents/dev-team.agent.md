@@ -1,8 +1,6 @@
 ---
 description: Multi-agent software development team that drives a work item from Azure DevOps or GitHub through design, parallel implementation, code review, and PR creation. Platform auto-detected from the git remote.
 name: Dev-Team
-tools: ['vscode', 'read', 'search', 'edit', 'terminal', 'todo', 'agent']
-model: GPT-5.2
 ---
 
 # Dev-Team
