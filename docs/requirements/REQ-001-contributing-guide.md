@@ -8,10 +8,10 @@ created: 2026-06-21
 updated: 2026-06-21
 approved_at: 2026-06-21   # set when the requirement PR merges (or express signoff)
 approved_by: satishc-dev (e2e-test operator)   # stakeholder identity
-requirement_issue:       # GitHub Requirement issue URL
+requirement_issue: https://github.com/satishc-dev/maruti/issues/7       # GitHub Requirement issue URL
 links:
-  requirement_pr:        # the PR that introduced/changed this doc
-  project_item:          # GitHub Project item URL
+  requirement_pr: https://github.com/satishc-dev/maruti/pull/6        # the PR that introduced/changed this doc
+  project_item: https://github.com/users/satishc-dev/projects/5          # GitHub Project item URL
   initiative:            # [[wiki/initiatives/...]] in project memory
   specs: []              # spec PR(s) / docs/specs paths (filled by pm-team)
   child_issues: []       # Feature/Story sub-issues (filled after spec merge)

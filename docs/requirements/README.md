@@ -6,7 +6,7 @@ handed to `pm-team` once its status is `approved`.
 
 | ID | Title | Status | Priority | Approved | Requirement issue | Doc |
 |----|-------|--------|----------|----------|-------------------|-----|
-| REQ-001 | Top-level CONTRIBUTING.md for new contributors | approved | P2 | 2026-06-21 | — | [REQ-001-contributing-guide.md](REQ-001-contributing-guide.md) |
+| REQ-001 | Top-level CONTRIBUTING.md for new contributors | approved | P2 | 2026-06-21 | [#7](https://github.com/satishc-dev/maruti/issues/7) | [REQ-001-contributing-guide.md](REQ-001-contributing-guide.md) |
 
 ## Lifecycle
 

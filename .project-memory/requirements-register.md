@@ -7,7 +7,7 @@ Project-item / initiative cross-links.
 
 | ID | Title | Status | Priority | Requirement issue | Project item | Doc |
 |----|-------|--------|----------|-------------------|--------------|-----|
-| REQ-001 | Top-level CONTRIBUTING.md for new contributors | approved | P2 | — (issue created at approval) | — (added to board at approval) | [docs/requirements/REQ-001-contributing-guide.md](../docs/requirements/REQ-001-contributing-guide.md) |
+| REQ-001 | Top-level CONTRIBUTING.md for new contributors | approved | P2 | [#7](https://github.com/satishc-dev/maruti/issues/7) | [Ready for Spec](https://github.com/users/satishc-dev/projects/5) | [docs/requirements/REQ-001-contributing-guide.md](../docs/requirements/REQ-001-contributing-guide.md) |
 
 ## Notes
 
