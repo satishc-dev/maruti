@@ -2,8 +2,8 @@
 
 Installable Claude Code plugin bundling one skill (`project-lead`) and one slash
 command (`/project-lead`). The Project Lead is the stakeholder-facing
-orchestrator: it owns requirements (as official repo docs), keeps a Project
-Memory wiki and a linked GitHub Project Kanban current, and delivers by **guided
+orchestrator: it owns requirements as official OKF v0.2 repo docs, keeps Project
+Memory and a linked GitHub Project Kanban current, and delivers by **guided
 handoff** to the `pm-team` and `dev-team` plugins. It never writes specs or code
 itself.
 
@@ -48,52 +48,39 @@ cp packages/project-lead/claude-code/skills/project-lead/*  .claude/skills/proje
 | Integration | Setup |
 |---|---|
 | GitHub | `gh auth login` for the org/repo where issues, PRs, and the Project live. Needed for the Kanban, the Requirement issue/label, and sub-issues. |
-| pm-team | Install `pm-team@maruti` — the Lead hands approved requirements to it for spec work. |
-| dev-team | Install `dev-team@maruti` — the Lead hands work items to it for implementation. |
-| Obsidian (optional) | Open the `.project-memory/` folder to browse the Lead's wiki, graph view, and logs. |
+| pm-team | Installed transitively by the plugin marketplace; local-copy installs should add `pm-team@maruti`. |
+| dev-team | Installed transitively by the plugin marketplace; local-copy installs should add `dev-team@maruti`. |
+| Obsidian (optional) | Open `.project-memory/` itself to browse the OKF bundle, graph view, and logs. |
 
 ## What the Lead does
 
 1. **Bootstrap** (`/project-lead bootstrap`) — idempotently scaffolds
-   `.project-memory/` (the wiki) and `docs/requirements/` (official requirement
-   docs), detects/creates+links a GitHub Project Kanban, detects the Requirement
-   issue type (or ensures a `requirement` label), checks that `pm-team`/`dev-team`
-   are available, and writes a pointer into `AGENTS.md`/`CLAUDE.md`.
+   `.project-memory/` and `docs/requirements/` as OKF v0.2 bundles, detects or
+   creates the GitHub Project Kanban, checks teams, and writes a pointer into
+   `AGENTS.md`/`CLAUDE.md`.
 2. **Intake** (`/project-lead` + a need) — captures a requirement as an official
-   `docs/requirements/REQ-NNN.md` doc. Two paths: you author a short doc/notes
-   (the Lead formalizes it), or you brainstorm the vision (the Lead drafts it).
-   Drives it to the Definition of Ready.
+   `docs/requirements/REQ-NNN.md` doc and drives it to the Definition of Ready.
 3. **Approve** (`/project-lead approve REQ-NNN`) — opens a **requirement PR**;
-   your approve/merge is the official signoff (express in-chat signoff available
-   for tiny edits). The Lead then creates the **Requirement issue** and moves the
-   board to **Ready for Spec**. The Lead will not engage `pm-team` before this.
-4. **Guided handoff** — for approved requirements, the Lead launches/recommends
-   `/pm-team <requirement>`; after the spec PR merges it links pm-team's
-   Feature/Story issues as **sub-issues** of the Requirement issue, then
-   recommends `/dev-team <issue>` per child. It reconciles every outcome back into
-   memory + the Kanban.
-5. **Status / sync / lint** — `/project-lead status` reports the
-   requirements→delivery funnel; `sync` reconciles the board with reality; `lint`
-   health-checks the memory wiki.
+   your approve/merge is the official signoff. The Lead stamps lifecycle, OKF
+   status, and verification, then creates the Requirement issue.
+4. **Migrate** (`/project-lead migrate [--apply]`) — dry-runs or applies the OKF
+   migration for pre-OKF Project Memory and requirement docs.
+5. **Guided handoff** — for approved requirements, the Lead launches/recommends
+   `/pm-team <requirement>` and later `/dev-team <issue>`, reconciling outcomes
+   back into memory + the Kanban.
+6. **Status / sync / lint** — `/project-lead status` reports the funnel; `sync`
+   reconciles the board with reality; `lint` is an advisory OKF + wiki
+   health-check.
 
 ## Usage
 
 ```
-# One-time per repo
 /project-lead bootstrap
-
-# Bring a need to the Lead (brainstorm or hand it a short doc)
 /project-lead I want users to be able to export their data as CSV
 /project-lead requirement new
-
-# Approve a requirement (opens the requirement PR / records signoff)
 /project-lead approve REQ-001
-
-# Hand the approved requirement to the teams (guided)
-/pm-team <the Lead will pass the approved problem + acceptance criteria>
-/dev-team <child-issue-id>
-
-# Stakeholder views
+/project-lead migrate
+/project-lead migrate --apply
 /project-lead status
 /project-lead sync
 /project-lead lint
@@ -103,13 +90,14 @@ cp packages/project-lead/claude-code/skills/project-lead/*  .claude/skills/proje
 
 | Path | Purpose |
 |---|---|
-| `docs/requirements/` | Official, versioned, PR-reviewable requirement docs + register |
-| `.project-memory/` | The Lead's Obsidian-readable wiki (overview, index, log, wiki pages) |
+| `docs/requirements/` | Official OKF requirement bundle + register |
+| `.project-memory/` | The Lead's OKF Project Memory bundle |
 | GitHub Project (v2) | The stakeholder Kanban (Intake → … → Done) |
 | Requirement issue + sub-issues | GitHub-native Requirement → Feature → Story traceability |
 
-The full memory layout, requirement doc schema, lifecycle, Definition of Ready,
-and approval contract are documented in [`../MEMORY-SCHEMA.md`](../MEMORY-SCHEMA.md).
+The full OKF memory layout, requirement doc schema, lifecycle, Definition of
+Ready, approval contract, migration algorithm, and advisory lint checklist are
+documented in [`../MEMORY-SCHEMA.md`](../MEMORY-SCHEMA.md).
 
 ## Boundaries
 

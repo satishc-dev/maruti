@@ -154,7 +154,7 @@ single chat-mode agent (or skill) since Copilot's primitive model is flatter.
 - [`project-lead/`](project-lead/) — stakeholder-facing Project Lead
   (`project-lead` skill + `/project-lead` slash command on Claude Code; a single
   `Project-Lead` chat agent on Copilot CLI) that owns requirements as official
-  `docs/requirements/` docs behind an approval gate, maintains a Project Memory
-  wiki (`.project-memory/`) plus a linked GitHub Project Kanban, and delivers by
+  OKF v0.2 `docs/requirements/` docs, maintains an OKF Project Memory bundle
+  (`.project-memory/`) plus a linked GitHub Project Kanban, and delivers by
   guided handoff to `pm-team` and `dev-team` — never writing specs or code
   itself.
