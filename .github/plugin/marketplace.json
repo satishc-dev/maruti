@@ -2,7 +2,7 @@
   "name": "maruti",
   "owner": {
     "name": "satishc-dev",
-    "email": "satishc@microsoft.com"
+    "email": "satish.chandra@live.in"
   },
   "metadata": {
     "description": "Maruti plugin marketplace for GitHub Copilot CLI — installable agent packages for product management, software delivery, MCP tool architecture, marketing strategy, and assistant authoring.",
