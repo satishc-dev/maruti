@@ -2,7 +2,7 @@
 type: Register
 title: Requirements Register (Project Memory mirror)
 description: Tracking mirror for the official Atlas Export requirements.
-generated: { by: project-lead/claude-code, at: 2026-09-19T21:22:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T21:22:00Z }
 status: stable
 ---
 

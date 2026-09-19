@@ -3,7 +3,7 @@ type: Architecture Note
 title: Board sync design
 description: Draft reconciliation design between requirement lifecycle and the GitHub Project Status field.
 tags: [architecture, sync]
-generated: { by: project-lead/claude-code, at: 2026-09-19T20:45:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T20:45:00Z }
 status: draft
 ---
 

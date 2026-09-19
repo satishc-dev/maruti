@@ -2,7 +2,7 @@
 type: Memory Conventions
 title: Project Memory Conventions (OKF v0.2 profile)
 description: The OKF rules this example bundle demonstrates.
-generated: { by: project-lead/claude-code, at: 2026-09-19T21:20:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T21:20:00Z }
 status: stable
 ---
 

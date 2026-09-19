@@ -3,13 +3,13 @@ type: Initiative
 title: CSV export
 description: Deliver a first-class CSV export path for account data.
 tags: [initiative, export]
-generated: { by: project-lead/claude-code, at: 2026-09-19T21:25:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T21:25:00Z }
 verified: { by: human:alex-owner, at: 2026-09-19T21:26:00Z }
 status: stable
 stale_after: 2026-10-19T00:00:00Z
 sources:
   - id: kickoff-notes
-    resource: /wiki/references/stakeholder-kickoff-notes.md
+    resource: /references/stakeholder-kickoff-notes.md
     title: Stakeholder kickoff notes
     author: human:alex-owner
     usage_count: 7

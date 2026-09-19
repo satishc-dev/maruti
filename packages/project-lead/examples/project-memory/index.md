@@ -20,4 +20,4 @@ okf_version: "0.2"
 * [Stakeholders](wiki/stakeholders/) - Stakeholder context.
 * [Risks](wiki/risks/) - Risks and open questions.
 * [Glossary](wiki/glossary/) - Domain terms.
-* [References](wiki/references/) - Mirrored source material.
+* [References](references/) - Mirrored source material.

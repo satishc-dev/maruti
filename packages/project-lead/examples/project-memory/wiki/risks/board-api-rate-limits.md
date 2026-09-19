@@ -3,14 +3,14 @@ type: Risk
 title: Board API rate limits
 description: Large board syncs could hit GitHub API limits and delay status reconciliation.
 tags: [risk, github]
-generated: { by: project-lead/claude-code, at: 2026-09-18T18:00:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-18T18:00:00Z }
 status: stable
 stale_after: 2026-09-19T00:00:00Z
 sources:
   - id: github-rate-limits
     resource: https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api
     title: GitHub REST API rate limits
-    author: GitHub
+    author: team:github-docs
     usage_count: 4
     last_modified: 2026-09-01T00:00:00Z
 usage_window: { from: 2026-09-01T00:00:00Z, to: 2026-09-18T23:59:59Z }

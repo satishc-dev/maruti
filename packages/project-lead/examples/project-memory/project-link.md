@@ -2,7 +2,7 @@
 type: Integration Link
 title: GitHub Project Link
 description: Fictional GitHub Project board configuration for the Atlas Export example.
-generated: { by: project-lead/claude-code, at: 2026-09-19T21:21:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T21:21:00Z }
 status: stable
 ---
 

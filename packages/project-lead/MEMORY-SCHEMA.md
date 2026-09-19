@@ -86,9 +86,12 @@ SHOULD include these families when it knows the values:
   `generated.by` is required when `generated` is present. `generated.at` records
   the last meaningful content change.
 - **Sources:** `sources:` entries with required `resource`, optional `id`,
-  `title`, `author`, `usage_count`, and `last_modified`. When multiple sources
-  share a time range, put `usage_window` as a sibling of `sources`, not under an
-  entry. A source entry may override the shared window when needed.
+  `title`, `author`, `usage_count`, and `last_modified`. `sources[].author`
+  follows the same OKF actor convention as `generated.by` and `verified[].by`;
+  for example, use `team:github-docs` for GitHub documentation authorship, not a
+  bare `GitHub` string. When multiple sources share a time range, put
+  `usage_window` as a sibling of `sources`, not under an entry. A source entry
+  may override the shared window when needed.
 - **Per-claim citations:** body footnotes use the same label as `sources[].id`.
   The label is the join key; do not use positional labels that change when the
   source list is reordered.
@@ -106,13 +109,26 @@ only correct for `log.md` date headings.
 
 ### 1.3 Actor convention
 
-- Lead-authored content uses `project-lead/claude-code` or
-  `project-lead/copilot`, depending on the platform running the Lead.
+OKF §7 defines actors as `<producer>/<version>` for agents and tools,
+`human:<id>` for people, and `process:<id>` for automation. Project Lead also
+uses the spec's `team:<id>` form shown for source authors in §5.1 when a source
+is authored by a team rather than a person, agent, or process. The identity
+fields `generated.by`, every `verified[].by`, and every `sources[].author` MUST
+use this convention.
+
+- Lead-authored content uses `project-lead-claude-code/0.2.0` or
+  `project-lead-copilot/0.2.0`, depending on the platform running the Lead. The
+  producer names encode the runtime surface, while `0.2.0` is this package's
+  Project Lead profile/plugin version; this satisfies OKF §7 because the segment
+  after `/` is a real version, not a platform tag.
 - Historical migrations use `process:project-lead-migration` because the Lead
   cannot honestly know the original author.
 - Human confirmations use `human:<github-login>`.
 - Automated events use `process:<name>`, for example `process:github-merge` or
   `process:project-lead-sync`.
+- Source authors use the same convention, for example `author: team:github-docs`
+  for GitHub documentation or `author: process:github-rest-api` for an API
+  response.
 
 The `human:` prefix is mandatory for hand-authored or human-confirmed content;
 OKF trust-tier derivation depends on that exact prefix.
@@ -176,7 +192,7 @@ type: Project Overview
 title: <Project name> — Overview
 description: <one-sentence synthesis>
 tags: [overview]
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 status: stable
 ---
 ```
@@ -186,7 +202,7 @@ status: stable
 type: Memory Conventions
 title: Project Memory Conventions (OKF v0.2 profile)
 description: Distilled conventions this wiki follows.
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 status: stable
 ---
 ```
@@ -196,7 +212,7 @@ status: stable
 type: Integration Link
 title: GitHub Project Link
 description: The linked GitHub Project (v2) board configuration.
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 status: stable
 ---
 ```
@@ -206,7 +222,7 @@ status: stable
 type: Register
 title: Requirements Register (Project Memory mirror)
 description: Tracking index referencing docs/requirements/* plus issues and Project items.
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 status: stable
 ---
 ```
@@ -302,10 +318,9 @@ lifecycle: draft         # draft | in-review | approved | in-spec | specced | in
 status: draft            # OKF status: draft | stable | deprecated; derived from lifecycle
 priority: P2             # P0 | P1 | P2 | P3
 version: 1
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 approved_at:             # ISO-8601 UTC, set on PR merge or express signoff
 approved_by:             # human:<stakeholder-login>
-verified:                # set on approval, e.g. { by: human:<login>, at: <ISO-8601 UTC> }
 requirement_issue:       # GitHub Requirement issue URL
 links:
   requirement_pr:        # PR that introduced/changed this doc
@@ -341,6 +356,19 @@ links:
 - [2026-09-19T21:30:00Z] v1 — created as draft.
 ```
 
+Draft requirements intentionally omit the optional OKF `verified` key. OKF
+defines "unverified" as no `verified` key at all; a bare `verified:` would parse
+as present-but-null rather than absent. On approval, add this key with a real
+human confirmation:
+
+```yaml
+verified: { by: human:<login>, at: <ISO-8601 datetime with UTC offset> }
+```
+
+Blank `approved_at` and `approved_by` placeholders are Project Lead extension
+keys, not OKF trust metadata; they remain as visible workflow placeholders until
+approval stamps them.
+
 `docs/requirements/README.md` is the official human-facing register:
 
 ```markdown
@@ -348,7 +376,7 @@ links:
 type: Register
 title: Requirements Register
 description: The official, human-facing table of all requirements, their lifecycle stage, and links.
-generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+generated: { by: project-lead-<platform>/0.2.0, at: <ISO-8601 UTC> }
 status: stable
 ---
 
@@ -551,6 +579,8 @@ requirement documents that still use the old lifecycle vocabulary directly in
 Transformations are idempotent:
 
 - Strip `index.md` frontmatter except the bundle-root `okf_version` block.
+- Reformat `index.md` bodies into OKF §8 grouped headings containing markdown
+  links and one-line descriptions (`* [Title](target.md) - description`).
 - Convert legacy log headings into OKF date sections, then run `normalize_log`.
 - Infer `type` from the vocabulary table, migrate known provenance into
   `generated` with `process:project-lead-migration` when historical authorship is
@@ -560,24 +590,71 @@ Transformations are idempotent:
 - Report optional fields that could not be honestly backfilled instead of
   fabricating sources, generated actors, or verifiers.
 
+Before transforming, `migrate` checks these already-migrated predicates so a
+second pass is a true no-op:
+
+- A concept file (not `index.md`/`log.md`) is migrated when: it has a non-empty
+  `type` key, AND it has neither `created` nor `updated` keys, AND its body
+  contains no `[[` `]]` sequences. If all three hold, skip the file entirely
+  (report "already conformant").
+- An `index.md` is migrated when: its frontmatter is empty, or (bundle root only)
+  is exactly `{ okf_version: "0.2" }` and nothing else.
+- A `log.md` is migrated when: every `##`-heading line matches
+  `^## \d{4}-\d{2}-\d{2}$` exactly, headings are in strictly descending date
+  order, and no date appears twice.
+- A `docs/requirements/REQ-*.md` is migrated when: it has a `lifecycle:` key
+  (not a bare requirement-vocabulary `status:` key) and a `status:` key whose
+  value is one of `draft|stable|deprecated`.
+
+When migrating legacy `created`/`updated` provenance, `updated` takes precedence
+over `created` for `generated.at`; if only `created` exists, use `created`. Bare
+dates are coerced to ISO-8601 UTC by appending `T00:00:00Z`. Each migrated file
+MUST disclose the caveat that `process:project-lead-migration` means historical
+authorship is unknown and invites the stakeholder to manually correct provenance
+where they know the true author.
+
+The dry-run report is binding: for every candidate file, show the old
+frontmatter block → new frontmatter block, old heading text → new heading text,
+and every rewritten wikilink as `[[old]] → [new](new-target)` with its
+resolution source noted (`alias`, `target-file title`, or `heuristic guess`).
+The report is printed before any writes; writes happen only with `--apply`.
+
 ### 6.3 `normalize_log(text) -> text`
 
 `normalize_log` is the shared routine used by migration, lint fixes, and every
 append-to-log path:
 
-1. Preserve the preamble before the first `## ` heading byte-for-byte. If absent,
-   synthesize `# Project Memory Update Log`.
-2. Classify date headings matching `## YYYY-MM-DD`. Convert legacy headings into
-   that form and a bullet `- **Event**: subject — text`.
-3. Group duplicate date sections, preserving bullet order.
-4. Drop byte-identical duplicate bullets after trimming outer whitespace.
-5. Sort date groups descending by `YYYY-MM-DD`.
-6. Emit a blank line after each heading and date group.
-7. Guarantee idempotency: running the routine twice yields byte-identical output.
+1. Split text into a preamble (everything before the first line matching
+   `^## `) and sections, where each section is one heading line matching
+   `^## (.+)$` plus all content up to the next such heading or EOF. Preserve the
+   preamble byte-for-byte. If it is absent, synthesize
+   `# <Directory or Project> Update Log\n\n`, deriving the name from the
+   containing directory or using `Project Memory` for the bundle-root `log.md`.
+2. Classify each `##` heading. A heading that matches
+   `^## \d{4}-\d{2}-\d{2}$` exactly is a date section. Any non-date `##`
+   heading is first routed through the §6.2 legacy log transformation (for
+   example `## [YYYY-MM-DD] event | subject` becomes the date heading and a
+   bullet `- **Event**: subject — text`) before continuing.
+3. Preserve multiline bullets and section content until the next bullet or
+   section boundary; do not split wrapped bullet paragraphs into separate
+   entries.
+4. Group all date sections with the same date key, concatenating bullets in the
+   order they appeared in the input.
+5. De-duplicate bullets within each date group. Two bullets are identical when
+   their complete text is byte-identical after trimming outer whitespace; keep
+   the first occurrence and drop later duplicates.
+6. Keep surviving bullets within each date group in their relative input order.
+7. Sort date groups descending by `YYYY-MM-DD`.
+8. Emit the preamble, then each date group as `## YYYY-MM-DD`, a blank line, the
+   ordered bullets (one per bullet block, starting with `- ` and conventionally
+   using a bold lead word), and a trailing blank line before the next group.
+   Running the routine on its own output MUST be byte-identical.
 
-Run it as the first step of every routine that appends to `log.md`, inside
-`lint` as an explicitly reported safe auto-fix, and after any git operation that
-could have union-merged `.project-memory/log.md`.
+Run `normalize_log` in one shared pre-mode Project Memory step at the top of
+every mode that touches `.project-memory/`, including read-only `status`, before
+reading or writing memory. Also run it inside `lint` as an explicitly reported
+safe auto-fix (state dates merged and duplicate bullets dropped) and after any
+git operation that could have union-merged `.project-memory/log.md`.
 
 ### 6.4 Lint checklist
 

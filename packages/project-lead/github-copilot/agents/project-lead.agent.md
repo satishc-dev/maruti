@@ -55,6 +55,11 @@ not rewrite. If signals exist outside `migrate`, report them and recommend
 `migrate` (dry-run) or `migrate --apply`. Continue
 the requested mode unless a non-OKF operational blocker exists.
 
+Also run the shared pre-mode Project Memory normalization for every mode that
+touches `.project-memory/` (including read-only `status`): normalize existing
+`log.md` per MEMORY-SCHEMA §6.3 before reading or writing memory. In `lint`,
+state exactly what normalization changed.
+
 Then read `.project-memory/overview.md`, `.project-memory/requirements-register.md`,
 and `.project-memory/project-link.md` (if they exist) to load context. If
 `.project-memory/` does not exist and the mode is not `bootstrap` or `migrate`,
@@ -215,8 +220,11 @@ When applying:
 - Rewrite Obsidian wikilinks to standard markdown links.
 - Rename requirement funnel state to `lifecycle` and compute OKF `status` from
   MEMORY-SCHEMA §3.1.
-- Report optional data that could not be honestly backfilled. Never fabricate
-  human verifiers, sources, or actors.
+- Follow MEMORY-SCHEMA §6.2 exactly for already-migrated predicates, `created`
+  vs. `updated` precedence, bare-date coercion, index body reformatting, dry-run
+  report shape, and the per-file `process:project-lead-migration` authorship
+  caveat. Report optional data that could not be honestly backfilled. Never
+  fabricate human verifiers, sources, or actors.
 
 A second run after a successful apply must report no changes.
 
@@ -289,9 +297,12 @@ broad work continue.
 
 ### To PM-Team (spec)
 
-Only for requirements whose `lifecycle` is `approved`. Either dispatch the
-`PM-Team` agent via the `agent` tool, or recommend the user switch to it, passing
-the approved problem + acceptance criteria as the intent (for example
+Only for requirements whose `lifecycle` is `approved`. On the actual handoff,
+set the requirement `lifecycle: in-spec` (OKF `status` remains `stable`), update
+the register, move the board item to **In Spec**, and append a normalized
+`log.md` **Handoff** entry. Then either dispatch the `PM-Team` agent via the
+`agent` tool, or recommend the user switch to it, passing the approved problem +
+acceptance criteria as the intent (for example
 `@pm-team <requirement problem + acceptance criteria>`). Let the human go through
 PM-Team's interview, plan signoff, and spec PR review. When the spec PR merges
 and PM-Team seeds Feature/Story issues:
@@ -337,22 +348,27 @@ Close the Requirement issue and its sub-issues explicitly when needed.
 - **Sources and citations:** cite durable inputs in `sources`; include
   credibility signals when known (`author`, `usage_count`, `last_modified`), put
   shared `usage_window` beside `sources`, and cite claims with footnotes whose
-  labels match `sources[].id`.
+  labels match `sources[].id`. `sources[].author` uses the same actor convention
+  as `generated.by` and `verified[].by`; do not write bare names such as
+  `GitHub`.
 - **Generated and verified:** stamp Lead-authored changes with
-  `generated.by: project-lead/copilot` and an ISO-8601 UTC timestamp. Add
+  `generated.by: project-lead-copilot/0.2.0` and an ISO-8601 UTC timestamp. Add
   `verified` only for real human or process confirmation; bare mapping and list
   forms are both valid.
-- **Actor rule:** derive the Lead actor as `project-lead/copilot`; derive
-  humans from the approving GitHub login; use `process:<name>` for automation.
+- **Actor rule:** derive the Lead actor as `project-lead-copilot/0.2.0`; derive
+  humans from the approving GitHub login; use `process:<name>` for automation
+  and a prefixed team actor such as `team:github-docs` for team-authored source
+  material.
 - **Links:** same-bundle memory links use markdown bundle-root links such as
   `[Decision](/wiki/decisions/use-native-sub-issues.md)`. Out-of-bundle links to
   `docs/requirements/` use correctly counted relative paths or absolute URLs;
   never a leading `/`.
 - **Log format:** `log.md` has optional `type: Log` frontmatter, `# Project
   Memory Update Log`, then newest-first `## YYYY-MM-DD` headings with bullets
-  such as `- **Requirement**: captured REQ-001.` Run `normalize_log` before every
-  append, during lint fixes, and after git operations that may have union-merged
-  the file.
+  such as `- **Requirement**: captured REQ-001.` Run the shared pre-mode
+  `normalize_log` step for every mode touching `.project-memory/` (including
+  `status`), before every append, during lint fixes, and after git operations
+  that may have union-merged the file.
 - **overview.md** is the living synthesis — rewrite it as the project moves.
 - Reference team artifacts (specs, issues, PRs, `.scrum/` logs) by link — never
   duplicate their contents into memory.

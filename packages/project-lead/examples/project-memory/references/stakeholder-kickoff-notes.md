@@ -3,7 +3,7 @@ type: Reference
 title: Stakeholder kickoff notes
 description: Synthetic source notes from the Atlas Export kickoff conversation.
 resource: https://example.com/atlas-export/kickoff-notes
-generated: { by: project-lead/claude-code, at: 2026-09-18T16:30:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-18T16:30:00Z }
 status: stable
 ---
 

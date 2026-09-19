@@ -3,7 +3,7 @@ type: Project Overview
 title: Atlas Export — Overview
 description: Current synthesis for a fictional CSV export initiative.
 tags: [overview, atlas-export]
-generated: { by: project-lead/claude-code, at: 2026-09-19T21:30:00Z }
+generated: { by: project-lead-claude-code/0.2.0, at: 2026-09-19T21:30:00Z }
 status: stable
 ---
 
