@@ -92,9 +92,11 @@ was created vs. already present.
    `index.md` with only `okf_version: "0.2"` frontmatter, OKF-shaped `log.md`,
    `schema.md`, `overview.md`, `requirements-register.md`, `project-link.md`,
    `references/`, and `wiki/` subfolders (`initiatives/ decisions/ architecture/
-   stakeholders/ risks/ glossary/`). Seed `overview.md` from a short interview
-   about the project's purpose, and seed `index.md` as a grouped markdown-link
-   catalog that points at the registers.
+   stakeholders/ risks/ glossary/`). Create a no-frontmatter `index.md` in
+   `references/` and in each wiki subfolder so the committed skeleton survives a
+   clone and supports progressive disclosure from day one. Seed `overview.md`
+   from a short interview about the project's purpose, and seed `index.md` as a
+   grouped markdown-link catalog that points at the registers.
 2. **Requirements area.** Create `docs/requirements/` as its own OKF bundle:
    `index.md` with only `okf_version: "0.2"`, `_template.md` with `type:
    Template` and the live requirement schema fenced in its body, and `README.md`
@@ -182,24 +184,44 @@ pm-team's and dev-team's job.
    - The stakeholder **reviews and approves/merges**. That merge is the official
      signoff. For tiny edits, accept an **express in-chat approval** instead, but
      still stamp the doc.
-3. On approval:
-   - Set `lifecycle: approved` and OKF `status: stable`; stamp `approved_at` /
-     `approved_by`; add `verified: { by: human:<login>, at: <ISO-8601 UTC> }`;
-     bump the Change log and `version`.
-   - Derive the approval actor from `gh pr view <PR> --json mergedBy` and the
-     timestamp from `mergedAt`. For express signoff, use the confirmed
-     stakeholder GitHub login and current UTC time. If no reliable human identity
-     exists, omit `verified` rather than guessing.
-   - **Create the Requirement issue** — only **after** the PR merges (or the
-     express signoff) so its body links the merged doc on the default branch,
-     not a transient branch blob. Use the custom issue type "Requirement" if
-     supported, else a `requirement`-labeled issue. Title `[REQ-NNN] <title>`,
-     body links the doc + PR. Record its URL in `requirement_issue`.
-   - Add/convert the Project item to that issue and move it to **Ready for Spec**.
-     Record the Project **item node id** (`PVTI_...`) in `links.project_item`.
-   - Update `docs/requirements/README.md` and
-     `.project-memory/requirements-register.md`; append a normalized `log.md`
-     **Approval** entry.
+3. On approval, persist the approval metadata before handoff:
+   - **PR approval path — post-merge reconciliation transaction.**
+     1. Query approval metadata in one call:
+        `gh pr view <PR> --json mergedBy,mergedAt`.
+     2. Return to the default branch before editing: `git fetch`, checkout the
+        default branch, and pull. Team handoffs can leave the worktree on a team
+        branch, and these edits must land on the merged state.
+     3. Create the Requirement issue only after the PR merges so its body links
+        the merged doc on the default branch, not a transient branch blob. Use
+        the custom issue type "Requirement" if supported, else a
+        `requirement`-labeled issue. Title `[REQ-NNN] <title>`, body links the
+        doc + PR. Record its URL in `requirement_issue`.
+     4. Add/convert the Project item to that issue, move it to **Ready for
+        Spec**, and record the Project **item node id** (`PVTI_...`) in
+        `links.project_item`.
+     5. Stamp the requirement doc: `lifecycle: approved`, OKF `status: stable`,
+        `approved_at`, `approved_by`, `verified: { by: human:<login>, at:
+        <ISO-8601 UTC> }`, `requirement_issue`, `links.project_item`, refreshed
+        `generated.at`, and bumped Change log + `version`. Derive the actor from
+        `mergedBy.login` and the timestamp from `mergedAt`; if no reliable human
+        identity exists, omit `verified` rather than guessing.
+     6. Update `docs/requirements/README.md`, `docs/requirements/index.md`, and
+        `.project-memory/requirements-register.md`; append a normalized
+        `log.md` **Approval** entry.
+     7. Persist those bookkeeping edits in a clearly designated mechanical
+        follow-up commit, for example
+        `chore(REQ-NNN): record approval metadata`. If the default branch is
+        protected and refuses a direct commit, open a small follow-up PR with
+        that title for the stakeholder to merge without re-reviewing the
+        already-approved requirement.
+     8. This recording does **not** reopen the requirement. It is bookkeeping
+        for an approval that already happened, not the change-control path that
+        intentionally re-opens an approved requirement to `in-review` through a
+        new requirement PR.
+   - **Express signoff path.** There is no PR to query. Use the confirmed
+     stakeholder GitHub login and current UTC time, then perform the same
+     doc/register/log/issue/Project updates on the default branch and persist
+     them by the same direct-commit-or-follow-up-PR rule.
 4. The requirement is now eligible for pm-team. **Do not** proceed to pm-team for
    any requirement that did not pass this gate.
 

@@ -38,13 +38,20 @@ whole repo is opened as a vault, configure links as relative paths to files.
 ├── project-link.md            # linked GitHub Project and Status field IDs
 ├── requirements-register.md   # mirror that references docs/requirements/*
 ├── references/                # OKF convention for mirrored external material
+│   └── index.md               # no-frontmatter local catalog; keeps folder committed
 └── wiki/
     ├── initiatives/           # one page per initiative/epic
+    │   └── index.md           # no-frontmatter local catalog; keeps folder committed
     ├── decisions/             # decision records
+    │   └── index.md
     ├── architecture/          # accumulated system & architecture knowledge
+    │   └── index.md
     ├── stakeholders/          # stakeholder context and preferences
+    │   └── index.md
     ├── risks/                 # risks and open questions
+    │   └── index.md
     └── glossary/              # domain terms
+        └── index.md
 ```
 
 ### 1.1 Type vocabulary
@@ -461,18 +468,40 @@ This is the boundary that protects pm-team from half-baked input.
   in-chat "approved" that the Lead records. Even then the Lead updates the doc
   frontmatter (`lifecycle`, `approved_at`, `approved_by`), the OKF `status`, the
   register, and `log.md`.
-- On approval the Lead:
-  1. Sets `lifecycle: approved` and OKF `status: stable`; stamps
-     `approved_at` / `approved_by`; adds `verified` with the approving human;
-     bumps the Change log.
-  2. Creates the **Requirement issue** (see §5) and records its URL in the doc.
-  3. Updates `docs/requirements/README.md` and `.project-memory/requirements-register.md`.
-  4. Moves the Project item to **Ready for Spec**.
-- **Verification stamp:** for a PR merge, derive `verified.by` from
-  `gh pr view <PR> --json mergedBy --jq .mergedBy.login` and `verified.at` from
-  `mergedAt`. For express signoff, use the confirmed stakeholder GitHub login
-  and current UTC instant. If no reliable human identity exists, omit `verified`
-  rather than guessing.
+- On approval the Lead completes the matching persistence path before handing off:
+  - For a requirement PR, run the **post-merge reconciliation transaction** below
+    on the default branch.
+  - For express signoff, there is no PR to query; use the confirmed stakeholder
+    GitHub login and current UTC instant as the approval identity/time, then
+    perform the same doc/register/log/issue/Project updates on the default branch
+    and persist them by the same direct-commit-or-follow-up-PR rule.
+- **Verification stamp:** for a PR merge, derive `verified.by` from the
+  transaction's `mergedBy.login` and `verified.at` from `mergedAt`. For express
+  signoff, use the confirmed stakeholder GitHub login and current UTC instant.
+  If no reliable human identity exists, omit `verified` rather than guessing.
+- **Post-merge reconciliation transaction (PR approvals):**
+  1. Query approval metadata in one call:
+     `gh pr view <PR> --json mergedBy,mergedAt`.
+  2. Return to the default branch before editing: `git fetch`, checkout the
+     default branch, and pull, because team handoffs may leave the worktree on a
+     team branch and the metadata must land on the merged state.
+  3. Create the **Requirement issue** (see §5) and add/convert the Project item;
+     capture both the issue URL and the Project item node id (`PVTI_...`).
+  4. Stamp the requirement doc with `lifecycle: approved`, OKF
+     `status: stable`, `approved_at`, `approved_by`, `verified`,
+     `requirement_issue`, and `links.project_item`; refresh `generated.at`;
+     update `docs/requirements/README.md`, `docs/requirements/index.md`, and
+     `.project-memory/requirements-register.md`; append the normalized `log.md`
+     approval entry; bump the Change log and `version`.
+  5. Persist those bookkeeping edits in a clearly designated mechanical follow-up
+     commit, for example `chore(REQ-NNN): record approval metadata`. If the
+     default branch is protected and refuses a direct commit, open a small
+     follow-up PR with that title for the stakeholder to merge without
+     re-reviewing the already-approved requirement.
+  6. This recording does **not** reopen the requirement. It is bookkeeping for an
+     approval that already happened, distinct from the §4 change-control rule
+     that intentionally re-opens an approved requirement to `in-review` through a
+     new requirement PR.
 - **Hard rule:** the Lead **MUST NOT** launch or recommend `/pm-team` for a
   requirement whose `lifecycle` is not `approved`.
 - **Change control:** any change to an `approved` (or later) requirement re-opens
@@ -591,20 +620,35 @@ Transformations are idempotent:
   fabricating sources, generated actors, or verifiers.
 
 Before transforming, `migrate` checks these already-migrated predicates so a
-second pass is a true no-op:
+second pass is a true no-op. A predicate MUST be the exact negation of its
+transformation's precondition: if any transformation step would still change the
+file, the file is not yet migrated and MUST NOT be skipped.
 
 - A concept file (not `index.md`/`log.md`) is migrated when: it has a non-empty
   `type` key, AND it has neither `created` nor `updated` keys, AND its body
   contains no `[[` `]]` sequences. If all three hold, skip the file entirely
   (report "already conformant").
-- An `index.md` is migrated when: its frontmatter is empty, or (bundle root only)
-  is exactly `{ okf_version: "0.2" }` and nothing else.
+- A bundle-root `index.md` is migrated only when: its frontmatter is exactly
+  `{ okf_version: "0.2" }` and nothing else, AND its body is already in OKF §8
+  grouped-links-with-description shape. Missing `okf_version` is a pre-OKF
+  detection signal, never an already-migrated state.
+- A non-root `index.md` is migrated only when: its frontmatter is empty, AND its
+  body is already in OKF §8 grouped-links-with-description shape.
 - A `log.md` is migrated when: every `##`-heading line matches
   `^## \d{4}-\d{2}-\d{2}$` exactly, headings are in strictly descending date
   order, and no date appears twice.
-- A `docs/requirements/REQ-*.md` is migrated when: it has a `lifecycle:` key
-  (not a bare requirement-vocabulary `status:` key) and a `status:` key whose
-  value is one of `draft|stable|deprecated`.
+- A `docs/requirements/REQ-*.md` is migrated when: the generic concept predicate
+  holds (`type` is non-empty, no `created`/`updated`, and no body wikilinks),
+  AND it has a `lifecycle:` key (not a bare requirement-vocabulary `status:`
+  key), AND it has a `status:` key whose value is one of
+  `draft|stable|deprecated`.
+
+When rewriting wikilinks, choose the markdown link text in this order: (i) the
+`|Alias` pipe text when present; (ii) the target file's own frontmatter `title`
+when the target can be located and read, preferred over guessing; (iii) a
+heuristic fallback using the final path segment with `-`/`_` converted to spaces
+and title-cased. The dry-run report MUST note which source (`alias`,
+`target-file title`, or `heuristic guess`) resolved each link.
 
 When migrating legacy `created`/`updated` provenance, `updated` takes precedence
 over `created` for `generated.at`; if only `created` exists, use `created`. Bare

@@ -156,8 +156,9 @@ single stakeholder-facing coordinator and the keeper of durable project context.
 1. Runs a detection-only OKF conformance check and recommends `migrate` if it
    sees pre-OKF files.
 2. Scaffolds `.project-memory/` as an OKF bundle: root `index.md` with
-   `okf_version: "0.2"`, OKF-shaped `log.md`, `references/`, wiki folders, and
-   `schema.md`.
+   `okf_version: "0.2"`, OKF-shaped `log.md`, `schema.md`, `references/`, and
+   wiki folders. `references/` and each wiki category start with a
+   no-frontmatter `index.md` so the committed skeleton survives clone.
 3. Scaffolds `docs/requirements/` as a separate OKF bundle: root `index.md`, a
    `type: Template` `_template.md`, and a `type: Register` `README.md`.
 4. Detects or helps you create + link a **GitHub Project (v2)** Kanban,
