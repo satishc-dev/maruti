@@ -1,54 +1,76 @@
 # Project Lead
 
-A stakeholder-facing **Project Lead** agent for Claude Code and GitHub Copilot CLI. The Project Lead is the lead and front-face of a project to its stakeholder (you). It owns the conversation — requirements in, status out — and **gets the work done by delegating** to the [`pm-team`](../pm-team/) and [`dev-team`](../dev-team/) plugins. It never writes specs or code itself.
+A stakeholder-facing **Project Lead** agent for Claude Code and GitHub Copilot
+CLI. The Project Lead is the lead and front-face of a project to its stakeholder
+(you). It owns the conversation — requirements in, status out — and **gets the
+work done by delegating** to the [`pm-team`](../pm-team/) and
+[`dev-team`](../dev-team/) plugins. It never writes specs or code itself.
 
 The Lead maintains two complementary surfaces:
 
-- **Project Memory** — a pure-markdown, Obsidian-readable compounding wiki under `.project-memory/`, following [Karpathy's LLM knowledge-base pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f). This is the Lead's working brain; you can open the folder in Obsidian to inspect how the agent reasons and works.
-- **GitHub Project (v2)** — a linked Kanban board that is the stakeholder-facing progress view. The Lead keeps it current so at any point you can see the requirements→delivery funnel and discuss it.
+- **Project Memory** — an [Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md)
+  markdown bundle under `.project-memory/`, pinned to spec SHA `ad30107c`. This
+  is the Lead's working brain; open the folder itself in Obsidian to inspect how
+  the agent reasons and works.
+- **GitHub Project (v2)** — a linked Kanban board that is the
+  stakeholder-facing progress view. The Lead keeps it current so at any point you
+  can see the requirements→delivery funnel and discuss it.
 
-Requirements are first-class, **official repo documents** under `docs/requirements/`, approved through a **requirement PR** before any spec work begins.
+Requirements are first-class, **official OKF repo documents** under
+`docs/requirements/`, approved through a **requirement PR** before any spec work
+begins.
 
 ## How to use this plugin
 
-You talk to the Project Lead in **plain language**; it captures what you need as an approved requirement and drives it to delivery through the pm-team and dev-team plugins — keeping the wiki and the Kanban board current the whole time. You never touch specs or code directly.
+You talk to the Project Lead in **plain language**; it captures what you need as
+an approved requirement and drives it to delivery through the pm-team and
+dev-team plugins — keeping Project Memory and the Kanban board current the whole
+time. You never touch specs or code directly.
 
 A full session, start to finish:
 
-1. **Install it** — once per machine, once per repo. See [Install](#install) below. On **Claude Code** you drive it with the `/project-lead` slash command; on **GitHub Copilot CLI** you talk to the `Project-Lead` chat-mode agent.
-
+1. **Install it** — once per machine, once per repo. See [Install](#install)
+   below. On **Claude Code** you drive it with the `/project-lead` slash command;
+   on **GitHub Copilot CLI** you talk to the `Project-Lead` chat-mode agent.
 2. **Bootstrap the repo (once):**
    ```
    /project-lead bootstrap
    ```
-   Scaffolds `.project-memory/`, `docs/requirements/`, the linked GitHub Project board, and the Requirement issue-type/label. Idempotent — safe to re-run.
-
+   Scaffolds `.project-memory/`, `docs/requirements/`, the linked GitHub Project
+   board, and the Requirement issue-type/label. Idempotent — safe to re-run.
 3. **Bring a need — just describe it:**
    ```
    /project-lead I want new contributors to have a one-page setup guide
    ```
-   (or `/project-lead` with no text to brainstorm). The Lead interviews you and drafts an official `docs/requirements/REQ-NNN-<slug>.md`. Iterate with it until the requirement is ready (clear problem, testable acceptance criteria, explicit scope).
-
+   The Lead interviews you and drafts an official
+   `docs/requirements/REQ-NNN-<slug>.md`. Iterate until the requirement is ready.
 4. **Approve it — the gate:**
    ```
    /project-lead approve REQ-001
    ```
-   The Lead opens a **requirement PR**; you review and merge it (or give an express in-chat "approved"). This signoff is mandatory — nothing goes to spec or build before it.
-
-5. **Let it hand off to the teams.** Once approved, the Lead recommends `/pm-team` (to write specs) and then `/dev-team <issue>` (to build), one step at a time. You go through each team's own signoff gates; the Lead reconciles their PRs and issues back into the board and the wiki.
-
-6. **Check in any time:**
+   The Lead opens a **requirement PR**; you review and merge it (or give an
+   express in-chat "approved"). This signoff is mandatory.
+5. **Let it hand off to the teams.** Once approved, the Lead recommends
+   `/pm-team` (to write specs) and then `/dev-team <issue>` (to build), one step
+   at a time. It reconciles PRs and issues back into the board and memory.
+6. **Check in or maintain the wiki any time:**
    ```
-   /project-lead status     # the requirements → delivery funnel
-   /project-lead sync       # reconcile the board with the real issue/PR state
-   /project-lead lint       # health-check the Project Memory wiki
+   /project-lead status     # requirements → delivery funnel
+   /project-lead sync       # reconcile board with issue/PR state
+   /project-lead lint       # advisory OKF + wiki health-check
+   /project-lead migrate    # dry-run OKF migration report
    ```
+7. **Accept delivery.** When all child work is done, the Lead verifies it against
+   acceptance criteria, offers optional acceptance signoff, and marks the
+   requirement `delivered`.
 
-7. **Accept delivery.** When all child work is done, the Lead verifies it against your acceptance criteria, offers an optional acceptance signoff, and marks the requirement `delivered`.
-
-> **On GitHub Copilot CLI**, run the same flow by talking to the `Project-Lead` agent in natural language — e.g. "bootstrap this repo", "I need …", "approve REQ-001", "what's the status?" — instead of the slash command.
+> **On GitHub Copilot CLI**, run the same flow by talking to the `Project-Lead`
+> agent in natural language — e.g. "bootstrap this repo", "I need …", "approve
+> REQ-001", "what's the status?", or "migrate --apply" — instead of the slash
+> command.
 >
-> **The golden rule:** you speak to the Lead; it delegates the work and keeps the record. It never writes specs or code itself.
+> **The golden rule:** you speak to the Lead; it delegates the work and keeps the
+> record. It never writes specs or code itself.
 
 ## What it can do (capabilities)
 
@@ -56,17 +78,24 @@ A full session, start to finish:
 |---|---|---|
 | **Capture & refine requirements** | Turns a rough idea or notes into an official, testable `docs/requirements/REQ-NNN` document | `/project-lead <need>` · `/project-lead requirement <id\|new>` |
 | **Approval gate** | Formal signoff via a requirement PR before any spec or build starts | `/project-lead approve <id>` |
-| **Project Memory wiki** | An Obsidian-readable `.project-memory/` wiki that compounds decisions, architecture, risks, and history | maintained automatically; browse the folder |
+| **Project Memory wiki** | An OKF v0.2 `.project-memory/` bundle that compounds decisions, architecture, risks, and history | maintained automatically; browse the folder |
+| **OKF migration** | Detects and upgrades pre-OKF memory/requirement files; dry-run by default, writes with `--apply` | `/project-lead migrate [--apply]` |
+| **Advisory lint** | Reports OKF conformance and wiki-health findings without rejecting or gating work | `/project-lead lint` |
 | **GitHub Project Kanban** | A live board showing the requirements → delivery funnel, with sub-issue roll-up | maintained automatically; view via `status` |
-| **Guided handoff** | Launches/recommends pm-team (specs) then dev-team (build) at the right moments and reconciles their output | automatic after approval |
-| **Status & reconciliation** | Funnel report, board-vs-reality sync, and wiki health-check | `/project-lead status` · `sync` · `lint` |
+| **Guided handoff** | Launches/recommends pm-team then dev-team at the right moments and reconciles output | automatic after approval |
+| **Status & reconciliation** | Funnel report and board-vs-reality sync | `/project-lead status` · `sync` |
 | **End-to-end traceability** | Requirement → Feature → Story sub-issues, so any PR traces back to its requirement | automatic (GitHub) |
 | **Cross-platform** | Runs on Claude Code and GitHub Copilot CLI; degrades gracefully on Azure DevOps | — |
 
 ## Roles
 
-- **`project-lead`** (skill on Claude Code / chat-mode agent on Copilot) — the orchestrator and stakeholder interface. Captures and refines requirements, maintains the Project Memory and the GitHub Project Kanban, and runs the **guided-handoff** lifecycle: it launches/recommends `/pm-team` and `/dev-team` at the right moments and reconciles their outputs back into memory + the board. It respects the existing signoff gates of those teams and adds its own **requirements approval gate**.
-- **`/project-lead`** (slash command on Claude Code) — kickoff with subcommands: `bootstrap`, intake (no subcommand), `requirement`, `approve`, `status`, `sync`, `lint`.
+- **`project-lead`** (skill on Claude Code / chat-mode agent on Copilot) — the
+  orchestrator and stakeholder interface. Captures and refines requirements,
+  maintains Project Memory and the GitHub Project Kanban, and runs the
+  **guided-handoff** lifecycle.
+- **`/project-lead`** (slash command on Claude Code) — kickoff with subcommands:
+  `bootstrap`, intake (no subcommand), `requirement`, `approve`, `migrate`,
+  `status`, `sync`, `lint`.
 
 ## Install
 
@@ -84,11 +113,17 @@ copilot plugin marketplace add satishc-dev/maruti
 copilot plugin install project-lead@maruti
 ```
 
-For each platform, the marketplace-add line is one-time per machine; subsequent installs only need the install line. For local-checkout and project-local-copy alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and [`github-copilot/README.md`](github-copilot/README.md).
+For each platform, the marketplace-add line is one-time per machine; subsequent
+installs only need the install line. For local-checkout and project-local-copy
+alternatives, see [`claude-code/README.md`](claude-code/README.md#install) and
+[`github-copilot/README.md`](github-copilot/README.md).
 
-**Dependencies come with it.** The Project Lead delegates to `pm-team` and `dev-team`, so it declares them as **plugin dependencies** in its `plugin.json`. On **Claude Code**, installing `project-lead@maruti` from the marketplace installs/enables `pm-team` and `dev-team` transitively — you don't install them separately. (On **GitHub Copilot CLI**, install the two teams alongside it: `copilot plugin install pm-team@maruti` and `copilot plugin install dev-team@maruti`.)
-
-The Project Lead is designed to be installed into **all your repos** and bootstrapped once per repo, so future development across your projects follows the same model.
+**Dependencies come with it.** The Project Lead delegates to `pm-team` and
+`dev-team`, so it declares them as **plugin dependencies** in its `plugin.json`.
+On **Claude Code**, installing `project-lead@maruti` from the marketplace
+installs/enables `pm-team` and `dev-team` transitively. On **GitHub Copilot CLI**,
+install the two teams alongside it: `copilot plugin install pm-team@maruti` and
+`copilot plugin install dev-team@maruti`.
 
 ## Relationship to pm-team and dev-team
 
@@ -97,12 +132,12 @@ Stakeholder (you)
       │  requirements / questions / status
       ▼
 ┌──────────────────────────────────────────────┐
-│  Project Lead                                  │
-│  - requirements interface + approval gate      │
-│  - maintains .project-memory/ (the wiki)       │
-│  - maintains the GitHub Project (Kanban)       │
-│  - guided handoff orchestration                │
-└───────┬────────────────────────┬───────────────┘
+│  Project Lead                                │
+│  - requirements interface + approval gate    │
+│  - maintains .project-memory/ (OKF bundle)   │
+│  - maintains the GitHub Project (Kanban)     │
+│  - guided handoff orchestration              │
+└───────┬────────────────────────┬─────────────┘
         │ launches/recommends     │ launches/recommends
         ▼                         ▼
    /pm-team  ──spec PR / issues──►  /dev-team ──► PR
@@ -118,70 +153,91 @@ single stakeholder-facing coordinator and the keeper of durable project context.
 
 `/project-lead bootstrap` is idempotent and re-runnable. It:
 
-1. Scaffolds `.project-memory/` (the wiki skeleton + `schema.md`).
-2. Scaffolds `docs/requirements/` (`_template.md` + an empty `README.md` register).
-3. Detects or helps you create + link a **GitHub Project (v2)** Kanban, persisting the link in `.project-memory/project-link.md`.
-4. Detects the org's custom **issue type "Requirement"** (falls back to a `requirement` label) and, on GitHub, ensures the `requirement` label exists.
-5. Checks that `pm-team` and `dev-team` are available, and guides you to install them if not.
-6. Writes a pointer to the Project Lead conventions into `AGENTS.md` / `CLAUDE.md`.
+1. Runs a detection-only OKF conformance check and recommends `migrate` if it
+   sees pre-OKF files.
+2. Scaffolds `.project-memory/` as an OKF bundle: root `index.md` with
+   `okf_version: "0.2"`, OKF-shaped `log.md`, `references/`, wiki folders, and
+   `schema.md`.
+3. Scaffolds `docs/requirements/` as a separate OKF bundle: root `index.md`, a
+   `type: Template` `_template.md`, and a `type: Register` `README.md`.
+4. Detects or helps you create + link a **GitHub Project (v2)** Kanban,
+   persisting the link in `.project-memory/project-link.md`.
+5. Detects the org's custom **issue type "Requirement"** (falls back to a
+   `requirement` label) and, on GitHub, ensures the `requirement` label exists.
+6. Checks that `pm-team` and `dev-team` are available, and guides installation if
+   not.
+7. Writes a pointer to the Project Lead conventions into `AGENTS.md` / `CLAUDE.md`.
 
 ## Requirements & the approval gate
 
-Requirements live as official, versioned repo docs and are approved before pm-team engages. Two intake paths both converge on a doc you approve:
+Requirements live as official, versioned repo docs and are approved before
+pm-team engages. Two intake paths both converge on a doc you approve:
 
-- **Path A — you author it:** drop a short requirement doc or rough notes; the Lead formalizes it into `docs/requirements/REQ-NNN-<slug>.md`.
-- **Path B — brainstorm:** brainstorm the vision/scenario with the Lead; it drafts the doc for your review.
+- **Path A — you author it:** drop a short requirement doc or rough notes; the
+  Lead formalizes it into `docs/requirements/REQ-NNN-<slug>.md`.
+- **Path B — brainstorm:** brainstorm the vision/scenario with the Lead; it
+  drafts the doc for your review.
 
-**Approval = a requirement PR** (mirrors pm-team's spec-PR pattern): the Lead opens a PR with the doc, you review & approve/merge, and that merge is the official signoff. An express in-chat signoff is available for tiny edits. The Lead **must not** invoke `/pm-team` until the requirement is `approved`.
+Requirement docs carry both `lifecycle` (Project Lead's delivery funnel) and OKF
+`status` (`draft`, `stable`, `deprecated`). Approval sets `lifecycle: approved`,
+OKF `status: stable`, and a `verified` human review stamp when a reliable human
+identity is known. The Lead **must not** invoke `/pm-team` until the requirement
+lifecycle is `approved`.
 
-GitHub-native concepts are leveraged for tracking: each requirement gets a **Requirement issue** (custom issue type when the org has it, else a `requirement` label), and pm-team's Feature/Story issues become **sub-issues** of it — giving end-to-end Requirement → Feature → Story traceability with roll-up on the board.
+GitHub-native concepts are leveraged for tracking: each requirement gets a
+**Requirement issue** and pm-team's Feature/Story issues become **sub-issues** of
+it — giving end-to-end Requirement → Feature → Story traceability with roll-up on
+the board.
 
-The full memory layout, requirement doc schema, lifecycle, Definition of Ready, and approval contract are in [`MEMORY-SCHEMA.md`](MEMORY-SCHEMA.md).
+The full memory layout, requirement doc schema, lifecycle, Definition of Ready,
+approval contract, migration algorithm, and advisory lint checklist are in
+[`MEMORY-SCHEMA.md`](MEMORY-SCHEMA.md).
 
 ## Lifecycle (guided handoff)
 
-| Phase | Lead action | Requirement status | Board column |
-|---|---|---|---|
-| Capture | Create `docs/requirements/REQ-NNN.md` (Path A or B) + log + draft item | `draft` | Intake |
-| Refine | Iterate doc; apply Definition of Ready | `in-review` | In Review |
-| **Approve** | Open requirement PR; you approve/merge; create Requirement issue | `approved` | Ready for Spec |
-| Spec | Launch/recommend `/pm-team`; spec PR | `in-spec` | In Spec |
-| Seed | pm-team seeds Feature/Story issues as sub-issues | `specced` | Ready for Dev |
-| Build | Recommend `/dev-team <issue>` per child; PRs | `in-delivery` | In Dev / In Review |
-| Accept | Verify against acceptance criteria; optional acceptance signoff | `delivered` | Done |
+| Phase | Lead action | Requirement lifecycle | OKF status | Board column |
+|---|---|---|---|---|
+| Capture | Create `docs/requirements/REQ-NNN.md` + log + draft item | `draft` | `draft` | Intake |
+| Refine | Iterate doc; apply Definition of Ready | `in-review` | `draft` | In Review |
+| **Approve** | Open requirement PR; you approve/merge; create Requirement issue | `approved` | `stable` | Ready for Spec |
+| Spec | Launch/recommend `/pm-team`; spec PR | `in-spec` | `stable` | In Spec |
+| Seed | pm-team seeds Feature/Story issues as sub-issues | `specced` | `stable` | Ready for Dev |
+| Build | Recommend `/dev-team <issue>` per child; PRs | `in-delivery` | `stable` | In Dev / In Review |
+| Accept | Verify against acceptance criteria; optional acceptance signoff | `delivered` | `stable` | Done |
+| Park | Defer or abandon with reason | `parked` | `deprecated` | Parked |
 
 ## Platform notes
 
 - **GitHub Projects (v2) is GitHub-specific.** On repos whose tracker is Azure
   DevOps, the Lead degrades gracefully: Project Memory and the guided handoff
-  still work, and the Kanban step uses ADO Boards instead. The primary target is
-  GitHub.
-- The teams keep their own `.scrum/` working memory; the Lead's
-  `.project-memory/` is the higher-level, durable project wiki that references
-  (never duplicates) team artifacts.
-- **Distributed / multi-machine runs.** To keep parallel agent sessions from
-  colliding, bootstrap gitignores the ephemeral, machine-local working state
-  (all of `.scrum/` — session journals, plans, retrospectives, watchdog status,
-  lessons — plus `.worktrees/`) while keeping the durable `.project-memory/` wiki
-  committed. The one append-only file, `.project-memory/log.md`, is set to
-  `merge=union` in `.gitattributes` so its chronology concatenates instead of
-  conflicting. See [`MEMORY-SCHEMA.md` § Distributed / multi-machine operation](MEMORY-SCHEMA.md#6-distributed--multi-machine-operation).
+  still work, and the Kanban step uses ADO Boards instead.
+- The teams keep their own `.scrum/` working memory; Project Memory is the
+  higher-level, durable OKF wiki that references (never duplicates) team
+  artifacts.
+- **Distributed / multi-machine runs.** Bootstrap gitignores ephemeral,
+  machine-local state (`.scrum/` and `.worktrees/`) while keeping the durable
+  `.project-memory/` wiki committed. `.project-memory/log.md` uses
+  `merge=union`; the Lead runs `normalize_log` after union merges so dates are
+  newest-first and duplicate bullets collapse. See
+  [`MEMORY-SCHEMA.md` § Distributed / multi-machine operation](MEMORY-SCHEMA.md#7-distributed--multi-machine-operation).
 
 ## Layout
 
 ```
 packages/project-lead/
-├── README.md                                    # this file
-├── MEMORY-SCHEMA.md                             # .project-memory/ + docs/requirements/ layout, schemas, workflows
-├── claude-code/                                 # installable Claude Code plugin
+├── README.md
+├── MEMORY-SCHEMA.md
+├── examples/
+│   └── project-memory/                         # conformant worked OKF bundle
+├── claude-code/                                # installable Claude Code plugin
 │   ├── .claude-plugin/plugin.json
-│   ├── README.md                                # install / usage
+│   ├── README.md
 │   ├── skills/
 │   │   └── project-lead/
 │   │       └── SKILL.md
 │   └── commands/
 │       └── project-lead.md
-└── github-copilot/                              # installable Copilot CLI plugin
+└── github-copilot/                             # installable Copilot CLI plugin
     ├── agents/
     │   └── project-lead.agent.md
     └── README.md
@@ -192,3 +248,5 @@ packages/project-lead/
 - A scheduled status digest the Lead posts to the stakeholder.
 - Azure DevOps "Requirement" work-item-type parity with the GitHub mapping.
 - A small search tool over `.project-memory/` once a project's wiki grows large.
+- Attested Computation for the requirements-funnel status digest, if the Lead
+  later needs OKF-verifiable derived metrics.

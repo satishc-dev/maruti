@@ -1,10 +1,16 @@
 # Project Lead — Memory & Requirements Schema
 
 This document is the binding reference for the on-disk artifacts the Project Lead
-maintains. It defines: the `.project-memory/` wiki layout and conventions, the
-official `docs/requirements/` documents, the requirement lifecycle and approval
-contract, and the GitHub Project / issue mapping. The `project-lead` skill and
-the `Project-Lead` Copilot agent both implement exactly what is described here.
+maintains. It defines the `.project-memory/` Project Memory bundle, the official
+`docs/requirements/` requirement bundle, the requirement lifecycle and approval
+contract, and the GitHub Project / issue mapping. The `project-lead` Claude Code
+skill and the `Project-Lead` Copilot agent both implement exactly what is
+described here.
+
+Project Memory and requirement documents are rebased on the
+[Open Knowledge Format (OKF) v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md)
+as read at spec SHA `ad30107c`. The Lead uses OKF as a permissive markdown
+interchange format, not as a rejecting validator.
 
 Two design rules hold everywhere:
 
@@ -18,62 +24,225 @@ Two design rules hold everywhere:
 
 ## 1. Project Memory (`.project-memory/`)
 
-A pure-markdown, Obsidian-readable compounding wiki. Open the folder in Obsidian
-to browse the graph, follow `[[wikilinks]]`, and inspect the Lead's work.
+Project Memory is an OKF v0.2 bundle rooted at `.project-memory/`: a pure
+markdown, Obsidian-readable compounding wiki. Open `.project-memory/` itself as
+the Obsidian vault so Obsidian's vault root and OKF's bundle root match. If the
+whole repo is opened as a vault, configure links as relative paths to files.
 
 ```
 .project-memory/
-├── schema.md                  # conventions + workflows the Lead follows (this file, distilled, lives here in-repo)
-├── index.md                   # content catalog: every page + 1-line summary, grouped by category
-├── log.md                     # append-only chronology of events
-├── overview.md                # the evolving project thesis / current-state synthesis
-├── project-link.md            # the linked GitHub Project: number, URL, status-field + option IDs
-├── requirements-register.md   # tracking index that REFERENCES docs/requirements/* + issues + Project items
+├── index.md                   # bundle root catalog; only okf_version frontmatter
+├── log.md                     # OKF-shaped chronology, normalized newest-first
+├── overview.md                # evolving project thesis / current-state synthesis
+├── schema.md                  # conventions + workflows the Lead follows
+├── project-link.md            # linked GitHub Project and Status field IDs
+├── requirements-register.md   # mirror that references docs/requirements/*
+├── references/                # OKF convention for mirrored external material
 └── wiki/
-    ├── initiatives/           # one page per initiative/epic (links requirements → specs → issues → PRs)
-    ├── decisions/             # decision records (what/why/alternatives/date)
+    ├── initiatives/           # one page per initiative/epic
+    ├── decisions/             # decision records
     ├── architecture/          # accumulated system & architecture knowledge
-    ├── stakeholders/          # stakeholder context, preferences, communication notes
+    ├── stakeholders/          # stakeholder context and preferences
     ├── risks/                 # risks and open questions
     └── glossary/              # domain terms
 ```
 
-### Conventions
+### 1.1 Type vocabulary
 
-- **Wikilinks:** cross-reference pages with `[[wiki/initiatives/duplicate-detection]]`
-  style links so Obsidian's graph view works.
-- **Frontmatter:** every wiki page carries YAML frontmatter with at least
-  `title`, `tags`, `created`, `updated` so Dataview queries work.
-- **`index.md`** is content-oriented — a catalog the Lead reads first to find
-  relevant pages, updated on every ingest.
-- **`log.md`** is chronological and append-only. Every entry starts with a
-  consistent prefix so it is greppable:
+OKF requires a non-empty `type` in every non-reserved concept document. Type
+values are producer-defined, descriptive, and self-explanatory. Project Lead uses
+this vocabulary consistently:
 
+| File / directory | `type` value |
+|---|---|
+| `.project-memory/overview.md` | `Project Overview` |
+| `.project-memory/log.md` and nested `log.md` | `Log` (recommended) |
+| `.project-memory/schema.md` | `Memory Conventions` |
+| `.project-memory/project-link.md` | `Integration Link` |
+| `.project-memory/requirements-register.md` | `Register` |
+| `.project-memory/wiki/initiatives/*.md` | `Initiative` |
+| `.project-memory/wiki/decisions/*.md` | `Decision` |
+| `.project-memory/wiki/architecture/*.md` | `Architecture Note` |
+| `.project-memory/wiki/stakeholders/*.md` | `Stakeholder` |
+| `.project-memory/wiki/risks/*.md` | `Risk` |
+| `.project-memory/wiki/glossary/*.md` | `Glossary Term` |
+| `.project-memory/references/*.md` | `Reference` by default, or a sharper type |
+| `docs/requirements/REQ-NNN-<slug>.md` | `Requirement` |
+| `docs/requirements/README.md` | `Register` |
+| `docs/requirements/_template.md` | `Template` |
+| Any bundle-root `index.md` | no `type`; only `okf_version` is allowed |
+| Any non-root `index.md` | no frontmatter |
+
+Consumers MUST tolerate unknown `type` values. Lint may ask the stakeholder to
+confirm an unusual value, but it never rejects the bundle for it.
+
+### 1.2 Frontmatter families
+
+`type` is the only always-required OKF key for non-reserved concepts. The Lead
+SHOULD include these families when it knows the values:
+
+- **Readable metadata:** `title`, `description`, and `tags` for navigation.
+- **Provenance:** `generated: { by: <actor>, at: <ISO-8601 datetime> }`.
+  `generated.by` is required when `generated` is present. `generated.at` records
+  the last meaningful content change.
+- **Sources:** `sources:` entries with required `resource`, optional `id`,
+  `title`, `author`, `usage_count`, and `last_modified`. When multiple sources
+  share a time range, put `usage_window` as a sibling of `sources`, not under an
+  entry. A source entry may override the shared window when needed.
+- **Per-claim citations:** body footnotes use the same label as `sources[].id`.
+  The label is the join key; do not use positional labels that change when the
+  source list is reordered.
+- **Trust:** `verified` may be a bare mapping or a list. Any verifier whose
+  `by` value starts with `human:` makes the concept human-reviewed. Absence of
+  `verified` is valid and means unverified.
+- **Lifecycle:** OKF `status` is only `draft`, `stable`, or `deprecated`;
+  absent means `stable`. `stale_after` is an absolute ISO-8601 datetime with an
+  explicit UTC offset.
+
+Every timestamp-valued key (`generated.at`, `verified.at`, `stale_after`,
+`sources[].last_modified`, `usage_window.from`, `usage_window.to`) uses ISO-8601
+with an explicit UTC offset, for example `2026-09-19T21:30:00Z`. Bare dates are
+only correct for `log.md` date headings.
+
+### 1.3 Actor convention
+
+- Lead-authored content uses `project-lead/claude-code` or
+  `project-lead/copilot`, depending on the platform running the Lead.
+- Historical migrations use `process:project-lead-migration` because the Lead
+  cannot honestly know the original author.
+- Human confirmations use `human:<github-login>`.
+- Automated events use `process:<name>`, for example `process:github-merge` or
+  `process:project-lead-sync`.
+
+The `human:` prefix is mandatory for hand-authored or human-confirmed content;
+OKF trust-tier derivation depends on that exact prefix.
+
+### 1.4 Reserved files
+
+`index.md` and `log.md` are reserved filenames and MUST NOT be used for concept
+documents.
+
+- The bundle-root `.project-memory/index.md` MAY carry frontmatter, but only:
+
+  ```yaml
+  ---
+  okf_version: "0.2"
+  ---
   ```
-  ## [YYYY-MM-DD] <event> | <subject>
+
+  Its body is a grouped catalog of markdown links and one-line descriptions.
+- Any nested `index.md` carries no frontmatter. Its body may be generated or
+  omitted by consumers.
+- `log.md` MAY carry frontmatter. Project Lead writes:
+
+  ```yaml
+  ---
+  type: Log
+  title: Project Memory Update Log
+  ---
   ```
 
-  where `<event>` ∈ `ingest | requirement | approval | handoff | sync | delivery | lint | decision`.
+  The body starts with `# Project Memory Update Log`, then bare date headings in
+  descending order:
 
-- **`overview.md`** holds the current synthesis: what the project is, where it
-  stands, the active initiatives, and the near-term plan. Rewritten as the
-  project evolves rather than appended to.
+  ```markdown
+  ## 2026-09-19
 
-### Workflows
+  - **Requirement**: Captured REQ-001 for CSV export.
+  - **Decision**: Accepted native GitHub sub-issues for traceability.
+  ```
+
+### 1.5 Links, sources, and the bundle-root trap
+
+Use standard markdown links only. OKF v0.2 does not include Obsidian wikilinks.
+
+- Same-bundle Project Memory links use the OKF-recommended bundle-relative form,
+  resolved from `.project-memory/`: `[Risk](/wiki/risks/rate-limits.md)`.
+- Links that leave `.project-memory/` MUST NOT use a leading `/`, because that
+  leading slash resolves to `.project-memory/`, not the repo root. Use a
+  correctly counted relative path, for example from
+  `.project-memory/wiki/initiatives/csv-export.md` to a requirement document:
+  `[REQ-001](../../../docs/requirements/REQ-001-csv-export.md)`.
+- Absolute URLs are acceptable for out-of-bundle links that need to survive file
+  moves.
+- Avoid bare non-slash paths for path-valued OKF fields whose target is meant to
+  stay inside a bundle; prefer the explicit leading `/` form.
+
+### 1.6 Root concept templates
+
+```yaml
+---
+type: Project Overview
+title: <Project name> — Overview
+description: <one-sentence synthesis>
+tags: [overview]
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+status: stable
+---
+```
+
+```yaml
+---
+type: Memory Conventions
+title: Project Memory Conventions (OKF v0.2 profile)
+description: Distilled conventions this wiki follows.
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+status: stable
+---
+```
+
+```yaml
+---
+type: Integration Link
+title: GitHub Project Link
+description: The linked GitHub Project (v2) board configuration.
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+status: stable
+---
+```
+
+```yaml
+---
+type: Register
+title: Requirements Register (Project Memory mirror)
+description: Tracking index referencing docs/requirements/* plus issues and Project items.
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+status: stable
+---
+```
+
+Project Memory concepts under `wiki/` follow the same shape, with the directory's
+`type`, a meaningful title and description, optional tags, `generated`, OKF
+`status`, and optional `sources`, `usage_window`, `verified`, and `stale_after`.
+
+Example initiative source frontmatter:
+
+```yaml
+sources:
+  - id: req-doc
+    resource: ../../../docs/requirements/REQ-001-csv-export.md
+    title: "REQ-001: CSV export"
+    author: human:satishc
+    usage_count: 12
+    last_modified: 2026-09-19T20:00:00Z
+usage_window: { from: 2026-09-01T00:00:00Z, to: 2026-09-19T23:59:59Z }
+```
+
+### 1.7 Workflows
 
 - **Ingest.** When the stakeholder shares a doc, decision, or context, the Lead
-  reads it, files/updates the relevant wiki page(s), updates `index.md`, and
-  appends a `log.md` entry. A single ingest may touch several pages
-  (initiative + decision + risk + glossary).
+  files or updates the relevant wiki page(s), updates `index.md`, normalizes and
+  appends `log.md`, and cites sources with OKF `sources` plus footnotes where a
+  claim needs attribution.
 - **Query.** To answer a stakeholder question, the Lead reads `index.md`, drills
   into relevant pages, and synthesizes an answer with citations to page paths.
   Valuable answers are filed back as new pages so explorations compound.
-- **Lint.** On `/project-lead lint`, the Lead health-checks the wiki:
-  contradictions between pages, stale claims superseded by newer info, orphan
-  pages with no inbound links, important concepts lacking a page, missing
-  cross-references. It reports findings and proposes fixes.
+- **Lint.** On `/project-lead lint`, the Lead reports advisory findings only:
+  OKF conformance gaps, contradictions, stale claims, orphan pages, important
+  concepts lacking pages, and missing cross-references. It proposes fixes but
+  never rejects a bundle or blocks a mode.
 
-### `project-link.md` format
+### 1.8 `project-link.md` format
 
 ```markdown
 # GitHub Project Link
@@ -96,18 +265,30 @@ to browse the graph, follow `[[wikilinks]]`, and inspect the Lead's work.
 - requirement_issue_type: <Requirement | label:requirement>   # detected capability
 ```
 
+The GitHub Project single-select **Status** field is unrelated to OKF `status`
+and to the requirement `lifecycle` extension.
+
 ---
 
 ## 2. Requirements (`docs/requirements/` — official repo docs)
 
+`docs/requirements/` is its own OKF v0.2 bundle. It has its own bundle-root
+`index.md`; `README.md` remains the human-facing register.
+
 ```
 docs/requirements/
-├── README.md                 # the official register: table of all requirements + status + links
-├── _template.md              # the requirement doc template (scaffolded at bootstrap)
-└── REQ-001-<slug>.md         # one official document per requirement
+├── index.md                  # bundle root; only okf_version frontmatter
+├── README.md                 # official register: lifecycle + priority + links
+├── _template.md              # type: Template; live schema is fenced in body
+└── REQ-001-<slug>.md         # one official Requirement concept per requirement
 ```
 
-### Requirement document schema
+`index.md` is purely regenerable: a flat list of every `REQ-*.md` using each
+doc's title and description, plus exactly one link to `README.md`. It never
+carries lifecycle, priority, approval, or board columns; those live in
+`README.md` and `.project-memory/requirements-register.md`.
+
+### 2.1 Requirement document schema
 
 Each `REQ-NNN-<slug>.md` is YAML frontmatter + body:
 
@@ -115,18 +296,21 @@ Each `REQ-NNN-<slug>.md` is YAML frontmatter + body:
 ---
 id: REQ-001
 title: <short title>
-status: draft            # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
+description: <one-sentence summary>
+type: Requirement
+lifecycle: draft         # draft | in-review | approved | in-spec | specced | in-delivery | delivered | parked
+status: draft            # OKF status: draft | stable | deprecated; derived from lifecycle
 priority: P2             # P0 | P1 | P2 | P3
 version: 1
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-approved_at:             # set when the requirement PR merges (or express signoff)
-approved_by:             # stakeholder identity
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+approved_at:             # ISO-8601 UTC, set on PR merge or express signoff
+approved_by:             # human:<stakeholder-login>
+verified:                # set on approval, e.g. { by: human:<login>, at: <ISO-8601 UTC> }
 requirement_issue:       # GitHub Requirement issue URL
 links:
-  requirement_pr:        # the PR that introduced/changed this doc (backfilled after `gh pr create`)
-  project_item:          # GitHub Project item node id (PVTI_...) — Projects v2 items have no stable web URL
-  initiative:            # [[wiki/initiatives/...]] in project memory
+  requirement_pr:        # PR that introduced/changed this doc
+  project_item:          # GitHub Project item node id (PVTI_...)
+  initiative:            # relative path into .project-memory/wiki/initiatives/
   specs: []              # spec PR(s) / docs/specs paths (filled by pm-team)
   child_issues: []       # Feature/Story sub-issues (filled after spec merge)
   prs: []                # dev-team PRs
@@ -154,20 +338,32 @@ links:
 <unresolved items; must be empty before approval>
 
 ## Change log
-- [YYYY-MM-DD] v1 — created (draft).
+- [2026-09-19T21:30:00Z] v1 — created as draft.
 ```
 
-`docs/requirements/README.md` (the register) is a table the Lead keeps current:
+`docs/requirements/README.md` is the official human-facing register:
 
 ```markdown
+---
+type: Register
+title: Requirements Register
+description: The official, human-facing table of all requirements, their lifecycle stage, and links.
+generated: { by: project-lead/<platform-tag>, at: <ISO-8601 UTC> }
+status: stable
+---
+
 # Requirements Register
 
-| ID | Title | Status | Priority | Approved | Requirement issue | Doc |
-|----|-------|--------|----------|----------|-------------------|-----|
-| REQ-001 | ... | approved | P1 | 2026-06-21 | #12 | [doc](REQ-001-....md) |
+| ID | Title | Lifecycle | Priority | Approved | Requirement issue | Doc |
+|----|-------|-----------|----------|----------|-------------------|-----|
+| REQ-001 | ... | approved | P1 | 2026-09-19T21:30:00Z | #12 | [doc](REQ-001-....md) |
 ```
 
-### Numbering
+`docs/requirements/_template.md` carries `type: Template`; the fillable
+Requirement frontmatter lives inside a fenced code block in its body so template
+files are never mistaken for live requirements.
+
+### 2.2 Numbering
 
 `REQ-NNN` is zero-padded, monotonically increasing, never reused. The Lead
 derives the next number by scanning existing `docs/requirements/REQ-*.md`.
@@ -182,7 +378,7 @@ draft ──► in-review ──►(APPROVAL GATE)──► approved
                           (parked at any point, with a reason logged)
 ```
 
-| Status | Meaning | Who advances it |
+| Lifecycle | Meaning | Who advances it |
 |---|---|---|
 | `draft` | Captured, still being shaped | Lead |
 | `in-review` | Meets Definition of Ready; requirement PR open for stakeholder review | Lead opens; stakeholder reviews |
@@ -193,10 +389,26 @@ draft ──► in-review ──►(APPROVAL GATE)──► approved
 | `delivered` | All children done; verified against acceptance criteria | Lead, at acceptance |
 | `parked` | Deferred; reason in Change log | Lead, on stakeholder direction |
 
-### Definition of Ready (DoR)
+### 3.1 The `lifecycle` / OKF `status` mapping
 
-A requirement may only move to `in-review` (i.e., be put up for approval) when
-ALL of the following hold:
+Requirement lifecycle is a Project Lead extension key named `lifecycle`. OKF
+`status` remains reserved for OKF's `draft | stable | deprecated` meaning. Every
+requirement document carries both keys, using this binding mapping:
+
+| Requirement `lifecycle` | OKF `status` | Justification |
+|---|---|---|
+| `draft` | `draft` | Not yet reviewed, possibly incomplete — exact match to OKF's own definition of `draft` (§5.4). |
+| `in-review` | `draft` | Still not yet a settled, "ready for consumption" document — the requirement PR is open, content can still change under review. Still `draft` in OKF's sense even though our own funnel treats it as a distinct stage. |
+| `approved` | `stable` | The document's content is now reviewed and current — exactly OKF's definition of `stable` ("ready for consumption," §5.4). |
+| `in-spec` | `stable` | The requirement *document itself* remains the settled, current definition of what's wanted; it is pm-team's spec that is in flux, not this doc. |
+| `specced` | `stable` | Same reasoning — the requirement doc doesn't change just because downstream work progresses. |
+| `in-delivery` | `stable` | Same reasoning. |
+| `delivered` | `stable` | **Deliberately not `deprecated`.** A delivered requirement's *definition* is still current/true — it describes what was built and why, and remains the canonical record. Nothing about "done" makes the content stale or superseded; OKF's `deprecated` means "kept for links and history; no longer current" (§5.4), which does not describe a delivered requirement. |
+| `parked` | `deprecated` | This is the one lifecycle stage that genuinely matches OKF's `deprecated`: "kept for links and history; no longer current" (§5.4) — a parked requirement is explicitly deferred/abandoned, its content is not something anyone should act on as current guidance. |
+
+### 3.2 Definition of Ready (DoR)
+
+A requirement may only move to `in-review` when ALL of the following hold:
 
 - [ ] Clear problem statement and desired outcome.
 - [ ] **Testable** acceptance / success criteria.
@@ -219,23 +431,29 @@ This is the boundary that protects pm-team from half-baked input.
   is the auditable signoff.
 - **Express signoff** (for tiny edits or when a PR is overkill): an explicit
   in-chat "approved" that the Lead records. Even then the Lead updates the doc
-  frontmatter (`status`, `approved_at`, `approved_by`), the register, and
-  `log.md`.
+  frontmatter (`lifecycle`, `approved_at`, `approved_by`), the OKF `status`, the
+  register, and `log.md`.
 - On approval the Lead:
-  1. Sets `status: approved`, stamps `approved_at` / `approved_by`, bumps the
-     Change log.
+  1. Sets `lifecycle: approved` and OKF `status: stable`; stamps
+     `approved_at` / `approved_by`; adds `verified` with the approving human;
+     bumps the Change log.
   2. Creates the **Requirement issue** (see §5) and records its URL in the doc.
   3. Updates `docs/requirements/README.md` and `.project-memory/requirements-register.md`.
   4. Moves the Project item to **Ready for Spec**.
+- **Verification stamp:** for a PR merge, derive `verified.by` from
+  `gh pr view <PR> --json mergedBy --jq .mergedBy.login` and `verified.at` from
+  `mergedAt`. For express signoff, use the confirmed stakeholder GitHub login
+  and current UTC instant. If no reliable human identity exists, omit `verified`
+  rather than guessing.
 - **Hard rule:** the Lead **MUST NOT** launch or recommend `/pm-team` for a
-  requirement whose status is not `approved`.
+  requirement whose `lifecycle` is not `approved`.
 - **Change control:** any change to an `approved` (or later) requirement re-opens
   it to `in-review` via a **new requirement PR**, and requires re-approval before
   pm-team re-engages. The Change log records the version bump and the reason.
 - **Acceptance signoff (optional closure):** when dev-team has delivered all
   child issues, the Lead verifies the result against the doc's acceptance
   criteria and offers the stakeholder a closing acceptance signoff before
-  setting `delivered`.
+  setting `lifecycle: delivered` (OKF `status` remains `stable`).
 
 ---
 
@@ -284,48 +502,135 @@ stakeholder sees completion at the requirement level on the Kanban.
 
 ```bash
 # Projects
-gh project list --owner <owner>                    # match by title first — create is NOT idempotent
-gh project create --owner <owner> --title "<repo> Delivery"   # only when no matching title exists
-gh project item-add <N> --owner <owner> --url <issue-url>     # response carries the item node id (PVTI_...)
-gh project field-list <N> --owner <owner>          # discover Status field + option IDs
+gh project list --owner <owner>
+gh project create --owner <owner> --title "<repo> Delivery"
+gh project item-add <N> --owner <owner> --url <issue-url>
+gh project field-list <N> --owner <owner>
 gh project item-edit --id <item-id> --field-id <status-field-id> \
   --project-id <project-id> --single-select-option-id <option-id>
 
 # Issues / labels / types
 gh label create requirement --description "Stakeholder requirement" --color 5319e7
 gh issue create --title "[REQ-001] <title>" --body-file <body.md> --type Requirement
-#   ^ --type works when the org has the custom "Requirement" issue type;
-#     otherwise drop --type and add: --label requirement
+# Otherwise drop --type and add: --label requirement
 
-# Sub-issues (native in gh >= ~2.9x): parent the Feature/Story under the Requirement
 gh issue edit <requirement-issue> --add-sub-issue <child-issue>[,<child-issue>...]
-#   or, equivalently, from the child:  gh issue edit <child> --parent <requirement-issue>
-# Fallback for older gh: the GraphQL addSubIssue mutation.
+# or, from the child: gh issue edit <child> --parent <requirement-issue>
 ```
 
-The skill/agent contains the exact, current invocations; this section is a map,
-not a frozen contract — the Lead adapts to the installed `gh` version and the
-org's enabled features, always degrading to the documented fallback.
+The skill/agent contains the current invocations; this section is a map, not a
+frozen contract.
 
 ---
 
-## 6. Distributed / multi-machine operation
+## 6. OKF conformance, migration, and versioning
+
+Project Lead pins its profile to OKF v0.2 as read at `ad30107c`. Bundle roots
+SHOULD declare `okf_version: "0.2"`; consumers that do not understand a declared
+version still attempt best-effort consumption.
+
+### 6.1 Conformance posture
+
+Lint and migration reports are advisory. OKF consumers MUST NOT reject a bundle
+for missing optional fields, unknown types, unknown keys, broken links, or
+missing `index.md` files. Therefore Project Lead never blocks bootstrap, intake,
+approval, sync, or status because an OKF optional field is missing.
+
+### 6.2 Migration mode
+
+`migrate` upgrades pre-OKF Project Memory and requirement files. It is dry-run by
+default and prints a diff-shaped report. It writes only with `--apply`, as normal
+working-tree edits.
+
+Detection includes: non-root `index.md` frontmatter, concept frontmatter missing
+`type`, legacy provenance keys, Obsidian wikilinks, legacy log headings of the
+form `## [YYYY-MM-DD] event | subject`, missing root `okf_version`, and
+requirement documents that still use the old lifecycle vocabulary directly in
+`status` instead of the `lifecycle` extension plus OKF `status`.
+
+Transformations are idempotent:
+
+- Strip `index.md` frontmatter except the bundle-root `okf_version` block.
+- Convert legacy log headings into OKF date sections, then run `normalize_log`.
+- Infer `type` from the vocabulary table, migrate known provenance into
+  `generated` with `process:project-lead-migration` when historical authorship is
+  unknown, preserve unknown keys, and rewrite wikilinks to markdown links.
+- For `docs/requirements/REQ-*.md`, rename the requirement funnel field to
+  `lifecycle`, add OKF `status` from §3.1, and add `type: Requirement` if absent.
+- Report optional fields that could not be honestly backfilled instead of
+  fabricating sources, generated actors, or verifiers.
+
+### 6.3 `normalize_log(text) -> text`
+
+`normalize_log` is the shared routine used by migration, lint fixes, and every
+append-to-log path:
+
+1. Preserve the preamble before the first `## ` heading byte-for-byte. If absent,
+   synthesize `# Project Memory Update Log`.
+2. Classify date headings matching `## YYYY-MM-DD`. Convert legacy headings into
+   that form and a bullet `- **Event**: subject — text`.
+3. Group duplicate date sections, preserving bullet order.
+4. Drop byte-identical duplicate bullets after trimming outer whitespace.
+5. Sort date groups descending by `YYYY-MM-DD`.
+6. Emit a blank line after each heading and date group.
+7. Guarantee idempotency: running the routine twice yields byte-identical output.
+
+Run it as the first step of every routine that appends to `log.md`, inside
+`lint` as an explicitly reported safe auto-fix, and after any git operation that
+could have union-merged `.project-memory/log.md`.
+
+### 6.4 Lint checklist
+
+`lint` reports and proposes; it never gates progress. Checks include:
+
+| Check | Posture |
+|---|---|
+| Non-reserved `.md` missing parseable frontmatter or non-empty `type` | Advisory |
+| `index.md` frontmatter beyond root `okf_version` | Advisory |
+| `log.md` not grouped as bare descending `## YYYY-MM-DD` sections | Advisory; safe auto-fix may be offered |
+| Bare `verified` mapping | Not a finding; it is valid OKF |
+| Unknown `type` value | Low-priority advisory |
+| Unknown extra frontmatter keys | Not a finding |
+| Bundle-internal link whose target is absent | Advisory, framed as possible future knowledge |
+| Missing `index.md` in a directory | Low-priority advisory |
+| Timestamp-valued field lacking explicit UTC offset | Advisory |
+| Shared `usage_window` nested under a source entry | High-priority advisory |
+| Footnote label with no matching `sources[].id` | Advisory |
+| `generated` present without `by` | Advisory |
+| Same-bundle path-valued field not using recommended `/` form | Gentle advisory |
+| Requirement `lifecycle` and OKF `status` disagree with §3.1 | Prominent advisory |
+| `docs/requirements/index.md` duplicates README lifecycle/priority columns | Advisory |
+
+Pre-existing quality checks continue: contradictions between pages, stale claims
+superseded by newer information, orphan pages, concepts lacking pages, and
+missing cross-references.
+
+### 6.5 Out of scope
+
+`type: Attested Computation` and OKF §10 fields (`runtime`, `parameters`,
+`computation`, `executor`, `attester`) are not part of this profile. A future
+extension could model the Lead's requirements-funnel status digest as an
+Attested Computation, but this schema does not implement it.
+
+---
+
+## 7. Distributed / multi-machine operation
 
 When features are distributed across multiple agent sessions and machines, some
-generated files merge cleanly and some do not. The rule is: **durable shared
-knowledge is committed; ephemeral per-session / per-machine working state is
-gitignored; and the one shared-but-append-only file uses a union merge.**
-Bootstrap (§ mode: bootstrap, step 7) writes the `.gitignore` and `.gitattributes`
-entries below.
+generated files merge cleanly and some do not. Durable shared knowledge is
+committed; ephemeral per-session / per-machine working state is gitignored; and
+the one shared-but-append-only file uses a union merge.
+
+Bootstrap writes the `.gitignore` and `.gitattributes` entries below.
 
 ### Committed (durable, shared) — all of `.project-memory/`
 
 `overview.md`, `index.md`, `requirements-register.md`, `schema.md`,
-`project-link.md`, and every page under `wiki/` are the project's brain and
-record. Parallel sessions generally edit different pages, so conflicts are rare
-and, when they occur, are real semantic merges to resolve by hand.
-`project-link.md` holds platform/account-agnostic IDs (GraphQL node ids), not
-machine-specific values, so it is safe to share.
+`project-link.md`, `log.md`, `references/`, and every page under `wiki/` are the
+project's brain and record. Parallel sessions generally edit different pages, so
+conflicts are rare and, when they occur, are real semantic merges to resolve by
+hand. `project-link.md` holds platform/account-agnostic IDs, not machine-specific
+values, so it is safe to share.
 
 ### Gitignored (ephemeral, machine-local) — all of `.scrum/` (and `.worktrees/`)
 
@@ -338,11 +643,10 @@ files. `.gitignore` gets `.scrum/` and `.worktrees/`.
 
 ### Union-merged (shared but append-only) — `.project-memory/log.md`
 
-The chronology is appended to by every session, which would conflict on every
-merge. `.gitattributes` gets `.project-memory/log.md merge=union`, so git
-concatenates both sides' entries instead of raising a conflict. Entries are
-prefixed `## [YYYY-MM-DD] <event> | <subject>`; if union merge interleaves them
-out of order, re-sort by date (identical duplicate lines collapse).
+`.gitattributes` gets `.project-memory/log.md merge=union`, so git concatenates
+both sides' entries instead of raising a conflict. The Lead immediately runs
+`normalize_log`: it groups entries under bare date headings, sorts dates
+newest-first, and collapses exact duplicate bullets.
 
 ### Lessons stay useful without merging
 
@@ -352,10 +656,9 @@ preserved by having the Lead **ingest notable lessons into `.project-memory/wiki
 
 ### Keep the Lead single-writer where you can
 
-By design the Lead is the **sole writer** of `.project-memory/` (Design rule 2).
-If one Lead session coordinates while only `dev-team` / `pm-team` execution is
-distributed, `.project-memory/` has a single writer and the union merge on
-`log.md` is only a safety net. Running multiple concurrent Lead sessions against
-the same wiki is supported by the rules above, but will occasionally require a
-manual merge on the rewritten summary files (`overview.md`, `index.md`,
-`requirements-register.md`).
+By design the Lead is the **sole writer** of `.project-memory/`. If one Lead
+session coordinates while only `dev-team` / `pm-team` execution is distributed,
+`.project-memory/` has a single writer and the union merge on `log.md` is only a
+safety net. Running multiple concurrent Lead sessions against the same wiki is
+supported by the rules above, but will occasionally require a manual merge on the
+rewritten summary files (`overview.md`, `index.md`, `requirements-register.md`).
