@@ -340,13 +340,12 @@ resolving an escalation, and only to confirm a deadlock is genuine.
 
 ## 7. Concurrency
 
-**Project-Lead runs as the root agent. Every team may run at most 2 subagents in
-parallel. More than 2 is not allowed.**
+**The limit is fixed. It is not negotiated at runtime.**
 
-- Project-Lead is the root session, not a subagent.
+- Project-Lead runs as the root agent and is NOT a subagent.
 - Project-Lead may have at most 2 teams active concurrently.
-- Each team lead may have at most 2 of its own subagents running concurrently,
-  counting crew and duck alike.
+- Every team lead may run at most 2 of its own subagents in parallel (crew and duck both count).
+- More than 2 is not allowed. There are no dynamic quotas and no borrowing.
 
 See `PARALLELISM.md` for workstream decomposition and enforcement.
 

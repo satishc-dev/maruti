@@ -228,6 +228,59 @@ def check_concurrency_rule() -> None:
         ok(f"concurrency rule stated in {len(found)} files")
 
 
+def check_gh_flags() -> None:
+    """Every documented gh flag must exist in the installed CLI.
+
+    An invented flag fails only at runtime, in the middle of a delivery, which is
+    the worst possible moment to discover it. Two were shipped and caught this way:
+    ``gh issue create --type`` and ``gh issue edit --add-sub-issue``, neither of
+    which exists in gh 2.86.0.
+    """
+    import shutil
+    import subprocess
+
+    if shutil.which("gh") is None:
+        ok("gh not installed; skipped flag validation")
+        return
+
+    pattern = re.compile(r"gh\s+(issue|pr|project|label|api|auth)\s+([a-z][a-z-]*)(.*)")
+    usages: dict[str, set[str]] = {}
+    for path in PACKAGE.rglob("*.md"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = pattern.search(line)
+            if not match:
+                continue
+            sub = f"{match.group(1)} {match.group(2)}"
+            # Take every flag on the rest of the line, not just the ones
+            # immediately following the subcommand — real invocations interleave
+            # flags with their values.
+            flags = set(re.findall(r"--[a-z][a-z-]*", match.group(3)))
+            usages.setdefault(sub, set()).update(flags)
+
+    bad = 0
+    for sub, flags in sorted(usages.items()):
+        try:
+            help_text = subprocess.run(
+                ["gh", *sub.split(), "--help"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if "unknown command" in help_text.lower():
+            fail(f"gh subcommand does not exist: gh {sub}")
+            bad += 1
+            continue
+        for flag in sorted(flags):
+            if flag not in help_text:
+                fail(f"gh {sub}: flag {flag} does not exist in the installed CLI")
+                bad += 1
+    if bad == 0:
+        ok(f"all gh flags valid across {len(usages)} subcommands")
+
+
 def main() -> int:
     check_expected_files()
     check_frontmatter()
@@ -235,6 +288,7 @@ def main() -> int:
     check_duck_files_defer()
     check_no_collisions()
     check_concurrency_rule()
+    check_gh_flags()
 
     for line in passes:
         print(f"  PASS  {line}")

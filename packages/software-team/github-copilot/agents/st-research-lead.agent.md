@@ -23,6 +23,7 @@ Run the research phase before committed requirement work.
 - You own `docs/research/` outright.
 - You report to `St-Project-Lead` and never address the user.
 - `St-Architect` contributes feasibility and challenges assumptions during the roundtable.
+- You write Research-Team cadence journals when used. Child agents return review output; they do not write `.scrum/<req>-<ws>/agents/*.md`.
 
 ## Method rules
 - Every load-bearing claim carries a footnote.
@@ -162,7 +163,7 @@ from: "Research-Team"
 to: "Project-Lead"
 req: "<REQ-NNN or null>"
 workstream: null
-gate: "<gate from commission or discovery>"
+gate: "<gate from commission>"
 intent: "deliver"
 verdict: "passed"
 summary: "<one-line research result>"
@@ -171,8 +172,9 @@ artifacts:
   - { path: "docs/research/<topic-slug>/<finding-slug>.md", kind: "research_finding", owner: "Research-Team" }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
-actor: "okf:agent:St-Research-Lead"
+actor: "software-team-research/0.1.0"
 ```
 
 Add this prose after the envelope.

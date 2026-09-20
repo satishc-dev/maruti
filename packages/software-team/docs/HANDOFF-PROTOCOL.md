@@ -76,6 +76,7 @@ artifacts:                       # list, required, empty when none.
     owner: "PM-Team"                                   # string, required, owning team id.
 board_requests: []              # list, required, conforming to GITHUB-INTEGRATION.md.
 lifecycle_request: null          # object or null, required: { from:, to:, expect_version: }.
+memory_proposals: []          # list, required, empty when none; proposal schema is in MEMORY-SCHEMA.md.
 receipt_of: null                 # string or null, required, event_id acknowledged by a receipt.
 actor: "software-team-pm/0.1.0"    # string, required. OKF actor per OKF-PROFILE.md.
 ```
@@ -106,6 +107,7 @@ artifacts:
   - { path: ".project-memory/references/import-systems.md", kind: "project_memory_reference", owner: Project-Lead }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
 actor: "software-team-project-lead/0.1.0"
 ```
@@ -131,6 +133,7 @@ board_requests:
     reason: "Spec is ready and the feature needs traceability before development."
     requested_by: PM-Team
 lifecycle_request: { from: "in-spec", to: "in-architecture", expect_version: 4 }
+memory_proposals: []
 receipt_of: null
 actor: "software-team-pm/0.1.0"
 ```
@@ -161,6 +164,7 @@ board_requests:
     reason: "Project-Lead needs a direct acceptance handoff on the PR."
     requested_by: Dev-Team
 lifecycle_request: { from: "in-dev", to: "in-acceptance", expect_version: 8 }
+memory_proposals: []
 receipt_of: null
 actor: "software-team-dev/0.1.0"
 ```
@@ -183,6 +187,7 @@ summary: "Acceptance review started for PR #42."
 artifacts: []
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: EV-REQ-014-018
 actor: "software-team-project-lead/0.1.0"
 ```
@@ -219,6 +224,7 @@ artifacts:
   - { path: "<team-specific input path>", kind: "<team-specific kind>", owner: "<owning team>" }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
 actor: "software-team-project-lead/0.1.0"
 ```
@@ -226,7 +232,7 @@ actor: "software-team-project-lead/0.1.0"
 |---|---|
 | Research-Team | `docs/requirements/REQ-NNN-<slug>.md` when present; `.project-memory/references/<topic>.md` when present; `docs/research/<prior-topic>/` when relevant. |
 | Architect-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/specs/REQ-NNN/`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant. |
-| UX-Team | `docs/requirements/REQ-NNN-<slug>.md`; `.project-memory/project-overview.md`; `docs/research/<topic>/` when relevant. |
+| UX-Team | `docs/requirements/REQ-NNN-<slug>.md`; `.project-memory/overview.md`; `docs/research/<topic>/` when relevant. |
 | PM-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant. |
 | Dev-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/specs/REQ-NNN/`; `docs/architecture/`; `.worktrees/REQ-NNN/ws<k>/`. |
 ## 7. Peer consultation
@@ -262,6 +268,7 @@ artifacts:
   - { path: "docs/specs/REQ-030/account-setup.md", kind: "draft_feature_spec", owner: PM-Team }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
 actor: "software-team-pm/0.1.0"
 ```
@@ -277,9 +284,10 @@ intent: consult
 verdict: vetoed
 summary: "Do not depend on the profile service contract; it cannot support the required consistency."
 artifacts:
-  - { path: "docs/architecture/ADR-012-profile-consistency.md", kind: "adr", owner: Architect-Team }
+  - { path: "docs/architecture/decisions/ADR-012-profile-consistency.md", kind: "adr", owner: Architect-Team }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: EV-REQ-030-012
 actor: "software-team-architect/0.1.0"
 ```
@@ -300,9 +308,10 @@ intent: deliver
 verdict: passed
 summary: "Architecture and development principles are ready for development."
 artifacts:
-  - { path: "docs/architecture/REQ-030-onboarding.md", kind: "solution_architecture", owner: Architect-Team }
+  - { path: "docs/architecture/REQ-030/solution.md", kind: "solution_architecture", owner: Architect-Team }
 board_requests: []
 lifecycle_request: { from: "in-architecture", to: "ready-for-dev", expect_version: 6 }
+memory_proposals: []
 receipt_of: null
 actor: "software-team-architect/0.1.0"
 ```
@@ -321,6 +330,7 @@ artifacts:
   - { path: "docs/requirements/REQ-030-onboarding.md", kind: "requirement", owner: Project-Lead }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: EV-REQ-030-021
 actor: "software-team-project-lead/0.1.0"
 ```
@@ -333,7 +343,7 @@ Project-Lead may refuse with a reason recorded in the receipt.
 A refused board request does not transfer board authority.
 ## 10. Escalation envelopes
 Escalation uses `intent: escalate`.
-Required content: what is blocked, what decision is needed, what the team recommends, and what it has already tried.
+Required content: what is impeded, what decision is needed, what the team recommends, and what it has already tried.
 Project-Lead must receipt every escalation with a decision.
 ```yaml
 event_id: EV-REQ-030-030
@@ -356,12 +366,13 @@ board_requests:
     reason: "Project-Lead decision is needed before implementation can continue."
     requested_by: Dev-Team
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
 actor: "software-team-dev/0.1.0"
 ```
 Required prose:
 ```text
-What is blocked: REQ-030/ws1 cannot implement server-side validation within the declared file scope.
+What is impeded: REQ-030/ws1 cannot implement server-side validation within the declared file scope.
 Decision needed: expand the file scope, create a second workstream, or revise the spec.
 Team recommendation: re-decompose into ws1 UI and ws2 validation service.
 Already tried: inspected the validation module, attempted an adapter inside file scope, and confirmed it would duplicate existing rules.

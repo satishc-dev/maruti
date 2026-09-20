@@ -219,13 +219,16 @@ unfamiliar type.
 | `docs/requirements/REQ-NNN-<slug>.md` | `Requirement` |
 | `docs/requirements/README.md` | `Register` |
 | `docs/requirements/_template.md` | `Template` |
-| `docs/research/briefs/*.md` | `Research Brief` |
-| `docs/research/findings/*.md` | `Research Finding` |
+| `docs/research/<topic-slug>/brief.md` | `Research Brief` |
+| `docs/research/<topic-slug>/<finding-slug>.md` | `Research Finding` |
 | `docs/specs/REQ-NNN/*.md` | `Feature Spec` |
 | `docs/ux/REQ-NNN/*.md` | `UX Brief` |
-| `docs/architecture/REQ-NNN/solution-architecture.md` | `Solution Architecture` |
+| `docs/architecture/REQ-NNN/solution.md` | `Solution Architecture` |
+| `docs/architecture/decisions/ADR-NNN-<slug>.md` | `Decision` |
 | `docs/architecture/principles/*.md` | `Development Principle` |
-| `docs/requirements/workstreams/*.md` | `Workstream` |
+| `.software-team/REQ-NNN/workstreams.md` | `Workstream` |
+| `.software-team/REQ-NNN/ledger.md` | `Handoff Record` |
+| `.project-memory/wiki/workstreams/*.md` | `Workstream` |
 | `docs/research/reviews/*.md` | `Review Record` |
 | `docs/specs/REQ-NNN/reviews/*.md` | `Review Record` |
 | `docs/ux/REQ-NNN/reviews/*.md` | `Review Record` |
@@ -277,7 +280,7 @@ When the artifact belongs to a delivery slice, record it separately with
 `workstream:`:
 
 ```yaml
-workstream: WS-REQ-001-export-download
+workstream: REQ-001/ws1
 ```
 
 Do not overload `generated.by` with ownership or responsibility. That would make
@@ -385,7 +388,7 @@ type: Feature Spec
 title: REQ-001 — CSV export download
 description: Feature specification for downloading filtered account data as CSV.
 owner: team:pm-team
-workstream: WS-REQ-001-export-download
+workstream: REQ-001/ws1
 generated: { by: software-team-pm/0.1.0, at: 2026-09-20T21:57:20Z }
 status: draft
 ---
@@ -399,7 +402,7 @@ type: UX Brief
 title: REQ-001 — CSV export experience
 description: User flow and interaction design for exporting filtered account data.
 owner: team:ux-team
-workstream: WS-REQ-001-export-download
+workstream: REQ-001/ws1
 generated: { by: software-team-ux/0.1.0, at: 2026-09-20T21:57:20Z }
 status: stable
 ---
@@ -413,7 +416,7 @@ type: Solution Architecture
 title: REQ-001 — CSV export solution architecture
 description: Technical architecture for CSV export delivery.
 owner: team:architect-team
-workstream: WS-REQ-001-export-download
+workstream: REQ-001/ws1
 generated: { by: software-team-architect/0.1.0, at: 2026-09-20T21:57:20Z }
 status: stable
 ---
@@ -437,10 +440,10 @@ status: stable
 ```yaml
 ---
 type: Workstream
-title: WS-REQ-001-export-download
+title: REQ-001/ws1 — CSV export download
 description: Delivery slice for building the CSV export download path.
 owner: team:project-lead
-workstream: WS-REQ-001-export-download
+workstream: REQ-001/ws1
 generated: { by: software-team-project-lead/0.1.0, at: 2026-09-20T21:57:20Z }
 status: stable
 ---

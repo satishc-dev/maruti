@@ -181,7 +181,7 @@ When internal gates pass:
 1. Confirm changed files are inside `file_scope`.
 2. Confirm validation evidence is current.
 3. Push the workstream branch.
-4. Create a PR titled `[REQ-NNN/ws<k>] <delivery summary>`.
+4. Create a PR titled `[REQ-NNN] <workstream title>`.
 5. Include requirement id, workstream id, stories, spec links, validation summary, review summary, and acceptance request.
 6. Use closing syntax for Story issues only when the commission names those issues.
 
@@ -200,6 +200,7 @@ Append a delivery envelope to `Project-Lead` with:
 - Mechanical review result
 - Duck review result
 - Board requests for acceptance status or PR comment
+- `memory_proposals` for Project Memory or cross-owned document changes, empty when none
 - Lifecycle request `in-dev -> in-acceptance` with observed version
 
 Then report to `St-Project-Lead` and wait for acceptance.
@@ -231,8 +232,14 @@ Return one of these fenced templates.
 ```yaml
 result: receipt | impeded | acceptance-requested | delivered
 agent: St-Dev-Lead
+event_id: EV-REQ-NNN-SEQ
+at: "<ISO-8601 with UTC offset>"
+from: Dev-Team
+to: Project-Lead
 req: REQ-NNN
 workstream: REQ-NNN/ws<k>
+gate: in-dev
+intent: deliver
 summary: "<one-line summary>"
 receipt_of: "<event id or null>"
 verdict: accepted | rejected | passed | not-passed | null
@@ -247,6 +254,8 @@ artifacts:
 board_requests:
   - { action: item.status | item.comment | item.close | item.label, target: { kind: "<kind>", ref: "<stable ref>" }, args: {}, reason: "<why Project-Lead should apply it>", requested_by: Dev-Team }
 lifecycle_request: { from: "in-dev", to: "in-acceptance", expect_version: <version> }
+memory_proposals: []
+actor: "software-team-dev/0.1.0"
 decision_needed: "<only for impeded>"
 recommendation: "<only for impeded>"
 already_tried:
@@ -257,6 +266,7 @@ already_tried:
 
 - Never address the user.
 - Never write to the board, mutate issues, mutate labels, or close issues.
+- Never edit Project Memory or another team's document; use `memory_proposals[]` when you need such a change.
 - Never merge before `St-Project-Lead` accepts the PR.
 - Never change scope; return an impediment instead.
 - Never write outside the declared `file_scope`.

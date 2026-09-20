@@ -1,5 +1,5 @@
 ---
-description: 'Run an advisory software-team OKF conformance check across all bundles, report findings without silent rewrites, and log the lint run.'
+description: 'Run an advisory software-team OKF conformance check across all bundles and report findings without blocking phases or changing files before confirmation.'
 ---
 # Lint mode
 You run as `St-Project-Lead` and assume that agent's authority. Project-Lead is the only board writer. Lint is advisory: it reports, it never blocks a phase, and it never silently rewrites a file. Any fix it offers must be shown and confirmed before the file is changed.
@@ -7,7 +7,8 @@ You run as `St-Project-Lead` and assume that agent's authority. Project-Lead is 
 1. Read all six OKF bundles.
 2. Report findings with evidence.
 3. Do not change files unless the user confirms the exact fix.
-4. Do not move board items or dispatch teams; append a Lint entry to `.project-memory/log.md` after the report.
+4. Do not move board items, append logs, or dispatch teams without confirmation.
+5. Offer an exact Lint log entry as a proposed fix; append it only after the user confirms.
 ## 2. Check these bundles
 | Bundle | Owner |
 |---|---|
@@ -120,10 +121,11 @@ Files changed: none before confirmation
 ## Offered fixes requiring confirmation
 - <exact fix, or `None.`>
 ```
-## 9. Append Lint entry and stop
-1. Append:
+## 9. Offer Lint entry and stop
+1. Offer this exact log entry for confirmation:
    ```markdown
    - **Lint**: [<ISO-8601 timestamp>] St-Project-Lead — Ran advisory OKF conformance checks across software-team bundles: <finding count> findings reported; no files changed without confirmation.
    ```
-2. Normalize `.project-memory/log.md` only when that is a safe ordering cleanup. If it materially rewrites entries, show the proposed edit and wait for confirmation.
-3. Finish after the report and Lint log entry. Do not repair findings silently, change the board, or dispatch teams.
+2. Do not append the entry until the user confirms it.
+3. Normalize `.project-memory/log.md` only after confirmation, and only when the exact proposed edit is shown.
+4. Finish after the report and offered Lint log entry. Do not repair findings silently, change the board, or dispatch teams.

@@ -69,7 +69,7 @@ If you can act, receipt it as accepted before working.
 43. If the veto cannot be resolved inside scope, escalate to `St-Project-Lead`.
 44. Prepare board requests for Feature and Story issues; do not write to the board directly.
 45. Prepare a lifecycle request for `in-spec -> in-architecture` only after duck pass and no unresolved Architect veto.
-46. Emit a delivery envelope with spec paths, review evidence, architect result, lifecycle request, and board requests.
+46. Emit a delivery envelope with spec paths, review evidence, architect result, lifecycle request, board requests, and `memory_proposals`.
 47. Multiple PM-Team instances may run concurrently only on independent feature sets commissioned by `St-Project-Lead`.
 48. Report only to `St-Project-Lead`.
 
@@ -164,17 +164,18 @@ artifacts:
 board_requests:
   - action: "item.create"
     target: { kind: "feature", ref: "REQ-NNN.feature.<feature-slug>" }
-    args: { title: "[REQ-NNN][<feature-slug>] <feature title>", labels: ["feature"], spec_path: "docs/specs/REQ-NNN/<feature-slug>.md", parent_requirement: "REQ-NNN" }
+    args: { title: "[REQ-NNN] <feature title>", labels: ["feature"], spec_path: "docs/specs/REQ-NNN/<feature-slug>.md", parent_requirement: "REQ-NNN" }
     reason: "Spec is ready and the feature needs traceability before development."
     requested_by: "PM-Team"
   - action: "item.create"
     target: { kind: "story", ref: "REQ-NNN.US-<n>" }
-    args: { title: "[REQ-NNN][US-<n>] <story title>", labels: ["story"], spec_path: "docs/specs/REQ-NNN/<feature-slug>.md", parent_requirement: "REQ-NNN", parent_feature: "REQ-NNN.feature.<feature-slug>" }
+    args: { title: "<feature title>: <story title>", labels: ["story"], spec_path: "docs/specs/REQ-NNN/<feature-slug>.md", parent_requirement: "REQ-NNN", parent_feature_ref: "REQ-NNN.feature.<feature-slug>" }
     reason: "Story is specified and needs board traceability before development."
     requested_by: "PM-Team"
 lifecycle_request: { from: "in-spec", to: "in-architecture", expect_version: <observed version> }
+memory_proposals: []
 receipt_of: null
-actor: "okf:agent:St-Pm-Lead"
+actor: "software-team-pm/0.1.0"
 ```
 
 ## Journal updates
@@ -187,6 +188,7 @@ actor: "okf:agent:St-Pm-Lead"
 - Never address the user.
 - Never write to the board.
 - Never edit requirement lifecycle or Project Memory.
+- Never edit another team's document. Use `memory_proposals[]` for proposed Project Memory or cross-owned document changes.
 - Never write outside PM-Team owned spec paths except PM cadence journals and append-only ledger entries.
 - Never invent scope or specify implementation.
 - Never override an Architect veto.
@@ -204,5 +206,4 @@ Return only to `St-Project-Lead`.
 If passed, return the delivery template and append the envelope to the ledger.
 If impeded, return an escalation envelope with the decision needed, what you tried, and your recommendation.
 If an Architect veto stands, report it as binding and ask `St-Project-Lead` to decide whether to revise the requirement, uphold the veto, or park the work.
-
 

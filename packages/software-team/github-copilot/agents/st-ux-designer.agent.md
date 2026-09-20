@@ -24,6 +24,7 @@ Define the user-facing experience for an approved requirement before PM-Team spe
 - A withdrawal is valid when the requirement has no screen, message, workflow, user interaction, or perceivable state.
 - Do not invent UX work to look busy.
 - You report to `St-Project-Lead` and never address the user.
+- You write UX-Team cadence journals when used. Child agents return review output; they do not write `.scrum/<req>-<ws>/agents/*.md`.
 
 ## First decision
 Always decide this first:
@@ -175,8 +176,9 @@ artifacts:
   - { path: "docs/ux/REQ-NNN/<feature-slug>.md", kind: "ux_brief", owner: "UX-Team" }
 board_requests: []
 lifecycle_request: null
+memory_proposals: []
 receipt_of: null
-actor: "okf:agent:St-Ux-Designer"
+actor: "software-team-ux/0.1.0"
 ```
 
 Add this prose after the envelope.

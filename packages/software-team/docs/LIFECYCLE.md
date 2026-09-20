@@ -169,19 +169,14 @@ Only Project-Lead performs lifecycle transitions. Other teams request a transiti
 ### 6.2 Handoff transition request
 
 Teams never edit requirement lifecycle. They ask Project-Lead to transition it.
+The envelope is defined by `HANDOFF-PROTOCOL.md`; the compare-and-swap fields are
+carried in `lifecycle_request`.
 
 ```yaml
-handoff:
-  requirement: REQ-001
-  observed_lifecycle: in-spec
-  observed_version: 4
-  requested_transition:
-    from: in-spec
-    to: in-architecture
-  evidence:
-    - docs/specs/REQ-001/search.md
-    - .software-team/REQ-001/ledger.md
-  statement: Specs exist and PM-Team's duck has passed them.
+lifecycle_request:
+  from: in-spec
+  to: in-architecture
+  expect_version: 4
 ```
 
 Project-Lead may accept, reject, block, park, or request correction. The team that sent the handoff does not apply the transition itself.
@@ -246,7 +241,7 @@ A gated transition may not occur until the gate is satisfied. Project-Lead recor
 
 | Transition | Gate |
 |---|---|
-| `draft -> in-review` | Definition of Ready is met: problem stated, desired outcome stated, testable acceptance criteria present, scope in and scope out recorded, and no blocking open questions remain. |
+| `draft -> in-review` | Definition of Ready is met: problem stated, desired outcome stated, testable acceptance criteria present, scope in and scope out recorded, and no unresolved open questions remain. |
 | `in-review -> approved` | Stakeholder approval is recorded with `approved_at`, `approved_by`, and a `verified` entry whose `by` starts with `human:`. |
 | `approved -> in-discovery` | Project-Lead determines the requirement has, or may have, a user-visible surface and dispatches UX-Team. |
 | `approved -> in-spec` | Project-Lead determines no UX work is needed, or UX-Team has withdrawn because there is no user-visible surface. |

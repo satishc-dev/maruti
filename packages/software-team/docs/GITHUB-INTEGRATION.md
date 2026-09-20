@@ -144,26 +144,32 @@ GitHub issues provide traceability. The issue tree mirrors the delivery tree.
 | Story | Story issue | `<feature title>: <story title>` | `story` |
 One Requirement has one Requirement issue. One Requirement may have many Feature issues. One Feature may have many Story issues.
 ### 4.1 Requirement issue
-Prefer a custom GitHub issue type named `Requirement`. Detect it through GraphQL or by probing `gh issue create --type`.
+Prefer a custom GitHub issue type named `Requirement`. The `gh` CLI has no
+`--type` flag on `gh issue create` (verified against gh 2.86.0), so both detection
+and creation go through the GraphQL API.
+
 GraphQL detection:
 ```bash
-gh api graphql -f query='query($owner: String!) { organization(login: $owner) { issueTypes(first: 100) { nodes { name } } } }' -f owner=<owner>
+gh api graphql -f query='query($owner: String!) { organization(login: $owner) { issueTypes(first: 100) { nodes { id name } } } }' -f owner=<owner>
 ```
-CLI probe:
-```bash
-gh issue create --repo <owner>/<repo> --title "[REQ-000] Probe" --body "Capability probe. Do not submit." --type Requirement --dry-run
-```
+Capture the `id` of the node named `Requirement`. An error or an empty node list
+means issue types are unavailable on this owner — use the label fallback.
+
 Record the outcome in `project-link.md`:
 ```markdown
 - requirement_issue_type: Requirement
+- requirement_issue_type_id: <IT_...>
 ```
 or:
 ```markdown
 - requirement_issue_type: label:requirement
 ```
-Create with custom type:
+Create with a custom type — create the issue first, then set its type:
 ```bash
-gh issue create --repo <owner>/<repo> --title "[REQ-NNN] <title>" --body-file <body.md> --type Requirement
+url=$(gh issue create --repo <owner>/<repo> --title "[REQ-NNN] <title>" --body-file <body.md>)
+number=${url##*/}
+issue_id=$(gh api graphql -f query='query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){id}}}' -f owner=<owner> -f repo=<repo> -F number="$number" --jq '.data.repository.issue.id')
+gh api graphql -f query='mutation($issue:ID!,$type:ID!){updateIssueIssueType(input:{issueId:$issue,issueTypeId:$type}){issue{number}}}' -f issue="$issue_id" -f type=<IT_...>
 ```
 Fallback create:
 ```bash
@@ -197,14 +203,19 @@ Story issue body requirements:
 - Name `workstream_id` when assigned.
 - State acceptance criteria copied or referenced from the spec.
 ### 4.4 Parenting
-Prefer native GitHub sub-issues.
+Prefer native GitHub sub-issues. The `gh` CLI exposes no sub-issue flag or
+subcommand (verified against gh 2.86.0), so parenting goes through GraphQL.
+
+Resolve both issues to node ids, then add the child to the parent:
 ```bash
-gh issue edit <requirement-issue> --add-sub-issue <feature-issue>
-gh issue edit <feature-issue> --add-sub-issue <story-issue>
-gh issue edit <feature-issue> --parent <requirement-issue>
-gh issue edit <story-issue> --parent <feature-issue>
+parent_id=$(gh api graphql -f query='query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){id}}}' -f owner=<owner> -f repo=<repo> -F number=<parent-number> --jq '.data.repository.issue.id')
+child_id=$(gh api graphql -f query='query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){id}}}' -f owner=<owner> -f repo=<repo> -F number=<child-number> --jq '.data.repository.issue.id')
+gh api graphql -H 'GraphQL-Features: sub_issues' -f query='mutation($parent:ID!,$child:ID!){addSubIssue(input:{issueId:$parent,subIssueId:$child}){issue{number}}}' -f parent="$parent_id" -f child="$child_id"
 ```
-Fallback:
+Apply this twice: Requirement issue as parent of each Feature issue, and Feature
+issue as parent of each Story issue.
+
+If the mutation is unavailable on this repository, fall back.
 - Add a `parent:REQ-NNN` label.
 - Add `Parent: #<n>` to the issue body.
 ```bash
@@ -281,7 +292,7 @@ Actions:
 | Action | Meaning | Project-Lead mutation |
 |---|---|---|
 | `item.create` | Create a GitHub issue or Project item. | `gh issue create`, `gh project item-add` |
-| `item.link` | Link issues or Project items. | `gh issue edit --add-sub-issue`, document update |
+| `item.link` | Link issues or Project items. | `addSubIssue` GraphQL mutation (§4.4), document update |
 | `item.status` | Move a Project item to a Status option. | `gh project item-edit` |
 | `item.label` | Add or remove labels. | `gh issue edit --add-label` or `--remove-label` |
 | `item.comment` | Add an issue or PR comment. | `gh issue comment` or `gh pr comment` |
@@ -322,8 +333,7 @@ Project-Lead applies it with:
 ```bash
 gh issue create --repo <owner>/<repo> --title "[REQ-014] Export format selection" --body-file <body.md> --label feature
 gh issue create --repo <owner>/<repo> --title "Export format selection: CSV option" --body-file <body.md> --label story --label "workstream:ws1"
-gh issue edit <requirement-issue> --add-sub-issue <feature-issue>
-gh issue edit <feature-issue> --add-sub-issue <story-issue>
+# then parent them with the addSubIssue mutation from §4.4
 ```
 Example: Dev-Team requests acceptance status.
 ```yaml

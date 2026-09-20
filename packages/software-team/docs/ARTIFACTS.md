@@ -500,7 +500,7 @@ req: REQ-014
 status: stable
 generated: { by: software-team-project-lead/0.1.0, at: 2026-09-20T23:10:00Z }
 workstreams:
-  - { workstream_id: REQ-014/ws1, req: REQ-014, title: Implement account export flow, stories: [REQ-014-US-1], file_scope: [src/accounts/export/**, tests/accounts/export/**], depends_on: [], team_id: dev-team-REQ-014-ws1, status: pending } # status: pending | ready | active | handoff | accepted | failed | parked.
+  - { workstream_id: REQ-014/ws1, req: REQ-014, title: Implement account export flow, stories: [REQ-014-US-1], file_scope: [src/accounts/export/**, tests/accounts/export/**], depends_on: [], team_id: dev-team-REQ-014-ws1, status: pending } # status values are defined by PARALLELISM.md.
 ---
 ```
 ### 11.2 Body template
@@ -545,10 +545,7 @@ other REQ-014 workstream.
 | Feature branch | Sibling branch `users/<you>/REQ-NNN-ws<k>` | `users/alex/REQ-014-ws1` |
 | Task branch | Sibling branch `users/<you>/REQ-NNN-ws<k>-task-<n>` | `users/alex/REQ-014-ws1-task-2` |
 | Nested branch form | Never use a path segment under the feature branch | Do not use `users/alex/REQ-014-ws1/task-2` |
-| Requirement issue title | `[REQ-NNN] <title>` | `[REQ-014] CSV export for filtered accounts` |
-| Feature issue title | `[REQ-NNN][<feature-slug>] <title>` | `[REQ-014][account-export] Export filtered account rows` |
-| Story issue title | `[REQ-NNN][US-<n>] <title>` | `[REQ-014][US-1] Export filtered account rows` |
-| PR title | `[REQ-NNN/ws<k>] <delivery summary>` | `[REQ-014/ws1] Add account CSV export` |
+| GitHub issue and PR titles | Defined by `GITHUB-INTEGRATION.md` | Requirement, Feature, Story, and PR titles |
 | Commit message | `<type>(REQ-NNN): <imperative summary>` | `feat(REQ-014): add filtered account export` |
 | Requirement document | `REQ-NNN-<slug>.md` | `REQ-014-csv-export.md` |
 | Spec document | `docs/specs/REQ-NNN/<feature-slug>.md` | `docs/specs/REQ-014/account-export.md` |
@@ -591,7 +588,7 @@ flowchart LR
 | Workstream record | Requirement | `req` | `links.workstreams[]` |
 | Workstream record | Stories | `workstreams[].stories[]` | `links.workstreams[]` |
 | Branch | Workstream | Branch name `REQ-NNN-ws<k>` | `links.workstreams[]` |
-| PR | Workstream | PR title `[REQ-NNN/ws<k>]` and PR body link | `links.prs[]` |
+| PR | Workstream | GitHub PR title defined by `GITHUB-INTEGRATION.md` and PR body workstream link | `links.prs[]` |
 | Issue | Requirement | Issue title `[REQ-NNN]` and body doc link | `requirement_issue` |
 | Feature or story issue | Requirement issue | Native parent-child issue relation | `links.child_issues[]` |
 ### 13.4 Update rule

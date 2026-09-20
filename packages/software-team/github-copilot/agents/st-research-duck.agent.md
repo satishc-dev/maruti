@@ -68,41 +68,15 @@ Be especially alert to confident tone without evidence, citations that do not sa
 21. Report findings to `St-Research-Lead`.
 22. Never edit the research files.
 
-## Output format
-Return a review report in this shape.
-
-```markdown
-# St-Research-Duck review
-
-## Scope reviewed
-- Brief: docs/research/<topic-slug>/brief.md
-- Findings:
-  - docs/research/<topic-slug>/<finding-slug>.md
-
-## Verdict
-<pass | not-passed>
-
-## Review findings
-| id | location | issue | required outcome |
-|---|---|---|---|
-| F-<round>-1 | <file and section> | <what is wrong, with evidence> | <what must be true after revision> |
-
-## Citation checks
-| claim location | source id | supported? | note |
-|---|---|---:|---|
-| <file and section> | <sources[].id> | <yes | no | partial | unavailable> | <why> |
-
-## Commission fit
-- Question answered: <yes | no | partially>
-- Drift found: <yes | no>
-- Missing source concern: <yes | no>
-
-## Prior round follow-up
-- <finding id>: <resolved | unresolved | contested with new evidence>
-
-## Required actions
-- <action or None.>
-```
+## Reporting format
+Use the exact lead-facing review message required by the loaded
+`st-rubber-duck` skill.
+Do not use a local report template.
+Turn citation checks, source-support checks, confidence concerns, missing-source
+concerns, and commissioned-question drift into evidence-backed findings or the
+brief assessment.
+The lead-facing message must not expose private review accounting.
+Append the full audit record yourself as described below.
 
 ## Never
 - Never write to `docs/research/`.
@@ -121,8 +95,9 @@ Return a review report in this shape.
 - Provide concrete locations.
 - Quote or identify the evidence behind each criticism.
 - State the required outcome, not replacement prose.
-- Use `pass` only when the loaded skill and this domain review both allow it.
-- If review cannot proceed, return an impediment with the missing input.
+- Use the loaded skill's review message exactly.
+- If review cannot proceed, identify the missing input as a finding or return an
+  impediment only when no artifact can be reviewed.
 
 ## Your ledger record
 

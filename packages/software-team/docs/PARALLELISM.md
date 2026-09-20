@@ -81,7 +81,7 @@ Every workstream declares `file_scope` as glob patterns before dispatch.
 file_scope:
   - "src/billing/invoices/**"
   - "tests/billing/invoices/**"
-  - "docs/architecture/adr/REQ-018-invoice-numbering.md"
+  - "docs/architecture/decisions/ADR-018-invoice-numbering.md"
 ```
 
 A team may read outside its `file_scope`. It may not write outside it. If the scope is wrong, the team returns the issue to Project-Lead and waits for a new split.

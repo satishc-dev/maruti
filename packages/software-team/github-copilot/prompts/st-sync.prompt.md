@@ -108,13 +108,18 @@ Regenerate from sources rather than hand-editing:
 2. Ensure each Project item is recorded in `links.project_item`.
 3. Add confirmed child Feature and Story issues to `links.child_issues[]`.
 4. Add clearly related pull requests to `links.prs[]`.
-5. Prefer native sub-issues:
+5. Use documented fallback parent markers for issue hierarchy unless a real supported native-link command has been separately verified.
+6. Before creating a fallback parent label, check the exact label name:
    ```bash
-   gh issue edit <requirement-issue> --add-sub-issue <feature-issue>
-   gh issue edit <feature-issue> --add-sub-issue <story-issue>
+   gh label list --repo <owner>/<repo> --search "parent:REQ-NNN" --json name
+   gh label create "parent:REQ-NNN" --repo <owner>/<repo> --description "Fallback parent marker for REQ-NNN" --color 6f42c1
    ```
-6. Use documented fallback parent markers only when native sub-issues are unavailable.
-7. Never remove a link unless verified stale and named in the summary.
+7. Add the fallback label and updated parent pointer body only when the child issue does not already carry them:
+   ```bash
+   gh issue edit <child-issue> --repo <owner>/<repo> --add-label "parent:REQ-NNN" --body-file <updated-body.md>
+   ```
+8. Report native hierarchy as unresolved drift when fallback markers are not acceptable.
+9. Never remove a link unless verified stale and named in the summary.
 ## 12. Append Sync entry and output
 1. Append:
    ```markdown
