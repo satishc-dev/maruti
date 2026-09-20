@@ -126,10 +126,20 @@ the consumer's expected location (e.g. `.github/agents/<name>.agent.md`,
 
 ## Currently authored agents
 
-All six packages ship variants for both Claude Code and GitHub Copilot CLI.
-The Claude Code variant typically uses multiple subagents fanned out by an
-orchestrator; the Copilot CLI variant collapses that orchestration into a
-single chat-mode agent (or skill) since Copilot's primitive model is flatter.
+All packages except [`software-team/`](software-team/) ship variants for both
+Claude Code and GitHub Copilot CLI. The Claude Code variant typically uses multiple
+subagents fanned out by an orchestrator; the Copilot CLI variant collapses that
+orchestration into a single chat-mode agent (or skill) since Copilot's primitive
+model is flatter.
+
+- [`software-team/`](software-team/) — **Copilot CLI only.** A simulated software
+  organisation: a stakeholder-facing `St-Project-Lead` plus Research, Architect,
+  PM, Dev and UX teams, each paired with an independent reviewer that must pass the
+  team's work before it proceeds. Runs research → requirements → UX → specs →
+  architecture and binding development principles → parallel delivery → acceptance
+  → merge. Supersedes `project-lead`, `pm-team` and `dev-team`, which remain
+  installable and unchanged. Copilot-only because the design depends on nested
+  agent dispatch and multi-turn peer messaging between agents.
 
 - [`assistant-wizard/`](assistant-wizard/) — designs and generates new custom
   packages (subagent / skill / slash command / chat mode / prompt file) for

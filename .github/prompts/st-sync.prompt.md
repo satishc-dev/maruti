@@ -1,0 +1,1 @@
+../../packages/software-team/github-copilot/prompts/st-sync.prompt.md

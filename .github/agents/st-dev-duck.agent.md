@@ -1,0 +1,1 @@
+../../packages/software-team/github-copilot/agents/st-dev-duck.agent.md
