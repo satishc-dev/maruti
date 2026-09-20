@@ -172,25 +172,25 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    ```
 2. Idempotency predicate: every Project and Status id is present for the current repo.
 ## 10. Detect Requirement issue type or fallback label
-1. Prefer custom issue type `Requirement`.
-2. First inspect local GitHub CLI support:
+1. Prefer the custom issue type `Requirement`. Do not probe the CLI for support — `gh` has no issue-type flag on `gh issue create`, so a CLI probe would always fail and wrongly force the fallback. Detection is a GraphQL question.
+2. Detect with GraphQL, capturing the type id:
    ```bash
-   gh issue create --help
+   gh api graphql -f query='query($owner: String!) { organization(login: $owner) { issueTypes(first: 100) { nodes { id name } } } }' -f owner=<owner>
    ```
-3. If the create command does not expose custom issue types, use the fallback label path.
-4. If custom issue types are exposed, detect `Requirement` with GraphQL:
-   ```bash
-   gh api graphql -f query='query($owner: String!) { organization(login: $owner) { issueTypes(first: 100) { nodes { name } } } }' -f owner=<owner>
+3. If a node named `Requirement` is returned, record both:
+   ```markdown
+   - requirement_issue_type: Requirement
+   - requirement_issue_type_id: <IT_...>
    ```
-5. If the CLI and GraphQL both show support, record `requirement_issue_type: Requirement`.
-6. Otherwise create and record fallback. Check exact label name before creating:
+4. **Expected non-failure:** custom issue types are an organization feature. For a user-owned repository the query returns `NOT_FOUND` and `gh` exits non-zero with `Could not resolve to an Organization with the login of '<owner>'`. This is a normal outcome, not a pre-flight failure. Do not stop bootstrap. Take the fallback path. The same applies to an organization with no `Requirement` type, which returns an empty node list.
+5. Fallback: create and record the label. Check the exact label name before creating:
    ```bash
    gh label list --repo <owner>/<repo> --search requirement --json name
    gh label create requirement --repo <owner>/<repo> --description "Stakeholder requirement" --color 5319e7
    gh label list --repo <owner>/<repo> --search requirement --json name
    ```
-7. Record `requirement_issue_type: label:requirement`.
-8. Idempotency predicate: project-link records the selected path and fallback label exists when selected.
+6. Record `requirement_issue_type: label:requirement`.
+7. Idempotency predicate: project-link records the selected path, and when the fallback was selected the `requirement` label exists.
 ## 11. Create remaining labels
 1. For each required label, first run `gh label list --repo <owner>/<repo> --search <label> --json name` and match the exact `name`.
 2. Create only labels missing by exact name:

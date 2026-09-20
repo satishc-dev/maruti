@@ -152,8 +152,20 @@ GraphQL detection:
 ```bash
 gh api graphql -f query='query($owner: String!) { organization(login: $owner) { issueTypes(first: 100) { nodes { id name } } } }' -f owner=<owner>
 ```
-Capture the `id` of the node named `Requirement`. An error or an empty node list
-means issue types are unavailable on this owner — use the label fallback.
+Capture the `id` of the node named `Requirement`.
+
+**Custom issue types are an organization feature.** If the repository is owned by a
+user rather than an organization, this query returns a `NOT_FOUND` error and `gh`
+exits non-zero:
+
+```text
+Could not resolve to an Organization with the login of '<owner>'.
+```
+
+That is an **expected outcome, not a failure**. Do not treat it as a pre-flight
+error and do not stop bootstrap. It means issue types are unavailable here — record
+the label fallback and continue. The same applies to an organization that simply
+has no `Requirement` type defined, which returns an empty node list.
 
 Record the outcome in `project-link.md`:
 ```markdown

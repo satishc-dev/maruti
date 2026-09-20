@@ -77,6 +77,12 @@ bar. See §6.
 Project-Lead has no duck. It is the accountable owner of the whole delivery and
 answers to the stakeholder directly; the stakeholder is its reviewer.
 
+Every other team has one, UX-Team included. UX produces a durable artifact that
+PM-Team then specifies against, so an unreviewed UX brief propagates its defects
+downstream exactly as an unreviewed spec would. If a project wants UX reviewed by
+PM instead, delete `St-Ux-Duck` and have `St-Ux-Designer` deliver straight to
+Project-Lead — nothing else in the protocol depends on it.
+
 ## 3. Team definitions
 
 ### 3.1 Project-Lead
