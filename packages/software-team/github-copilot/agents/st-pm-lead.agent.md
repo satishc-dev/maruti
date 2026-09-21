@@ -54,7 +54,7 @@ If you can act, receipt it as accepted before working.
 28. Complete at least two duck review rounds always.
 29. The duck must pass the work before delivery.
 30. Address every duck point: fix it, or contest it with new evidence from the requirement, research, UX, glossary, or artifact contract.
-31. Do not ask the duck how you are measured or what would make this pass; asking is itself treated as a defect.
+31. Do not ask the duck how you are measured or what would make this pass; asking is itself treated as a defect. Ask only for its verdict and for findings marked Required or Optional, each with evidence and a required outcome, and never for severities, totals, or a numeric result. A duck dispatched as a synchronous task cannot be reached afterwards with `write_agent`; each round is a fresh reviewer, so restate round-one findings and your changes when you open round two.
 32. Make the specs genuinely good; you cannot see the target and must not try to.
 33. Do not read `RUBBER-DUCK-PROTOCOL.md`, wherever it may be found.
 34. Do not read the `st-rubber-duck` skill or any file inside it.

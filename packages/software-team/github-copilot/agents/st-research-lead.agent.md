@@ -84,6 +84,8 @@ Run the research phase before committed requirement work.
 34. Do not read `RUBBER-DUCK-PROTOCOL.md`.
 35. Do not read `packages/software-team/github-copilot/skills/st-rubber-duck/SKILL.md`.
 36. When the duck passes the work after at least two rounds, prepare a delivery envelope.
+37. Ask the duck only for its verdict and for findings marked Required or Optional, each with evidence and a required outcome. Never ask for severities, totals, a numeric result, or the standard it applies, and never ask what would make this pass; asking is itself treated as a defect. Tell it not to disclose its private review standard.
+38. A duck dispatched as a synchronous task cannot be reached afterwards with `write_agent`; each round is a fresh reviewer with no memory. When you open round two, restate the round-one findings and what you changed so it can check dispositions.
 37. List every finding path in the delivery envelope.
 38. Include open questions and impediments.
 39. Return the delivery envelope to `St-Project-Lead`.

@@ -242,6 +242,15 @@ It does not transfer ownership.
 It is recorded in the ledger as `intent: consult`.
 PM-Team and Dev-Team may consult Architect-Team mid-flight.
 Mechanism: send the question with `write_agent`, end the turn, then read the reply with `read_agent` when it arrives.
+
+**When peer messaging is unavailable.** `write_agent` only reaches an agent that is still running and addressable. An agent dispatched as a *synchronous* task has already returned by the time you would message it, and a sibling launched synchronously by a shared parent is not addressable from your context either. Both fail with `Agent is not running in background mode` or an unknown-agent error. This is a platform constraint, not a protocol violation, and it was observed repeatedly in live runs.
+
+Fall back in this order, and record which one you used:
+
+1. **Relay through the commissioner.** Send the question to the agent that commissioned you — usually Project-Lead — and let it put the question to the peer and return the answer. This preserves the record because both legs are ordinary envelopes.
+2. **Re-dispatch.** Where the peer is a reviewer, open a new round as a fresh dispatch. Treat the new instance as having no memory of the last round: restate the prior findings and what changed, so it checks dispositions instead of starting over.
+
+Never silently skip a consultation because the channel failed, and never invent the answer you expected. Record an impediment naming the peer, the question, and the fallback taken.
 ```yaml
 tool: write_agent
 arguments: { agent_id: "<architect-agent-id>", message: "<question with req, paths, constraints, and desired decision>" }

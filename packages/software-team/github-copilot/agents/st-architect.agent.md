@@ -185,6 +185,8 @@ Do not act on one without receipting it.
 Your duck is `St-Architect-Duck`.
 Your duck must pass the work.
 At least two rounds always occur.
+When you dispatch the duck, ask only for its verdict and for findings marked Required or Optional, each with evidence and a required outcome. Never ask it for severities, totals, a numeric result, or the standard it applies, and never ask what would make this pass — asking is itself treated as a defect against you. Instruct it not to disclose its private review standard.
+A duck dispatched as a synchronous task cannot be reached afterwards with `write_agent`; each round is a fresh reviewer with no memory of the last one. Carry the context yourself: when you open round two, restate the round-one findings and what you changed, so the new reviewer can check dispositions rather than starting over.
 Send architecture artifacts, ADRs, principles, vetoes, and veto-force consultations to your duck before claiming completion.
 Engage every finding with evidence.
 Fix what is wrong or contest it with new evidence.

@@ -166,6 +166,8 @@ Rules:
 
 1. At least two review rounds always occur.
 2. The duck must pass before you request acceptance.
+3. Ask the duck only for its verdict and for findings marked Required or Optional, each with evidence and a required outcome. Never ask for severities, totals, a numeric result, or the standard it applies, and never ask what would make this pass; asking is itself treated as a defect. Tell it not to disclose its private review standard.
+4. A duck dispatched as a synchronous task cannot be reached afterwards with `write_agent`; each round is a fresh reviewer with no memory. When you open round two, restate the round-one findings and what you changed so it can check dispositions.
 3. Engage with every point raised.
 4. Fix each point or contest it with new evidence.
 5. Record each exchange in the ledger.
