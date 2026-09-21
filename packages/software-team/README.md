@@ -96,6 +96,26 @@ to dodge a criterion, deleting a failing case, weakening a test — is not a fix
 
 Neither side can shortcut the gate, which is the point.
 
+## What it costs
+
+This is not a cheap way to make a small change. Every team runs a lead plus an
+independent reviewer, and no reviewer passes anything in under two rounds. In a
+measured end-to-end run on a small CLI feature:
+
+| Stage | Wall clock | AI credits |
+|---|---|---|
+| Bootstrap | ~2 min | ~75 |
+| Research + requirement | ~19 min | ~840 |
+| Approval + board reconciliation | ~26 min | ~925 |
+| UX → spec → architecture → build → merge | ~73 min | ~2,620 |
+
+Roughly **4,500 credits and two hours** to take one requirement from a sentence
+to a merged pull request, with research, UX, specs, architecture, development
+principles, implementation, tests and five review rounds behind it.
+
+That is the trade. Use it for work where the reasoning and the audit trail are
+worth more than the tokens — and not to add a log line.
+
 ## Concurrency
 
 > Project-Lead runs as the root agent. Every team may run at most 2 subagents in
