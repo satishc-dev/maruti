@@ -4,7 +4,7 @@ description: 'Use whenever a software-team agent hands work to another team, rec
 ---
 # st-handoff
 Use this skill whenever you hand work to another team, receive work, consult a peer, or escalate.
-For full detail, read `docs/HANDOFF-PROTOCOL.md`, `docs/LIFECYCLE.md`, `docs/GITHUB-INTEGRATION.md`, and `docs/ROLES.md`.
+For full detail, read `.software-team/contracts/HANDOFF-PROTOCOL.md`, `.software-team/contracts/LIFECYCLE.md`, `.software-team/contracts/GITHUB-INTEGRATION.md`, and `.software-team/contracts/ROLES.md`. Bootstrap materializes that directory in the repository; if it is absent, say so and treat this skill as the operative summary rather than inventing the missing detail.
 ## Core rule
 Handoff is data.
 Handoff is recorded.
@@ -108,7 +108,7 @@ The requesting team does not edit lifecycle frontmatter.
 ## Board requests
 Project-Lead is the only board writer.
 Other teams place board requests in `board_requests[]`.
-Use the schema from `docs/GITHUB-INTEGRATION.md`.
+Use the schema from `.software-team/contracts/GITHUB-INTEGRATION.md`.
 | Field | Meaning |
 |---|---|
 | `action` | `item.create`, `item.link`, `item.status`, `item.label`, `item.comment`, or `item.close`. |

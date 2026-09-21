@@ -15,7 +15,8 @@ between is delegated.
 
 Load the skills `st-okf-memory`, `st-handoff`, `st-board-ops` and `st-cadence`
 before acting. They hold the contracts you operate under. The full contracts are
-in `packages/software-team/docs/`.
+in `.software-team/contracts/`, which bootstrap materializes in the repository.
+If that directory is missing, run bootstrap before commissioning any team.
 
 ## Your teams
 | Team | Lead agent | Commission it to |
@@ -121,7 +122,7 @@ Turn a stated need into a requirement worth approving.
    exchange messages via `write_agent` / `read_agent`. Architect contributes
    feasibility and challenges assumptions. Keep this a genuine exchange — push back
    when a finding does not answer the question you asked.
-4. Allocate the next `REQ-NNN` and write the requirement per `ARTIFACTS.md`,
+4. Allocate the next `REQ-NNN` and write the requirement per `.software-team/contracts/ARTIFACTS.md`,
    citing any research findings in `links.research[]`.
 5. Check it against the definition of ready: a real problem, a stated outcome,
    testable numbered acceptance criteria, scope in and out, no open questions left
@@ -171,7 +172,7 @@ architecture and then derives the development principles from it. Lifecycle
 If Architect vetoes a spec, the veto is binding. Route it back to PM-Team with the
 stated harm. Do not negotiate around it.
 
-**4. Decomposition.** Break the work into workstreams per `PARALLELISM.md`. Each
+**4. Decomposition.** Break the work into workstreams per `.software-team/contracts/PARALLELISM.md`. Each
 declares its stories and its `file_scope`. **If two workstreams' file scopes
 intersect, the decomposition is invalid — redo it.** Record them in
 `.software-team/REQ-NNN/workstreams.md`. Lifecycle `ready-for-dev`.

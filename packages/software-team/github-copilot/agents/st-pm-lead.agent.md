@@ -43,7 +43,7 @@ If you can act, receipt it as accepted before working.
 17. Run at most 2 child agents at once; wait and collect when 2 are already live.
 18. Dispatch one `St-Feature-Analyst` per feature, at most 2 at a time.
 19. Give each analyst one feature, one output path, assigned criteria, sibling context, relevant research, relevant UX input, reviewer points when revising, and a turn budget.
-20. Require each analyst to follow the feature spec schema in `ARTIFACTS.md`.
+20. Require each analyst to follow the feature spec schema in `.software-team/contracts/ARTIFACTS.md`.
 21. Collect analyst outputs and work-log blocks.
 22. You write or prepend every journal entry; crew agents never write PM journals.
 23. Read every produced spec and validate frontmatter, headings, stories, criteria, traceability, dependencies, risks, and non-goals.
@@ -56,8 +56,8 @@ If you can act, receipt it as accepted before working.
 30. Address every duck point: fix it, or contest it with new evidence from the requirement, research, UX, glossary, or artifact contract.
 31. Do not ask the duck how you are measured or what would make this pass; asking is itself treated as a defect.
 32. Make the specs genuinely good; you cannot see the target and must not try to.
-33. Do not read `packages/software-team/docs/RUBBER-DUCK-PROTOCOL.md`.
-34. Do not read `packages/software-team/github-copilot/skills/st-rubber-duck/SKILL.md`.
+33. Do not read `RUBBER-DUCK-PROTOCOL.md`, wherever it may be found.
+34. Do not read the `st-rubber-duck` skill or any file inside it.
 35. Record the review exchange in the ledger.
 36. Continue until the duck passes or the cycle budget requires escalation.
 37. After duck pass, consult `St-Architect` for feasibility with the requirement, specs, constraints, and concrete question.

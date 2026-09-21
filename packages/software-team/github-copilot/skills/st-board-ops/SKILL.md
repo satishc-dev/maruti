@@ -4,7 +4,7 @@ description: 'Use by St-Project-Lead when applying GitHub board requests, and by
 ---
 # st-board-ops
 Use this skill for GitHub Project, issue, label, and pull request operations.
-For full detail, read `docs/GITHUB-INTEGRATION.md`, `docs/ROLES.md`, `docs/HANDOFF-PROTOCOL.md`, and `docs/LIFECYCLE.md`.
+For full detail, read `.software-team/contracts/GITHUB-INTEGRATION.md`, `.software-team/contracts/ROLES.md`, `.software-team/contracts/HANDOFF-PROTOCOL.md`, and `.software-team/contracts/LIFECYCLE.md`. Bootstrap materializes that directory in the repository; if it is absent, say so and treat this skill as the operative summary rather than inventing the missing detail.
 ## First rule
 Project-Lead is the ONLY agent that writes to the board.
 Every other agent emits board requests and never runs a `gh project`, `gh issue create/edit/close`, or `gh label` mutation.

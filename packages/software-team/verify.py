@@ -59,6 +59,15 @@ EXPECTED_SKILLS = [
 ]
 EXPECTED_PROMPTS = ["st-bootstrap", "st-status", "st-sync", "st-lint"]
 
+# Contracts that must ship inside the plugin so bootstrap can materialize them
+# into a target repository. RUBBER-DUCK-PROTOCOL.md is deliberately absent: it
+# stays in the package's own docs/ and is never copied into a repository.
+EXPECTED_CONTRACTS = [
+    "ROLES.md", "GLOSSARY.md", "LIFECYCLE.md", "ARTIFACTS.md",
+    "HANDOFF-PROTOCOL.md", "PARALLELISM.md", "MEMORY-SCHEMA.md",
+    "OKF-PROFILE.md", "GITHUB-INTEGRATION.md", "CADENCE.md",
+]
+
 DUCK_AGENTS = {a for a in EXPECTED_AGENTS if a.endswith("-duck")}
 
 failures: list[str] = []
@@ -281,9 +290,62 @@ def check_gh_flags() -> None:
         ok(f"all gh flags valid across {len(usages)} subcommands")
 
 
+def check_contracts_shipped() -> None:
+    """Every contract an agent is told to read must ship inside the plugin.
+
+    The plugin's install source is ``github-copilot/`` alone. Contracts that live
+    outside it are simply absent at runtime, and the failure is silent: agents
+    carry on with no roles, no lifecycle and no artifact schemas. This shipped
+    once — a live probe of ``St-Project-Lead`` in a fresh repository looked for
+    nine contracts and found zero — so it is now checked mechanically.
+    """
+    contracts_dir = COPILOT / "contracts"
+    if not contracts_dir.is_dir():
+        fail("github-copilot/contracts/ does not exist; contracts would not ship with the plugin")
+        return
+
+    shipped = {p.name for p in contracts_dir.glob("*.md")}
+
+    missing = sorted(set(EXPECTED_CONTRACTS) - shipped)
+    if missing:
+        fail(f"contracts missing from the plugin: {missing}")
+
+    # The rubric must never be copied into a target repository.
+    if "RUBBER-DUCK-PROTOCOL.md" in shipped:
+        fail("RUBBER-DUCK-PROTOCOL.md must not ship in contracts/; ducks load the skill instead")
+
+    # Every referenced contract must resolve, and no reference may point at the
+    # old package-relative path, which does not exist once installed.
+    referenced: set[str] = set()
+    dead = 0
+    ref_pattern = re.compile(r"\.software-team/contracts/([A-Z][A-Z-]*\.md)")
+    stale_pattern = re.compile(r"packages/software-team/docs/")
+    for path in sorted(COPILOT.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        referenced.update(ref_pattern.findall(text))
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            if stale_pattern.search(line):
+                fail(
+                    f"stale contract path {path.relative_to(REPO_ROOT)}:{line_no}: "
+                    f"{line.strip()[:90]}"
+                )
+                dead += 1
+
+    unresolved = sorted(referenced - shipped)
+    if unresolved:
+        fail(f"agents reference contracts that do not ship: {unresolved}")
+
+    if not missing and not unresolved and dead == 0:
+        ok(
+            f"{len(shipped)} contracts ship with the plugin and all "
+            f"{len(referenced)} referenced contracts resolve"
+        )
+
+
 def main() -> int:
     check_expected_files()
     check_frontmatter()
+    check_contracts_shipped()
     check_rubric_asymmetry()
     check_duck_files_defer()
     check_no_collisions()

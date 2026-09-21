@@ -26,6 +26,14 @@ Start in the repository you want to work in:
 @st-project-lead bootstrap
 ```
 
+Installed agents are namespaced by plugin, so the fully-qualified name is
+`software-team:st-project-lead`. Use that form wherever a bare name is not
+resolved, including `copilot --agent software-team:st-project-lead` for
+non-interactive runs.
+
+Bootstrap also copies the contracts into `.software-team/contracts/`, which every
+agent reads from. Run it before commissioning any team.
+
 Then talk to `St-Project-Lead` in plain language. It is the only agent you address;
 it commissions the rest.
 
@@ -120,4 +128,5 @@ reliably share a counter — and `list_agents` verifies it at runtime.
 
 GitHub only; Azure DevOps is not supported. See the
 [package README](../README.md) for the full design and the
-[contracts](../docs/) for agent behaviour.
+[contracts](contracts/) for agent behaviour. Those contracts ship with this
+plugin and are copied into each repository at `.software-team/contracts/`.

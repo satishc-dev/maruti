@@ -108,10 +108,18 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
 5. Inspect team-owned bundle roots when present: `docs/research/`, `docs/ux/`, `docs/specs/`, and `docs/architecture/`.
 6. Do not create or modify team-owned bundle contents during bootstrap. Report missing or non-conformant team-owned roots as owner action before first use.
 7. Idempotency predicate: Project-Lead-owned roots and templates exist; team-owned bundle status is reported without mutation.
-## 6. Create `.software-team/`
+## 6. Create `.software-team/` and materialize the contracts
 1. Create `.software-team/` if missing.
 2. Do not create a `REQ-NNN` subdirectory during bootstrap.
-3. Idempotency predicate: root exists and no requirement-specific ledger was invented.
+3. **Locate the shipped contracts.** Every agent reads its contracts from `.software-team/contracts/`, so bootstrap is the one step that puts them there. The contracts ship inside the installed plugin, not in the target repository. Resolve the source directory by taking the first of these that exists:
+   1. `packages/software-team/github-copilot/contracts/` relative to the repository root — this is the case when working inside the `maruti` repository itself.
+   2. `<plugin-root>/contracts/`, where `<plugin-root>` is the directory containing `skills/st-handoff/SKILL.md` for the installed `software-team` plugin. On a default installation this is `~/.copilot/installed-plugins/<marketplace>/software-team/`. Resolve it by locating the `st-handoff` skill file on disk and taking its grandparent's parent, rather than assuming the marketplace name.
+4. If neither source resolves, stop and report `contracts source not found` as an impediment. Do not invent contract content, and do not proceed to commission any team — every downstream agent depends on these files.
+5. Copy these ten files into `.software-team/contracts/`: `ROLES.md`, `GLOSSARY.md`, `LIFECYCLE.md`, `ARTIFACTS.md`, `HANDOFF-PROTOCOL.md`, `PARALLELISM.md`, `MEMORY-SCHEMA.md`, `OKF-PROFILE.md`, `GITHUB-INTEGRATION.md`, `CADENCE.md`.
+6. `RUBBER-DUCK-PROTOCOL.md` is deliberately not among them. It is not shipped in the plugin and must never be copied into a repository. Ducks load the `st-rubber-duck` skill instead. If you find that file, do not read it and do not copy it.
+7. Copy semantics: create the file when absent. When present and byte-identical, report `already present`. When present and different, overwrite it and report `updated`, because these are versioned contracts owned by the package rather than repository content — but never overwrite anything outside `.software-team/contracts/`.
+8. Record the resolved source path and the file count in the final checklist as evidence.
+9. Idempotency predicate: `.software-team/` exists, `.software-team/contracts/` holds exactly those ten files matching the shipped copies, `RUBBER-DUCK-PROTOCOL.md` is absent, and no requirement-specific ledger was invented.
 ## 7. Find or create the GitHub Project
 1. Read `.project-memory/project-link.md`; verify recorded project when present:
    ```bash
@@ -208,7 +216,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
 5. Idempotency predicate: required repository labels exist by exact name.
 ## 12. Write pointers and merge rules
 1. Create `AGENTS.md` if missing. Append one `## Software Team` section only if absent.
-2. Pointer section lists `packages/software-team/docs/ROLES.md`, `GLOSSARY.md`, `MEMORY-SCHEMA.md`, `GITHUB-INTEGRATION.md`, `OKF-PROFILE.md`, `LIFECYCLE.md`, `ARTIFACTS.md`, `.project-memory/`, and `.software-team/`.
+2. Pointer section lists `.software-team/contracts/ROLES.md`, `.software-team/contracts/GLOSSARY.md`, `.software-team/contracts/MEMORY-SCHEMA.md`, `.software-team/contracts/GITHUB-INTEGRATION.md`, `.software-team/contracts/OKF-PROFILE.md`, `.software-team/contracts/LIFECYCLE.md`, `.software-team/contracts/ARTIFACTS.md`, `.project-memory/`, and `.software-team/`.
 3. Include: `Project-Lead is the only board writer. Other teams request board changes through handoff envelopes.`
 4. Append to `.gitignore` only if absent:
    ```gitignore
@@ -231,7 +239,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
 4. Idempotency predicate: a second normalization produces no change and this run has one Bootstrap entry.
 ## 14. Print final checklist
 Print a `# Bootstrap checklist` table with columns `Area`, `Result`, and `Evidence`.
-Rows: Auth pre-flight; Existing state inspected; Project Memory bundle; Project-Lead-owned requirements bundle; Team-owned bundle status; `.software-team/`; GitHub Project; Status field and options; Requirement issue handling; Labels; Pointers and merge rules; Log; Non-conformance.
+Rows: Auth pre-flight; Existing state inspected; Project Memory bundle; Project-Lead-owned requirements bundle; Team-owned bundle status; `.software-team/`; Contracts materialized; GitHub Project; Status field and options; Requirement issue handling; Labels; Pointers and merge rules; Log; Non-conformance.
 Use results such as `<created|already present|mixed>`, `<matched|created>`, `<ready|manual action>`, and `<none|listed>` with concrete paths or ids as evidence.
 ## 15. What bootstrap does not do
 Bootstrap does not create requirements, commission teams, or write any specification. It does not write research, UX, solution architecture, development principles, product code, or tests.

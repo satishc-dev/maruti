@@ -38,8 +38,8 @@ If required input is missing, return `impeded` with the exact missing item and d
 15. If near turn budget, write safe partial work, return `in-progress`, and name the next action.
 16. Return a structured summary and work-log block to `St-Pm-Lead`.
 17. Never spawn subagents or write journals.
-18. Do not read `packages/software-team/docs/RUBBER-DUCK-PROTOCOL.md`.
-19. Do not read `packages/software-team/github-copilot/skills/st-rubber-duck/SKILL.md`.
+18. Do not read `RUBBER-DUCK-PROTOCOL.md`, wherever it may be found.
+19. Do not read the `st-rubber-duck` skill or any file inside it.
 
 ## Feature spec file template
 Write this concrete shape at the assigned path:

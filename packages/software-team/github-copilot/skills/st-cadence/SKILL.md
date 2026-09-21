@@ -4,7 +4,7 @@ description: 'Use by any software-team lead running cycles and by any crew agent
 ---
 # st-cadence
 Use this skill when a team lead runs cycles or a crew agent reports work.
-For full detail, read `docs/CADENCE.md`, `docs/PARALLELISM.md`, `docs/HANDOFF-PROTOCOL.md`, and `docs/ROLES.md`.
+For full detail, read `.software-team/contracts/CADENCE.md`, `.software-team/contracts/PARALLELISM.md`, `.software-team/contracts/HANDOFF-PROTOCOL.md`, and `.software-team/contracts/ROLES.md`. Bootstrap materializes that directory in the repository; if it is absent, say so and treat this skill as the operative summary rather than inventing the missing detail.
 ## Core rule
 A cycle is one dispatch-and-collect round by a team lead.
 The counter starts at `1`, increments by `1`, and never resets within the workstream.

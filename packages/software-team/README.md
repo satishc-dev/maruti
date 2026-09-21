@@ -114,6 +114,7 @@ intersect another's, and gets its own git worktree and branch.
 ```
 .project-memory/          Project Memory          Project-Lead
 .software-team/           Ledgers, workstreams    append-only
+.software-team/contracts/ The contracts agents read   materialized by bootstrap
 docs/requirements/        REQ-NNN                 Project-Lead
 docs/research/            Findings, cited         Research-Team
 docs/ux/                  Briefs, wireframes      UX-Team
@@ -140,8 +141,14 @@ Then, in the repository you want to work in:
 @st-project-lead bootstrap
 ```
 
+Installed agents are namespaced by plugin, so the fully-qualified name is
+`software-team:st-project-lead`. Use that form wherever a bare name is not
+resolved — notably `copilot --agent software-team:st-project-lead`, which is how
+you drive it non-interactively.
+
 Bootstrap is idempotent — it reports what it created versus what was already there,
-never overwrites, and is safe to re-run.
+never overwrites, and is safe to re-run. It also materializes the contracts into
+`.software-team/contracts/`, so run it before commissioning any team.
 
 After that, just talk to it:
 
@@ -151,22 +158,40 @@ After that, just talk to it:
 
 ## Contracts
 
-The behaviour of every agent is defined in [`docs/`](docs/). Agents load these; they
+The behaviour of every agent is defined in
+[`github-copilot/contracts/`](github-copilot/contracts/). Agents load these; they
 are not background reading.
 
 | Contract | Defines |
 |---|---|
-| [`ROLES.md`](docs/ROLES.md) | The six teams, their authority, the RACI, escalation |
+| [`ROLES.md`](github-copilot/contracts/ROLES.md) | The six teams, their authority, the RACI, escalation |
 | [`RUBBER-DUCK-PROTOCOL.md`](docs/RUBBER-DUCK-PROTOCOL.md) | The review standard — **duck agents only** |
-| [`PARALLELISM.md`](docs/PARALLELISM.md) | Workstreams, worktrees, the concurrency limit |
-| [`LIFECYCLE.md`](docs/LIFECYCLE.md) | States, gates, compare-and-swap transitions |
-| [`HANDOFF-PROTOCOL.md`](docs/HANDOFF-PROTOCOL.md) | Envelopes, receipts, consultation, escalation |
-| [`ARTIFACTS.md`](docs/ARTIFACTS.md) | Every document schema and naming convention |
-| [`OKF-PROFILE.md`](docs/OKF-PROFILE.md) | OKF v0.2 across all six bundles |
-| [`MEMORY-SCHEMA.md`](docs/MEMORY-SCHEMA.md) | Project Memory, ownership, projections |
-| [`GITHUB-INTEGRATION.md`](docs/GITHUB-INTEGRATION.md) | Projects v2, issues, PRs |
-| [`CADENCE.md`](docs/CADENCE.md) | Cycles, journals, budgets, retrospectives |
-| [`GLOSSARY.md`](docs/GLOSSARY.md) | One meaning per term |
+| [`PARALLELISM.md`](github-copilot/contracts/PARALLELISM.md) | Workstreams, worktrees, the concurrency limit |
+| [`LIFECYCLE.md`](github-copilot/contracts/LIFECYCLE.md) | States, gates, compare-and-swap transitions |
+| [`HANDOFF-PROTOCOL.md`](github-copilot/contracts/HANDOFF-PROTOCOL.md) | Envelopes, receipts, consultation, escalation |
+| [`ARTIFACTS.md`](github-copilot/contracts/ARTIFACTS.md) | Every document schema and naming convention |
+| [`OKF-PROFILE.md`](github-copilot/contracts/OKF-PROFILE.md) | OKF v0.2 across all six bundles |
+| [`MEMORY-SCHEMA.md`](github-copilot/contracts/MEMORY-SCHEMA.md) | Project Memory, ownership, projections |
+| [`GITHUB-INTEGRATION.md`](github-copilot/contracts/GITHUB-INTEGRATION.md) | Projects v2, issues, PRs |
+| [`CADENCE.md`](github-copilot/contracts/CADENCE.md) | Cycles, journals, budgets, retrospectives |
+| [`GLOSSARY.md`](github-copilot/contracts/GLOSSARY.md) | One meaning per term |
+
+### Where the contracts live at runtime
+
+The ten operational contracts ship **inside the plugin**, at
+`github-copilot/contracts/`. They have to: the plugin's install source is
+`github-copilot/` alone, so anything outside it simply does not exist on an
+installed machine.
+
+`bootstrap` copies them into the target repository at `.software-team/contracts/`,
+and every agent reads them from there. That gives one stable, repo-relative path
+that is identical whether you are developing inside `maruti` or working in an
+installed repo — and it makes the contracts a committed, auditable part of the
+project rather than invisible machinery.
+
+`RUBBER-DUCK-PROTOCOL.md` is the deliberate exception. It stays in
+[`docs/`](docs/), never ships, and is never copied into a repository. Ducks load
+the `st-rubber-duck` skill instead.
 
 `RUBBER-DUCK-PROTOCOL.md` is restricted. If you are working on this package, note
 that pasting its contents into any lead agent silently defeats the review design —
@@ -197,6 +222,6 @@ agent dispatch and multi-turn peer messaging between agents, and this design dep
 on both.
 
 Roles deliberately left out, to hold the team at six: security reviewer, technical
-writer, release engineer, bug triage, scrum master. [`ROLES.md`](docs/ROLES.md#9-roles-deliberately-not-included)
+writer, release engineer, bug triage, scrum master. [`ROLES.md`](github-copilot/contracts/ROLES.md#9-roles-deliberately-not-included)
 records where their duties currently land, so any of them can be split out later
 without redesigning the protocol.

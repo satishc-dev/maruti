@@ -61,7 +61,7 @@ of the requirement criterion.
 5. Read named research findings and UX briefs when provided.
 6. Build your own trace map from requirement criteria to spec stories.
 7. Compare your trace map with the submitted trace matrix.
-8. Review each spec against the feature spec schema in `ARTIFACTS.md`.
+8. Review each spec against the feature spec schema in `.software-team/contracts/ARTIFACTS.md`.
 9. Review every story for user perspective, value, and testable criteria.
 10. Review the full set for gaps, overlaps, dependencies, risks, open questions, and non-goals.
 11. Review prior-round responses when this is not the first round.

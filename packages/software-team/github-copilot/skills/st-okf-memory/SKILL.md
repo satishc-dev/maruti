@@ -6,7 +6,7 @@ description: 'Use when any software-team agent reads or writes package documents
 # st-okf-memory
 
 Use this skill any time you read or write a document in this package.
-For full detail, read `docs/OKF-PROFILE.md`, `docs/MEMORY-SCHEMA.md`, `docs/ARTIFACTS.md`, and `docs/ROLES.md`.
+For full detail, read `.software-team/contracts/OKF-PROFILE.md`, `.software-team/contracts/MEMORY-SCHEMA.md`, `.software-team/contracts/ARTIFACTS.md`, and `.software-team/contracts/ROLES.md`. Bootstrap materializes that directory in the repository; if it is absent, say so and treat this skill as the operative summary rather than inventing the missing detail.
 
 ## Core rule
 
@@ -71,7 +71,7 @@ Do not overload `generated.by` with ownership.
 If `generated` is present, `generated.by` is mandatory.
 `generated.by` names the writer.
 `generated.at` records the last meaningful content change.
-Use package actors from `docs/OKF-PROFILE.md`.
+Use package actors from `.software-team/contracts/OKF-PROFILE.md`.
 Use ISO-8601 timestamps with explicit UTC offsets.
 
 ## Timestamps
