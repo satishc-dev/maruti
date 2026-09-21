@@ -55,7 +55,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    type: Project Overview
    title: <Project name> — Overview
    description: Current project synthesis.
-   generated: { by: software-team-project-lead/0.1.0, at: <ISO-8601 timestamp> }
+   generated: { by: process:software-team-bootstrap, at: <ISO-8601 timestamp> }
    status: stable
    ---
    ```
@@ -66,7 +66,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    type: Memory Conventions
    title: Project Memory Conventions (OKF v0.2 profile)
    description: Distilled conventions this Project Memory bundle follows.
-   generated: { by: software-team-project-lead/0.1.0, at: <ISO-8601 timestamp> }
+   generated: { by: process:software-team-bootstrap, at: <ISO-8601 timestamp> }
    status: stable
    ---
    ```
@@ -77,7 +77,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    type: Integration Link
    title: GitHub Project Link
    description: Linked GitHub Project board configuration.
-   generated: { by: software-team-project-lead/0.1.0, at: <ISO-8601 timestamp> }
+   generated: { by: process:software-team-bootstrap, at: <ISO-8601 timestamp> }
    status: stable
    ---
    ```
@@ -88,7 +88,7 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    type: Register
    title: Requirements Register (Project Memory mirror)
    description: Mirror of docs/requirements/ with lifecycle, board, and delivery links.
-   generated: { by: software-team-project-lead/0.1.0, at: <ISO-8601 timestamp> }
+   generated: { by: process:software-team-bootstrap, at: <ISO-8601 timestamp> }
    status: stable
    ---
    ```
@@ -103,11 +103,22 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    okf_version: "0.2"
    ---
    ```
-3. Create `docs/requirements/_template.md` only if missing.
-4. `docs/requirements/_template.md` frontmatter: `id: REQ-NNN`, `title`, `description`, `type: Requirement`, `lifecycle: draft`, `status: draft`, `priority: P2`, `version: 1`, `owner: team:project-lead`, `generated`, `approved_at`, `approved_by`, `requirement_issue`, `links: { requirement_pr:, project_item:, research: [], ux: [], specs: [], architecture: [], workstreams: [], child_issues: [], prs: [] }`.
-5. Inspect team-owned bundle roots when present: `docs/research/`, `docs/ux/`, `docs/specs/`, and `docs/architecture/`.
-6. Do not create or modify team-owned bundle contents during bootstrap. Report missing or non-conformant team-owned roots as owner action before first use.
-7. Idempotency predicate: Project-Lead-owned roots and templates exist; team-owned bundle status is reported without mutation.
+3. Create `docs/requirements/README.md` only if missing. This is the human-facing requirements register, and it is a different document from `docs/requirements/index.md`. `st-sync`, `st-lint`, `LIFECYCLE.md` and `OKF-PROFILE.md` all expect it, so a bootstrap that omits it leaves the repository non-conformant and the next run will create it — which breaks idempotency. Frontmatter:
+   ```yaml
+   ---
+   type: Register
+   title: Requirements Register
+   description: Generated register of canonical project requirements.
+   generated: { by: process:software-team-bootstrap, at: <ISO-8601 timestamp> }
+   status: stable
+   ---
+   ```
+   Body: title `# Requirements Register`, then an empty table with columns ID, Title, Lifecycle, Priority, Version, Approved, Requirement issue, Project item, Doc.
+4. Create `docs/requirements/_template.md` only if missing.
+5. `docs/requirements/_template.md` frontmatter: `id: REQ-NNN`, `title`, `description`, `type: Requirement`, `lifecycle: draft`, `status: draft`, `priority: P2`, `version: 1`, `owner: team:project-lead`, `generated`, `approved_at`, `approved_by`, `requirement_issue`, `links: { requirement_pr:, project_item:, research: [], ux: [], specs: [], architecture: [], workstreams: [], child_issues: [], prs: [] }`.
+6. Inspect team-owned bundle roots when present: `docs/research/`, `docs/ux/`, `docs/specs/`, and `docs/architecture/`.
+7. Do not create or modify team-owned bundle contents during bootstrap. Report missing or non-conformant team-owned roots as owner action before first use.
+8. Idempotency predicate: Project-Lead-owned roots, the register, and templates all exist; team-owned bundle status is reported without mutation.
 ## 6. Create `.software-team/` and materialize the contracts
 1. Create `.software-team/` if missing.
 2. Do not create a `REQ-NNN` subdirectory during bootstrap.
@@ -267,15 +278,22 @@ Every new GitHub Project is created with a built-in single-select `Status` field
 6. Idempotency predicate: one pointer section exists; ignore and merge entries exist exactly once.
 ## 13. Normalize log and append Bootstrap entry
 1. Normalize `.project-memory/log.md`: preserve preamble, use bare descending `## YYYY-MM-DD` headings, group same dates, deduplicate identical bullets, and preserve same-day order.
-2. Append:
+2. Append, using the OKF automation actor exactly as written. Do not substitute the agent display name — `OKF-PROFILE.md` §5 requires `<producer>/<version>` or a `process:` actor, and writing `St-Project-Lead` here makes a later run rewrite the line, which breaks idempotency:
    ```markdown
-   - **Bootstrap**: [<ISO-8601 timestamp>] St-Project-Lead — Bootstrapped software-team repository support: Project Memory, Project-Lead-owned requirements bundle, team-owned bundle status, GitHub Project link, labels, pointers, and merge rules checked idempotently.
+   - **Bootstrap**: [<ISO-8601 timestamp>] process:software-team-bootstrap — Bootstrapped software-team repository support: Project Memory, Project-Lead-owned requirements bundle, team-owned bundle status, GitHub Project link, labels, pointers, and merge rules checked idempotently.
    ```
 3. Normalize again after append.
-4. Idempotency predicate: a second normalization produces no change and this run has one Bootstrap entry.
+4. Idempotency predicate: a second normalization produces no change, this run has one Bootstrap entry, and a later run neither rewrites the actor nor adds a second entry.
 ## 14. Print final checklist
 Print a `# Bootstrap checklist` table with columns `Area`, `Result`, and `Evidence`.
-Rows: Auth pre-flight; Existing state inspected; Project Memory bundle; Project-Lead-owned requirements bundle; Team-owned bundle status; `.software-team/`; Contracts materialized; GitHub Project; Status field and options; Requirement issue handling; Labels; Pointers and merge rules; Log; Non-conformance.
+Rows: Auth pre-flight; Existing state inspected; Project Memory bundle; Project-Lead-owned requirements bundle; Team-owned bundle status; `.software-team/`; Contracts materialized; GitHub Project; Status field and options; Requirement issue handling; Labels; Pointers and merge rules; Log; Commit; Non-conformance.
 Use results such as `<created|already present|mixed>`, `<matched|created>`, `<ready|manual action>`, and `<none|listed>` with concrete paths or ids as evidence.
-## 15. What bootstrap does not do
+## 15. Commit policy
+1. Commit the artifacts you created in a single commit. Bootstrap output is scaffolding the project is meant to keep, and leaving it uncommitted makes the next run's idempotency impossible to judge.
+2. Commit message: `chore: bootstrap software-team`, with the standard `Co-authored-by` trailer.
+3. Stage only paths bootstrap owns: `.project-memory/`, `.software-team/`, `docs/requirements/`, `AGENTS.md`, `.gitignore`, `.gitattributes`. Never stage unrelated working-tree changes you did not make.
+4. If there is nothing to commit, say so and commit nothing. A second run must produce no commit.
+5. **Never push.** Never create a branch, never open a pull request, and never modify any remote ref. Publishing is the stakeholder's decision, and bootstrap has not been asked to make it.
+6. Idempotency predicate: the first run produces exactly one commit, a second run produces none, and `origin` is untouched by both.
+## 16. What bootstrap does not do
 Bootstrap does not create requirements, commission teams, or write any specification. It does not write research, UX, solution architecture, development principles, product code, or tests.
