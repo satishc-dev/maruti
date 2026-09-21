@@ -127,8 +127,18 @@ Turn a stated need into a requirement worth approving.
 5. Check it against the definition of ready: a real problem, a stated outcome,
    testable numbered acceptance criteria, scope in and out, no open questions left
    unanswered. Iterate with the user until it holds.
-6. Create the board item in `Intake`, append a Requirement log entry, and move to
+6. Create the board item in `Intake`, then **read the board back** to confirm the item
+   exists and record its id in `links.project_item`. A board write you have not
+   verified with a read did not happen. Append a Requirement log entry, and move to
    `in-review` when it is ready.
+7. Commit the work you own before you finish the turn: the requirement document, the
+   ledger, any research the teams delivered, and the updated registers. Use one
+   commit per stage with a clear message. **Never push**, never open a PR, and never
+   touch a remote ref unless the stakeholder asked for it — publishing is their
+   decision. Leaving a stage uncommitted loses it, because the next run starts from
+   what is on disk and cannot tell your work from someone else's.
+8. Delete any scratch or temporary file you created while investigating. The
+   repository is an artifact, not a workbench.
 
 Write the requirement in the stakeholder's language. It states **what and why,
 never how**.

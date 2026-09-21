@@ -124,6 +124,14 @@ Persist the link at `.project-memory/project-link.md`.
 ```
 `project_id` is the Projects v2 node id, usually `PVT_...`; `status_field_id` is the Status field id, usually `PVTSSF_...`; `status_options` maps every column name to its option id. Option ids are short hex strings, not `PVTSSFO_` values. Record `project_url` exactly as the API returns it — user-owned Projects live under `/users/<owner>/projects/<N>` and organization-owned Projects under `/orgs/<owner>/projects/<N>`, so the path cannot be assumed.
 
+## Shell portability
+
+Every snippet here is a portable command line, not a script for one shell. Copilot CLI runs the host shell, which on Windows is PowerShell. Never chain these commands with the `and-and` operator: PowerShell rejects it before a variable assignment with `Unexpected token '='`, so a chained pre-flight fails without ever reaching the command that mattered. Run each command separately, or separate with `;` and check `$LASTEXITCODE`.
+
+## Verify every write
+
+A mutation is complete when a read confirms it, not when the command is issued. After any `item-create`, `item-edit`, `issue create`, `issue edit` or `label create`, read the resulting state back, record the observed id, and report an impediment if the read does not show the change. Never record a board link you have not seen. This matters most near the end of a long run, where a command can be issued and never complete — an unverified write is a failed write.
+
 Every new Project ships a built-in `Status` field holding `Todo`, `In Progress` and `Done`. Reconcile it to the twelve lifecycle options with `updateProjectV2Field` rather than expecting to create the field; see the bootstrap prompt for the exact mutation. That mutation replaces the entire option list, so reuse the existing `id` of any option you are keeping, or items lose their status.
 Add a Requirement issue to the Project:
 ```bash

@@ -53,6 +53,22 @@ If absent, the required human action is `gh auth refresh -s project`.
 | `git ls-remote origin HEAD` fails | Stop; Project-Lead reports missing repository access. |
 | `project` scope absent | Stop; Project-Lead reports the needed refresh. |
 If pre-flight fails, create nothing.
+## Running these commands safely
+Every snippet in this package is a portable command line, not a script for one shell. Copilot CLI runs the host's shell, which on Windows is PowerShell.
+- **Never chain commands with the `and-and` operator.** PowerShell rejects it before a variable assignment with `Unexpected token '='`, so a chained pre-flight fails without ever running the command that mattered. Run each command separately, or separate them with `;` and check `$LASTEXITCODE` after each.
+- Do not assume `2>/dev/null`, heredocs, or `$(...)` behave as they do in bash.
+- Prefer several short commands over one long chain. A chain that dies half way is indistinguishable, in a transcript, from one that succeeded.
+## Verify every write
+A board mutation is not done because the command was issued. It is done when a read confirms it.
+1. After any `gh project item-create`, `item-edit`, `issue create`, `issue edit` or `label create`, run a read that proves the effect:
+   ```bash
+   gh project item-list <N> --owner <owner> --format json
+   gh issue view <number>
+   gh label list --search <name> --json name
+   ```
+2. Compare the read against what you intended, and record the observed id or value in the ledger and in the requirement's `links`.
+3. If the read does not show the change, the write failed. Report it as an impediment. Never report a board change you have not seen.
+4. This matters most at the end of a long run, where a command can be issued but never complete. Treat an unverified write as a failed write.
 No issue, label, project, project item, branch, or pull request is half-created.
 ## Project detection
 The board title is `<repo> Delivery`.

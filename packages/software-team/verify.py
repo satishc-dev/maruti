@@ -255,7 +255,7 @@ def check_gh_flags() -> None:
     pattern = re.compile(r"gh\s+(issue|pr|project|label|api|auth)\s+([a-z][a-z-]*)(.*)")
     usages: dict[str, set[str]] = {}
     for path in PACKAGE.rglob("*.md"):
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for _, line in code_lines(path):
             match = pattern.search(line)
             if not match:
                 continue
@@ -342,10 +342,47 @@ def check_contracts_shipped() -> None:
         )
 
 
+def code_lines(path: Path):
+    """Yield (line_no, line) for lines inside fenced code blocks only.
+
+    Prose that *describes* a command must not be parsed as an invocation --
+    a sentence naming three commands would otherwise attribute all their flags
+    to the first one, and a sentence forbidding ``&&`` would trip the ban.
+    """
+    inside = False
+    for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if line.lstrip().startswith("```"):
+            inside = not inside
+            continue
+        if inside:
+            yield line_no, line
+
+
+def check_shell_portability() -> None:
+    """No snippet may chain commands with && .
+
+    Copilot CLI runs the host shell, which on Windows is PowerShell. There,
+    ``&& $var = ...`` is a parse error, so a chained pre-flight fails without
+    ever reaching the command that mattered. A live run lost a board write
+    exactly this way.
+    """
+    offenders = []
+    for path in sorted(COPILOT.rglob("*.md")):
+        for line_no, line in code_lines(path):
+            if "&&" in line:
+                offenders.append(f"{path.relative_to(REPO_ROOT)}:{line_no}: {line.strip()[:80]}")
+    if offenders:
+        for item in offenders:
+            fail(f"shell chaining with && is not portable: {item}")
+    else:
+        ok("no && command chaining in any snippet")
+
+
 def main() -> int:
     check_expected_files()
     check_frontmatter()
     check_contracts_shipped()
+    check_shell_portability()
     check_rubric_asymmetry()
     check_duck_files_defer()
     check_no_collisions()
