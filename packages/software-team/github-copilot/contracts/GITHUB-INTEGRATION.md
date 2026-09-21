@@ -104,7 +104,7 @@ Persist the link at `.project-memory/project-link.md`.
 
 - owner: <org-or-user>
 - project_number: <N>
-- project_url: https://github.com/orgs/<owner>/projects/<N>
+- project_url: <the url field returned by `gh project view`, verbatim>
 - project_id: <PVT_...>
 - status_field_id: <PVTSSF_...>
 - status_options:
@@ -122,7 +122,9 @@ Persist the link at `.project-memory/project-link.md`.
     Blocked: <option-id>
 - requirement_issue_type: <Requirement | label:requirement>
 ```
-`project_id` is the Projects v2 node id, usually `PVT_...`; `status_field_id` is the Status field id, usually `PVTSSF_...`; `status_options` maps every column name to its option id.
+`project_id` is the Projects v2 node id, usually `PVT_...`; `status_field_id` is the Status field id, usually `PVTSSF_...`; `status_options` maps every column name to its option id. Option ids are short hex strings, not `PVTSSFO_` values. Record `project_url` exactly as the API returns it — user-owned Projects live under `/users/<owner>/projects/<N>` and organization-owned Projects under `/orgs/<owner>/projects/<N>`, so the path cannot be assumed.
+
+Every new Project ships a built-in `Status` field holding `Todo`, `In Progress` and `Done`. Reconcile it to the twelve lifecycle options with `updateProjectV2Field` rather than expecting to create the field; see the bootstrap prompt for the exact mutation. That mutation replaces the entire option list, so reuse the existing `id` of any option you are keeping, or items lose their status.
 Add a Requirement issue to the Project:
 ```bash
 gh project item-add <N> --owner <owner> --url <issue-url>

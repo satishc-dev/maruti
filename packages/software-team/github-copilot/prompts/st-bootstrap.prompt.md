@@ -139,28 +139,64 @@ Make the repository ready for the software-team. Be fully ordered and idempotent
    ```
 5. Idempotency predicate: one exact-title Project is selected and its number, URL and `PVT_...` id are known.
 ## 8. Ensure Status field and options
+Every new GitHub Project is created with a built-in single-select `Status` field already holding `Todo`, `In Progress` and `Done`. `Status` is therefore almost never absent, and treating a non-conformant option set as manual action would halt every first-time bootstrap. Reconcile the options instead.
 1. Run:
    ```bash
    gh project field-list <N> --owner <owner> --format json
    ```
-2. Ensure single-select field `Status` exists.
-3. If `Status` is absent, create it with every required option:
+2. Locate the single-select field named `Status` and capture its `PVTSSF_...` id and its current options, each with `id` and `name`.
+3. Required option names, in order: Intake, In Review, Ready for Discovery, In Discovery, In Spec, In Architecture, Ready for Dev, In Dev, In Acceptance, Done, Parked, Blocked.
+4. If `Status` is genuinely absent, create it with every required option:
    ```bash
    gh project field-create <N> --owner <owner> --name Status --data-type SINGLE_SELECT --single-select-options "Intake,In Review,Ready for Discovery,In Discovery,In Spec,In Architecture,Ready for Dev,In Dev,In Acceptance,Done,Parked,Blocked" --format json
    ```
-4. Re-run:
+5. If `Status` exists and its option names already match the required set, change nothing.
+6. Otherwise reconcile with `updateProjectV2Field`. That mutation **replaces the whole option list**, so build the replacement carefully: for every required name that already exists, reuse its existing `id` so items keep their status; for every required name that does not exist, omit `id` so a new option is created.
+7. Count the items on the board before deciding what to do with options that are not in the required set:
+   ```bash
+   gh project item-list <N> --owner <owner> --format json
+   ```
+   - **No items** — drop the extra options. A fresh board's `Todo` and `In Progress` carry no information.
+   - **Any items** — keep every extra option, appended after the required ones, and report them as non-conformant but preserved. Never silently delete an option that items may be using.
+8. Apply the reconciliation. Inline the option list; `singleSelectOptions` is a list of input objects and cannot be passed through `-f`:
+   ```bash
+   gh api graphql -f query='
+   mutation {
+     updateProjectV2Field(input: {
+       fieldId: "<PVTSSF_...>",
+       singleSelectOptions: [
+         {name: "Intake", color: GRAY, description: "Requirement recorded, not yet reviewed"},
+         {name: "In Review", color: YELLOW, description: "Awaiting stakeholder review"},
+         {name: "Ready for Discovery", color: BLUE, description: "Approved, UX discovery pending"},
+         {name: "In Discovery", color: BLUE, description: "UX discovery running"},
+         {name: "In Spec", color: PURPLE, description: "PM-Team is specifying"},
+         {name: "In Architecture", color: PURPLE, description: "Architect-Team is designing"},
+         {name: "Ready for Dev", color: BLUE, description: "Build-ready, no workstream active"},
+         {name: "In Dev", color: ORANGE, description: "Dev-Team is implementing"},
+         {name: "In Acceptance", color: YELLOW, description: "Project-Lead is verifying the PR"},
+         {name: "Done", color: GREEN, description: "Accepted, merged and closed"},
+         {name: "Parked", color: GRAY, description: "Deliberately deferred"},
+         {name: "Blocked", color: RED, description: "Cannot proceed"}
+       ]
+     }) {
+       projectV2Field { ... on ProjectV2SingleSelectField { id name options { id name } } }
+     }
+   }'
+   ```
+   Add `id: "<existing-option-id>"` to any option that already exists. Valid colors are GRAY, BLUE, GREEN, YELLOW, ORANGE, RED, PINK and PURPLE; anything else is rejected.
+9. Re-run:
    ```bash
    gh project field-list <N> --owner <owner> --format json
    ```
-5. Ensure option names: Intake, In Review, Ready for Discovery, In Discovery, In Spec, In Architecture, Ready for Dev, In Dev, In Acceptance, Done, Parked, Blocked.
-6. If `Status` exists but lacks a required option, stop and report manual action. Do not guess ids.
-7. Idempotency predicate: field id and every option id are known.
+10. Confirm every required option name is present and capture its option id. Option ids are short hex strings, not `PVTSSFO_` values.
+11. Stop and report manual action only if the mutation itself fails, or if `Status` is not a single-select field and so cannot hold these options. Do not guess ids.
+12. Idempotency predicate: field id and every required option id are known, and a second run finds the options already conformant and changes nothing.
 ## 9. Record project link
 1. Write or update the Project Link field list while preserving required frontmatter:
    ```markdown
    - owner: <org-or-user>
    - project_number: <N>
-   - project_url: https://github.com/orgs/<owner>/projects/<N>
+   - project_url: <the url field returned by `gh project view`, verbatim>
    - project_id: <PVT_...>
    - status_field_id: <PVTSSF_...>
    - status_options:
