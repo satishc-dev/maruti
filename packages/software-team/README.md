@@ -189,7 +189,6 @@ Then, in the repository you want to work in:
 ```
 @st-project-lead bootstrap
 ```
-
 Installed agents are namespaced by plugin, so the fully-qualified name is
 `software-team:st-project-lead`. Use that form wherever a bare name is not
 resolved — notably `copilot --agent software-team:st-project-lead`, which is how
@@ -204,6 +203,29 @@ After that, just talk to it:
 ```
 @st-project-lead I want users to be able to export their account data as CSV
 ```
+
+## Upgrading
+
+```
+copilot plugin marketplace update
+copilot plugin update software-team@maruti
+```
+
+Installing does not pull later changes on its own, and the CLI reports "already at
+latest" while still refreshing content — so run the update explicitly before
+assuming you have the current behaviour.
+
+**Coming from 0.1.0, re-run `bootstrap` in every repository that used it.** That
+release did not ship the contracts at all: the plugin installs `github-copilot/`
+only, and the contracts lived outside it, so agents looked for nine contract files
+and found none — silently, with no error. 0.2.0 ships them inside the plugin and
+bootstrap copies them to `.software-team/contracts/`. A repository bootstrapped
+under 0.1.0 has no such directory, and bootstrap is idempotent, so re-running it is
+safe and only adds what is missing.
+
+0.2.0 also changed where work happens: every writer now authors in its own git
+worktree on its own branch rather than in the shared main tree. That needs no
+migration — it applies from the next commission onwards.
 
 ## Contracts
 

@@ -12,7 +12,7 @@
     {
       "name": "software-team",
       "description": "A simulated software organisation: a stakeholder-facing Project Lead plus Research, Architect, PM, Dev and UX teams, each with an independent reviewer. Runs research, requirements, UX, specs, architecture and parallel delivery through to acceptance and merge on GitHub.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./packages/software-team/github-copilot"
     },
     {
