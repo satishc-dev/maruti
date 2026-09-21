@@ -148,6 +148,35 @@ offsets, real markdown links, and footnote labels that resolve to declared sourc
 That last rule matters most for research — a claim without a source is not a
 finding.
 
+### Where it writes them
+
+A working tree has one index and one `HEAD`, so two agents editing one tree stage
+each other's half-written files and fight over `index.lock`. Every writer therefore
+authors in its **own git worktree on its own branch**, and the main working tree is
+an integration point nobody edits:
+
+```
+main working tree            merges only — and bootstrap
+.worktrees/REQ-007/project-lead/   Project-Lead    users/you/REQ-007-lead
+.worktrees/REQ-007/research/       Research-Team   users/you/REQ-007-research
+.worktrees/REQ-007/ux/             UX-Team         users/you/REQ-007-ux
+.worktrees/REQ-007/pm/             PM-Team         users/you/REQ-007-pm
+.worktrees/REQ-007/architect/      Architect-Team  users/you/REQ-007-architect
+.worktrees/REQ-007/ws1/            Dev-Team        users/you/REQ-007-ws1
+```
+
+Project-Lead merges each delivered branch, and merges its own at every stage
+boundary **before** commissioning the next team — otherwise that team branches from
+the default branch and reads a stale `lifecycle` and `version`.
+
+Merges are additive by construction: each team writes only under the directory it
+owns, file scopes may not intersect, and `log.md` and `ledger.md` carry
+`merge=union` so concurrent appends combine without conflict.
+
+`bootstrap` is the single exception and runs in the main tree — nothing is running
+alongside it, and it is what creates the `.gitignore` entry that makes `.worktrees/`
+ignorable in the first place.
+
 ## Install
 
 ```
@@ -225,6 +254,7 @@ teams at once breaks that assumption, so each hazard is addressed explicitly:
 | Hazard | Countermeasure |
 |---|---|
 | Many roles writing shared memory | One owning writer per path; others propose |
+| Many agents writing one working tree | One worktree and branch per writer; the main tree is integration-only |
 | `REQ-NNN` allocated by scanning files — two writers collide | Project-Lead is the sole, serialized allocator |
 | Lifecycle edits are last-write-wins | `version` field with a compare-and-swap predicate |
 | Union-merged log has no ordering or identity | Ledger entries carry event id, actor, workstream |

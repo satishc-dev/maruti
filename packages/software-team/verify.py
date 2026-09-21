@@ -378,11 +378,77 @@ def check_shell_portability() -> None:
         ok("no && command chaining in any snippet")
 
 
+def check_worktree_isolation() -> None:
+    """Every writer must author in its own git worktree.
+
+    A working tree has one index and one HEAD, so two agents editing one tree
+    stage each other's half-written files and contend on index.lock. Worktree
+    isolation was originally prescribed for Dev-Team only, leaving Research, UX,
+    PM and Architect authoring directly in the shared main tree -- safe only
+    while stages happened to run sequentially, which the design does not
+    guarantee.
+    """
+    writers = {
+        "st-project-lead": "project-lead",
+        "st-research-lead": "research",
+        "st-ux-designer": "ux",
+        "st-pm-lead": "pm",
+        "st-architect": "architect",
+        "st-dev-lead": "ws",
+    }
+    before = len(failures)
+    for agent, _ in sorted(writers.items()):
+        path = COPILOT / "agents" / f"{agent}.agent.md"
+        if not path.exists():
+            fail(f"missing writer agent: {agent}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if ".worktrees/" not in text:
+            fail(f"{path.relative_to(REPO_ROOT)}: names no worktree; it would author in the main tree")
+        if "branch" not in text.lower():
+            fail(f"{path.relative_to(REPO_ROOT)}: names no branch to commit on")
+
+    # Reviewers must read the worktree, not the main tree, or they review files
+    # that were never written there.
+    for duck in sorted(DUCK_AGENTS):
+        path = COPILOT / "agents" / f"{duck}.agent.md"
+        if not path.exists():
+            continue
+        if ".worktrees/" not in path.read_text(encoding="utf-8"):
+            fail(
+                f"{path.relative_to(REPO_ROOT)}: does not reference the worktree under "
+                f"review; it would review stale or absent files"
+            )
+
+    # The invariant belongs in the charter and the parallelism contract, not
+    # only in the agents that happen to implement it.
+    for contract, needle in (
+        ("ROLES.md", "working tree"),
+        ("PARALLELISM.md", "One writer per working tree"),
+        ("HANDOFF-PROTOCOL.md", "worktree"),
+    ):
+        path = COPILOT / "contracts" / contract
+        if not path.exists() or needle.lower() not in path.read_text(encoding="utf-8").lower():
+            fail(f"contracts/{contract}: does not state the worktree isolation rule")
+
+    # Bootstrap is the one deliberate exception and must say so.
+    boot = COPILOT / "prompts" / "st-bootstrap.prompt.md"
+    if boot.exists() and "main working tree" not in boot.read_text(encoding="utf-8"):
+        fail("st-bootstrap.prompt.md: does not record that bootstrap is the main-tree exception")
+
+    if len(failures) == before:
+        ok(
+            f"worktree isolation stated for {len(writers)} writers, "
+            f"{len(DUCK_AGENTS)} reviewers and 3 contracts"
+        )
+
+
 def main() -> int:
     check_expected_files()
     check_frontmatter()
     check_contracts_shipped()
     check_shell_portability()
+    check_worktree_isolation()
     check_rubric_asymmetry()
     check_duck_files_defer()
     check_no_collisions()

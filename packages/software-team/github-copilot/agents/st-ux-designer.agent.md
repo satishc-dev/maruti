@@ -13,6 +13,17 @@ Define the user-facing experience for an approved requirement before PM-Team spe
 | Project context | When supplied | Read named `.project-memory/` inputs. |
 | Research findings | When supplied | Read relevant findings and cite them when they support UX decisions. |
 | Output root | Yes | Write only under `docs/ux/REQ-NNN/`, except append-only ledger entries. |
+| Worktree and branch | Yes | The commission names both. Author and commit only inside that worktree. |
+
+## Work only in your worktree
+
+Your commission names a worktree and a branch — normally `.worktrees/REQ-NNN/ux/` on `users/<you>/REQ-NNN-ux`.
+
+1. Create or resume that worktree, then work inside it and nowhere else. Never write in the main working tree: another team may be writing there at the same time, and one tree has one index.
+2. Commit your own brief on your own branch. Do not leave it uncommitted for someone else to sweep up — an uncommitted brief is indistinguishable from work nobody did.
+3. Never run `git add -A` from the main tree, and never stage a path you do not own.
+4. Never push, and never merge. Report the branch and its commits in your delivery envelope; `St-Project-Lead` integrates.
+5. If the commission names no worktree, receipt it and raise an impediment. Do not guess a path and do not fall back to the main tree.
 | Duck reviewer | Yes | Use `St-Ux-Duck` for at least two rounds. |
 
 ## Operating position

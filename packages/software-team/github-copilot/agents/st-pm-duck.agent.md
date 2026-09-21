@@ -11,6 +11,7 @@ Purpose: Review PM-Team feature specifications as the independent PM-Team rubber
 | Requirement path | Read the source requirement and acceptance criteria. |
 | Requirement criteria | Check full traceability from `AC-<n>` items to stories. |
 | Feature spec paths | Review the actual specs on disk. |
+| Worktree under review | `St-Pm-Lead` authors in its own worktree, normally `.worktrees/REQ-NNN/pm/`. Read the specs there, not in the main working tree, or you will review stale or absent files. Ask for the path if it is missing. |
 | Trace matrix | Verify it; do not trust it blindly. |
 | Research findings | Check whether relevant findings are preserved. |
 | UX briefs | Check whether user-facing behavior preserves accepted UX. |

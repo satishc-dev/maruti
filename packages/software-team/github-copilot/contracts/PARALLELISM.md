@@ -134,21 +134,79 @@ Each workstream costs a team. Prefer fewer, larger workstreams over many tiny on
 
 ## 4. Filesystem and git isolation
 
-Use one git worktree per workstream under `.worktrees/<REQ-NNN>/ws<k>/`.
+**One writer per working tree.** A working tree has one index and one `HEAD`. Two agents editing the same tree will stage each other's half-written files, contend on `index.lock`, and leave debris that cannot be told apart from work in progress. So every writer gets its own worktree and its own branch, and the main working tree is an integration point that nobody authors in.
+
+| Working tree | Who authors there | Branch |
+|---|---|---|
+| Main working tree, default branch | **Nobody.** Merges and `bootstrap` only. | default |
+| `.worktrees/<REQ-NNN>/project-lead/` | Project-Lead | `users/<you>/REQ-NNN-lead` |
+| `.worktrees/<REQ-NNN>/research/` | Research-Team | `users/<you>/REQ-NNN-research` |
+| `.worktrees/<REQ-NNN>/ux/` | UX-Team | `users/<you>/REQ-NNN-ux` |
+| `.worktrees/<REQ-NNN>/pm/` | PM-Team | `users/<you>/REQ-NNN-pm` |
+| `.worktrees/<REQ-NNN>/architect/` | Architect-Team | `users/<you>/REQ-NNN-architect` |
+| `.worktrees/<REQ-NNN>/ws<k>/` | One Dev-Team workstream | `users/<you>/REQ-NNN-ws<k>` |
+
+Dev-Team is the case with more than one worktree at a time, because a requirement may decompose into several workstreams. Every other team has exactly one.
 
 ```bash
+.worktrees/REQ-007/project-lead/
+.worktrees/REQ-007/research/
+.worktrees/REQ-007/pm/
 .worktrees/REQ-007/ws1/
 .worktrees/REQ-007/ws2/
 .worktrees/REQ-012/ws1/
 ```
 
-The path mirrors the workstream id. It makes handoff and forensics simple.
+### 4.0 Research predates the requirement
 
-### 4.1 Branch names
+Research runs before `REQ-NNN` exists, so it keys on the slug instead, matching the ledger path it already uses:
+
+```bash
+.worktrees/pre-REQ-<slug>/research/       # branch users/<you>/pre-REQ-<slug>-research
+.worktrees/pre-REQ-<slug>/project-lead/   # branch users/<you>/pre-REQ-<slug>-lead
+```
+
+### 4.1 Creating and entering a worktree
+
+The commissioner creates the worktree and names it in the commission envelope. The commissioned team enters it and works nowhere else.
+
+```bash
+git worktree add .worktrees/REQ-007/pm -b users/alex/REQ-007-pm
+git -C .worktrees/REQ-007/pm status --short
+```
+
+Resume rather than recreate when the worktree already exists. Never create a second worktree for the same branch; git refuses, and the attempt signals that two agents believe they own the same work.
+
+### 4.2 Committing and merging
+
+1. Author and commit only inside your own worktree, on your own branch.
+2. Never run `git add -A` from the main working tree, and never stage a path you do not own.
+3. Report your branch and its commits in your delivery envelope.
+4. Project-Lead merges delivered branches into the default branch in the main working tree. Merging is not authoring, which is why it is the one thing the main tree is for.
+
+**Project-Lead merges before it commissions.** Its own branch is long-lived for the requirement and is merged into the default branch at each stage boundary, *before* the next team is dispatched. A team reads the requirement from the default branch, so unmerged lifecycle state would hand it a stale `lifecycle` and `version`. This is a correctness rule, not housekeeping.
+
+Merges between teams are additive by construction: each team writes only under the directory it owns, and §3 already forbids intersecting file scopes. `.project-memory/log.md` and `.software-team/**/ledger.md` carry `merge=union` in `.gitattributes`, so concurrent appends from separate branches combine without conflict.
+
+### 4.3 Teardown
+
+After a branch is merged and its work is accepted, remove the worktree and the branch:
+
+```bash
+git worktree remove .worktrees/REQ-007/pm
+git branch -d users/alex/REQ-007-pm
+```
+
+Do not tear down a failed or dirty worktree. §7 keeps it as evidence.
+
+### 4.4 Branch names
 
 Use sibling branch names.
 
 ```bash
+# team branch
+users/<you>/REQ-NNN-<team>
+
 # feature branch
 users/<you>/REQ-NNN-ws<k>
 

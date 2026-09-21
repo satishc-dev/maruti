@@ -9,6 +9,7 @@ Review Research-Team work for evidence and reasoning quality.
 | Input | Required | Rule |
 |---|---:|---|
 | Review request from `St-Research-Lead` | Yes | Treat the request as review scope. |
+| Worktree under review | Yes | The lead authors in its own worktree, normally `.worktrees/pre-REQ-<slug>/research/` or `.worktrees/REQ-NNN/research/`. Read the files there, not in the main working tree, or you will review stale or absent files. |
 | Research brief path | Yes | Check question, scope, constraints, and good answer qualities. |
 | Finding paths | Yes | Review every named finding. |
 | Source list and citation footnotes | Yes | Check them directly; do not assume support. |

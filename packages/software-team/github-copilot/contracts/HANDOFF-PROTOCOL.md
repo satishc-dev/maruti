@@ -202,11 +202,14 @@ The receiver receipts before acting.
 The receiver returns `deliver`, `escalate`, or `reject`.
 | Team | Receives | Must return |
 |---|---|---|
-| Research-Team | Requirement when present at `docs/requirements/REQ-NNN-<slug>.md`; research question; scope; constraints; prior references under `.project-memory/`; prior findings under `docs/research/`. | Findings under `docs/research/<topic>/`; cited evidence; verdict; artifacts; open questions; impediments. |
-| Architect-Team | Requirement; specs under `docs/specs/REQ-NNN/`; UX brief under `docs/ux/REQ-NNN/` when present; research findings; repository constraints; current `docs/architecture/`. | Solution architecture, ADRs when needed, and development principles under `docs/architecture/`; verdict; vetoes with `verdict: vetoed`; impediments. |
-| UX-Team | Requirement; user-visible hypothesis; product context from `.project-memory/`; research findings; output path `docs/ux/REQ-NNN/`. | UX brief under `docs/ux/REQ-NNN/`, or withdrawal stating no user-visible surface; verdict; artifacts; impediments. |
-| PM-Team | Approved requirement; UX brief when present; research findings; known architecture constraints; output path `docs/specs/REQ-NNN/`; out-of-scope statements. | Feature specs under `docs/specs/REQ-NNN/`; stories; acceptance criteria; verdict; board requests for feature and story issues; impediments. |
-| Dev-Team | Requirement; feature specs; solution architecture; development principles; workstream record; branch; worktree `.worktrees/REQ-NNN/ws<k>/`; file scope; dependencies; acceptance criteria. | Pull request; validation summary; verdict; board requests for acceptance status or PR comment; impediments; no merge before Project-Lead acceptance. |
+| Research-Team | Requirement when present at `docs/requirements/REQ-NNN-<slug>.md`; research question; scope; constraints; prior references under `.project-memory/`; prior findings under `docs/research/`; worktree and branch. | Findings under `docs/research/<topic>/`; cited evidence; verdict; artifacts; branch and commits; open questions; impediments. |
+| Architect-Team | Requirement; specs under `docs/specs/REQ-NNN/`; UX brief under `docs/ux/REQ-NNN/` when present; research findings; repository constraints; current `docs/architecture/`; worktree and branch. | Solution architecture, ADRs when needed, and development principles under `docs/architecture/`; verdict; branch and commits; vetoes with `verdict: vetoed`; impediments. |
+| UX-Team | Requirement; user-visible hypothesis; product context from `.project-memory/`; research findings; output path `docs/ux/REQ-NNN/`; worktree and branch. | UX brief under `docs/ux/REQ-NNN/`, or withdrawal stating no user-visible surface; verdict; artifacts; branch and commits; impediments. |
+| PM-Team | Approved requirement; UX brief when present; research findings; known architecture constraints; output path `docs/specs/REQ-NNN/`; out-of-scope statements; worktree and branch. | Feature specs under `docs/specs/REQ-NNN/`; stories; acceptance criteria; verdict; branch and commits; board requests for feature and story issues; impediments. |
+| Dev-Team | Requirement; feature specs; solution architecture; development principles; workstream record; branch; worktree `.worktrees/REQ-NNN/ws<k>/`; file scope; dependencies; acceptance criteria. | Pull request; validation summary; verdict; branch and commits; board requests for acceptance status or PR comment; impediments; no merge before Project-Lead acceptance. |
+
+**Every commission names a worktree and a branch.** Not only Dev's. A commissioned team authors and commits inside that worktree and nowhere else, and returns the branch it committed on. `PARALLELISM.md` §4 holds the paths and names. A commission without them is incomplete — receipt it, then raise an impediment rather than guessing or working in the main tree.
+
 Exact commission payload pattern:
 ```yaml
 event_id: EV-REQ-NNN-SEQ
@@ -219,6 +222,9 @@ gate: "<current lifecycle gate>"
 intent: commission
 verdict: null
 summary: "<one-line dispatch>"
+worktree: ".worktrees/REQ-NNN/<team>/"
+branch: "users/<you>/REQ-NNN-<team>"
+base_ref: "<default branch, already carrying every merged prior stage>"
 artifacts:
   - { path: "docs/requirements/REQ-NNN-<slug>.md", kind: "requirement", owner: Project-Lead }
   - { path: "<team-specific input path>", kind: "<team-specific kind>", owner: "<owning team>" }
@@ -228,12 +234,21 @@ memory_proposals: []
 receipt_of: null
 actor: "software-team-project-lead/0.1.0"
 ```
+A delivery envelope returns the same two fields plus what was committed:
+```yaml
+intent: deliver
+worktree: ".worktrees/REQ-NNN/<team>/"
+branch: "users/<you>/REQ-NNN-<team>"
+commits: ["<sha> <subject>"]
+```
+`base_ref` matters. Project-Lead merges its own branch into the default branch at every stage boundary *before* commissioning, so the default branch always carries current lifecycle state. A team branching from anything else reads a stale `lifecycle` and `version`.
+
 | Team | Required input paths in `artifacts[]` |
 |---|---|
-| Research-Team | `docs/requirements/REQ-NNN-<slug>.md` when present; `.project-memory/references/<topic>.md` when present; `docs/research/<prior-topic>/` when relevant. |
-| Architect-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/specs/REQ-NNN/`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant. |
-| UX-Team | `docs/requirements/REQ-NNN-<slug>.md`; `.project-memory/overview.md`; `docs/research/<topic>/` when relevant. |
-| PM-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant. |
+| Research-Team | `docs/requirements/REQ-NNN-<slug>.md` when present; `.project-memory/references/<topic>.md` when present; `docs/research/<prior-topic>/` when relevant; `.worktrees/<REQ-NNN or pre-REQ-slug>/research/`. |
+| Architect-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/specs/REQ-NNN/`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant; `.worktrees/REQ-NNN/architect/`. |
+| UX-Team | `docs/requirements/REQ-NNN-<slug>.md`; `.project-memory/overview.md`; `docs/research/<topic>/` when relevant; `.worktrees/REQ-NNN/ux/`. |
+| PM-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/ux/REQ-NNN/` when present; `docs/research/<topic>/` when relevant; `.worktrees/REQ-NNN/pm/`. |
 | Dev-Team | `docs/requirements/REQ-NNN-<slug>.md`; `docs/specs/REQ-NNN/`; `docs/architecture/`; `.worktrees/REQ-NNN/ws<k>/`. |
 ## 7. Peer consultation
 Consultation is distinct from handoff.

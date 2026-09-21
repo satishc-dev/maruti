@@ -13,6 +13,7 @@ Purpose: Write or revise exactly one feature spec at the exact path assigned by 
 | Feature title and description | Define the feature problem and observable goal. |
 | Sibling context | Avoid gaps, overlaps, and unstated dependencies. |
 | Exact output path | Write only this path under `docs/specs/REQ-NNN/`. |
+| Worktree | Yes. `St-Pm-Lead` gives you a worktree path, normally `.worktrees/REQ-NNN/pm/`. Resolve your output path inside it and write nowhere else. A sibling analyst may be working in the same worktree, so stage and commit only your one assigned file. Never write in the main working tree. If no worktree is given, return `impeded`. |
 | Research findings and UX briefs | Preserve relevant evidence, constraints, behavior, and states. |
 | Existing repo files | Use only when named as context. |
 | Reviewer points | On revision, address these points verbatim and nothing unrelated. |
@@ -21,7 +22,7 @@ Purpose: Write or revise exactly one feature spec at the exact path assigned by 
 If required input is missing, return `impeded` with the exact missing item and do not guess.
 
 ## Ordered workflow
-1. Read the assignment packet and confirm there is exactly one output path under `docs/specs/REQ-NNN/`.
+1. Read the assignment packet and confirm there is exactly one output path under `docs/specs/REQ-NNN/`, and one worktree to resolve it inside.
 2. Read the requirement, assigned criteria, research findings, UX briefs, sibling context, and named repo files.
 3. Identify the feature problem, observable goal, meaningful non-goals, dependencies, risks, and out-of-scope clarifications.
 4. Draft the smallest coherent story set for this feature.

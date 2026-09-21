@@ -50,6 +50,24 @@ The same principle extends to documents: every path has exactly one owning team
 (§4). A team that needs a change to a document it does not own proposes it to the
 owner; it does not edit it.
 
+It extends again to **working trees**. A working tree has one index and one
+`HEAD`, so two agents editing one tree are two writers on one surface. Every
+writer therefore authors inside its own git worktree on its own branch:
+
+| Working tree | Who authors there |
+|---|---|
+| The main working tree, on the default branch | **Nobody.** It is an integration point. |
+| `.worktrees/<REQ-NNN>/project-lead/` | Project-Lead |
+| `.worktrees/<REQ-NNN>/<team>/` | That one team, and no other |
+
+Project-Lead is included. It is the only agent that merges, and it merges *into*
+the main tree; it does not author there. The single exception is `bootstrap`,
+which runs in the main tree because no team is running and because bootstrap is
+what creates the `.gitignore` entry that makes `.worktrees/` ignorable — worktrees
+cannot precede it.
+
+`PARALLELISM.md` §4 holds the paths, branch names and teardown rules.
+
 ### Rule 3 — Nothing ships unreviewed
 
 **Every team except Project-Lead has a rubber-duck counterpart, and no team's work

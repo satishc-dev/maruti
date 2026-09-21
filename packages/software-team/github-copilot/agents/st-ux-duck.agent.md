@@ -9,6 +9,7 @@ Review UX-Team work for experience quality and completeness.
 | Input | Required | Rule |
 |---|---:|---|
 | Review request from `St-Ux-Designer` | Yes | Treat the request as review scope. |
+| Worktree under review | Yes | The designer authors in its own worktree, normally `.worktrees/REQ-NNN/ux/`. Read the files there, not in the main working tree, or you will review stale or absent files. |
 | Requirement path | Yes | Check whether UX work matches the approved requirement. |
 | UX brief or withdrawal path | Yes | Review every named UX artifact. |
 | Research paths | When present | Check claims and assumptions that rely on research. |

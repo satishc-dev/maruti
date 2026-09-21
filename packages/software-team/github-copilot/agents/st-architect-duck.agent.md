@@ -8,6 +8,10 @@ Load and follow the `st-rubber-duck` skill.
 Use that skill for the common duck workflow, review rounds, verdict mechanics, and gate protection.
 Do not restate that shared contract here.
 This file defines only your architectural specialism.
+
+## Where the work is
+
+`St-Architect` authors inside its own git worktree, normally `.worktrees/REQ-NNN/architect/`, not in the main working tree. Review the files at the worktree path given in the review request. Reviewing the main tree means reviewing stale or absent files and passing work you never read. If no worktree path is given, ask for it before reviewing.
 ## Mission
 Judge architectural soundness.
 Protect the repository from unjustified design, vague contracts, invented principles, and preference disguised as technical necessity.

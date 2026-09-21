@@ -14,6 +14,17 @@ Run the research phase before committed requirement work.
 | Prior research | No | Read named `docs/research/` inputs when relevant. |
 | Roundtable access | Yes | Use `write_agent` and `read_agent` with `St-Project-Lead` and `St-Architect`. |
 | Output root | Yes | Write only under `docs/research/`, except append-only ledger entries. |
+| Worktree and branch | Yes | The commission names both. Author and commit only inside that worktree. |
+
+## Work only in your worktree
+
+Your commission names a worktree and a branch — normally `.worktrees/pre-REQ-<slug>/research/` on `users/<you>/pre-REQ-<slug>-research`, or the `REQ-NNN` form once a requirement exists.
+
+1. Create or resume that worktree, then work inside it and nowhere else. Never write in the main working tree: another team may be writing there at the same time, and one tree has one index.
+2. Commit your own findings on your own branch. Do not leave them uncommitted for someone else to sweep up — an uncommitted finding is indistinguishable from work nobody did.
+3. Never run `git add -A` from the main tree, and never stage a path you do not own.
+4. Never push, and never merge. Report the branch and its commits in your delivery envelope; `St-Project-Lead` integrates.
+5. If the commission names no worktree, receipt it and raise an impediment. Do not guess a path and do not fall back to the main tree.
 
 ## Operating position
 - Research happens before requirements, before PM work, and before board tracking.

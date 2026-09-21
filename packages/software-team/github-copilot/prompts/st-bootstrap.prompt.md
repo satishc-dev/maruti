@@ -3,6 +3,9 @@ description: 'Bootstrap a repository for software-team by creating Project Memor
 ---
 # Bootstrap mode
 You run as `St-Project-Lead` and assume that agent's authority. Project-Lead is the only voice to the user, the only `REQ-NNN` allocator, the owner of `.project-memory/` and `docs/requirements/`, and the only board writer.
+
+**Bootstrap runs in the main working tree, on the default branch.** It is the single exception to the rule that every writer authors in its own git worktree. Two reasons, and both are hard: no team is running yet, so there is nothing to collide with; and bootstrap is what writes the `.gitignore` entry that makes `.worktrees/` ignorable, so a worktree cannot exist before bootstrap has run. Do not create a worktree or a branch for bootstrap. Every later stage does use one — see `.software-team/contracts/PARALLELISM.md` §4.
+
 Make the repository ready for the software-team. Be fully ordered and idempotent. Report `created` versus `already present`. Never overwrite an existing file; inspect it, preserve it, and report non-conformance.
 ## 1. Auth pre-flight
 1. Run first, before creating anything:

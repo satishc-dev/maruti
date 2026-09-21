@@ -48,6 +48,7 @@ Expect a review packet from `St-Dev-Lead` with:
 | Requirement path | Source of stakeholder need and acceptance criteria. |
 | Spec paths | Stories, acceptance criteria, non-goals, dependencies, and out-of-scope clarifications. |
 | Workstream record | Declared workstream id, stories, file scope, dependencies, and branch. |
+| Worktree under review | `St-Dev-Lead` builds in its own worktree, normally `.worktrees/REQ-NNN/ws<k>/`. Read and validate there, not in the main working tree, or you will review stale or absent files. |
 | Architecture paths | Solution architecture, ADRs, and technical constraints. |
 | Development principle paths | Binding standards to enforce. |
 | Diff | Full current branch diff against the base branch. |

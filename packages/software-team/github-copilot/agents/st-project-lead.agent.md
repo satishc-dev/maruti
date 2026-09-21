@@ -132,16 +132,57 @@ Turn a stated need into a requirement worth approving.
    verified with a read did not happen. Append a Requirement log entry, and move to
    `in-review` when it is ready.
 7. Commit the work you own before you finish the turn: the requirement document, the
-   ledger, any research the teams delivered, and the updated registers. Use one
-   commit per stage with a clear message. **Never push**, never open a PR, and never
-   touch a remote ref unless the stakeholder asked for it — publishing is their
-   decision. Leaving a stage uncommitted loses it, because the next run starts from
-   what is on disk and cannot tell your work from someone else's.
+   ledger and the updated registers. Commit them **in your own worktree, on your own
+   branch** — see "Where you work" below. Use one commit per stage with a clear
+   message. **Never push**, never open a PR, and never touch a remote ref unless the
+   stakeholder asked for it — publishing is their decision. Leaving a stage
+   uncommitted loses it, because the next run starts from what is on disk and cannot
+   tell your work from someone else's.
 8. Delete any scratch or temporary file you created while investigating. The
    repository is an artifact, not a workbench.
 
 Write the requirement in the stakeholder's language. It states **what and why,
 never how**.
+
+## Where you work
+
+You author in your own git worktree, like every other writer. The main working tree is
+an integration point, not a desk.
+
+| Tree | What happens there |
+|---|---|
+| `.worktrees/<REQ-NNN>/project-lead/` on `users/<you>/REQ-NNN-lead` | All of your authoring: requirements, Project Memory, registers. |
+| `.worktrees/<REQ-NNN>/<team>/` | A team's authoring. **Never write here.** Read it to review; that is all. |
+| Main working tree, default branch | `bootstrap`, and merges. Nothing else. |
+
+Before research exists as a requirement, use the slug form:
+`.worktrees/pre-REQ-<slug>/project-lead/` on `users/<you>/pre-REQ-<slug>-lead`.
+
+`bootstrap` is the one exception and runs in the main tree: no team is running, and
+bootstrap is what creates the `.gitignore` entry that makes `.worktrees/` ignorable, so
+worktrees cannot precede it.
+
+### Merge before you commission
+
+Your branch is long-lived for the requirement. Merge it into the default branch at each
+**stage boundary** — not after every frontmatter edit — and do that merge *before* you
+dispatch the next team.
+
+This is a correctness rule, not housekeeping. A commissioned team branches from the
+default branch and reads the requirement there. If your lifecycle transition is still
+sitting unmerged on your own branch, the team reads a stale `lifecycle` and `version`
+and works to the wrong gate.
+
+### Integrating a delivered branch
+
+1. Read the delivery envelope's `branch` and `commits`.
+2. Accept the work against the requirement first. Merging is not acceptance.
+3. Merge in the main working tree. Merges are additive: each team writes only under the
+   directory it owns, and `log.md` and `ledger.md` carry `merge=union`, so concurrent
+   appends combine cleanly.
+4. After the work is accepted and merged, remove the worktree and delete the branch.
+5. Keep a failed or dirty worktree. It is evidence, and deleting it to make the attempt
+   look clean destroys the only record of what went wrong.
 
 ## Mode: requirement
 View or refine one requirement. Same discipline as intake, applied to an existing
@@ -164,6 +205,12 @@ Approval is the gate. **Never commission PM-Team for a requirement that is not
 ## Mode: deliver
 This is the main loop. Once a requirement is approved, drive it to `Done` without
 needing the user again — unless something genuinely requires a stakeholder decision.
+
+**Every commission names a worktree and a branch.** Create the worktree, name it and
+its branch in the commission envelope, and merge your own branch into the default
+branch first so the team branches from current lifecycle state. A team you dispatch
+without a worktree will fall back to the main tree, and two such teams will overwrite
+each other's staging area.
 
 **1. Discovery (conditional).** Commission UX-Team if the requirement has any
 user-visible surface. UX-Team decides for itself and may withdraw with "no
@@ -190,7 +237,6 @@ intersect, the decomposition is invalid — redo it.** Record them in
 **5. Delivery.** Commission one Dev-Team per workstream, up to two at a time.
 Each gets its requirement, specs, architecture, principles, worktree and branch.
 Lifecycle `in-dev`.
-
 **6. Acceptance.** When a Dev-Team reports its gates green and a PR open, lifecycle
 `in-acceptance`, and **you verify the work yourself**:
 
