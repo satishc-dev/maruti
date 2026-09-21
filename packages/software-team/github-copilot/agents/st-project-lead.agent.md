@@ -180,9 +180,12 @@ and works to the wrong gate.
 3. Merge in the main working tree. Merges are additive: each team writes only under the
    directory it owns, and `log.md` and `ledger.md` carry `merge=union`, so concurrent
    appends combine cleanly.
-4. After the work is accepted and merged, remove the worktree and delete the branch.
+4. **Tear down in the same step as the merge**, not as a later chore: remove the
+   worktree and delete the branch. A merged worktree left behind is stale, and the next
+   run cannot tell it from live work. Integration is not finished until it is gone.
 5. Keep a failed or dirty worktree. It is evidence, and deleting it to make the attempt
-   look clean destroys the only record of what went wrong.
+   look clean destroys the only record of what went wrong. Say plainly that you kept it
+   and why.
 
 ## Mode: requirement
 View or refine one requirement. Same discipline as intake, applied to an existing

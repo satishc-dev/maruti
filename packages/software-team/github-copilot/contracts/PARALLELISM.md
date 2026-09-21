@@ -190,14 +190,14 @@ Merges between teams are additive by construction: each team writes only under t
 
 ### 4.3 Teardown
 
-After a branch is merged and its work is accepted, remove the worktree and the branch:
+Teardown happens **in the same step as the merge**, not as a later chore. A merged worktree left in place is stale, and the next run cannot tell it from live work.
 
 ```bash
 git worktree remove .worktrees/REQ-007/pm
 git branch -d users/alex/REQ-007-pm
 ```
 
-Do not tear down a failed or dirty worktree. §7 keeps it as evidence.
+Do not tear down a failed or dirty worktree. §7 keeps it as evidence. Say plainly that you kept it and why.
 
 ### 4.4 Branch names
 
