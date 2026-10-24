@@ -89,7 +89,12 @@ class InstalledPayloadTests(unittest.TestCase):
                             )
                         diagnostic = self.invoke(helper, workspace, "doctor")
                         self.assertIs(diagnostic["data"]["git"], git_project)
-                        self.invoke(helper, workspace, "bootstrap")
+                        bootstrap = self.invoke(helper, workspace, "bootstrap")["data"]
+                        self.assertEqual(bootstrap["instructions"]["status"], "created")
+                        agents = (workspace / "AGENTS.md").read_bytes()
+                        self.assertIn(b"<!-- maruti-memory:begin -->", agents)
+                        self.assertIn(b"`memory-recall`", agents)
+                        self.assertNotIn(str(plugin).encode(), agents)
                         store = workspace / ".maruti/memory/local"
                         metadata_before = (store / ".memory-store.json").read_bytes()
                         metadata = json.loads(metadata_before)
@@ -114,6 +119,7 @@ class InstalledPayloadTests(unittest.TestCase):
                         self.assertEqual(
                             (store / ".memory-store.json").read_bytes(), metadata_before,
                         )
+                        self.assertEqual((workspace / "AGENTS.md").read_bytes(), agents)
                         document = workspace / "input.md"
                         document.write_text(
                             "---\ntype: Memory Note\ntitle: Packaging sentinel\n---\n"
@@ -190,6 +196,56 @@ class InstalledPayloadTests(unittest.TestCase):
                                 helper, workspace, "write", "--path", pending,
                                 "--input", str(document), "--expected", "missing",
                             )
+
+    def test_software_team_and_memory_instruction_sections_coexist_in_either_order(self):
+        for team_first in (False, True):
+            with self.subTest(team_first=team_first), tempfile.TemporaryDirectory(
+                prefix="memory team instructions "
+            ) as temporary:
+                root = Path(temporary)
+                plugin = root / "isolated team plugin"
+                shutil.copytree(
+                    ROOT / "packages/software-team/github-copilot", plugin,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+                )
+                workspace = root / "consumer project"
+                workspace.mkdir()
+                subprocess.run(
+                    ["git", "init", "--quiet", str(workspace)],
+                    check=True, capture_output=True, timeout=30,
+                )
+                project_memory = workspace / ".project-memory"
+                project_memory.mkdir()
+                owned = b"---\nokf_version: \"0.2\"\n---\n\n# Project-Lead context\n"
+                (project_memory / "index.md").write_bytes(owned)
+                agents = workspace / "AGENTS.md"
+                owner = b"# Existing owner guidance\r\n"
+                team = (
+                    b"\r\n## Software Team\r\n"
+                    b"Read `.software-team/contracts/ROLES.md` and `.project-memory/`.\r\n"
+                    b"Project-Lead is the only board writer. Other teams request board "
+                    b"changes through handoff envelopes.\r\n"
+                )
+                agents.write_bytes(owner + (team if team_first else b""))
+                helper = plugin / "memory/runtime/memory.py"
+                result = self.invoke(helper, workspace, "bootstrap")["data"]
+                self.assertEqual(result["instructions"]["status"], "appended")
+                if not team_first:
+                    agents.write_bytes(agents.read_bytes() + team)
+                before = agents.read_bytes()
+                self.assertTrue(before.startswith(owner))
+                self.assertIn(team, before)
+                result = self.invoke(helper, workspace, "bootstrap")["data"]
+                self.assertEqual(result["instructions"]["status"], "present")
+                self.assertEqual(agents.read_bytes(), before)
+                self.assertEqual(before.count(b"## Software Team"), 1)
+                self.assertEqual(before.count(b"<!-- maruti-memory:begin -->"), 1)
+                self.assertEqual((project_memory / "index.md").read_bytes(), owned)
+                shared = self.invoke(
+                    helper, workspace, "--role", "shared", "bootstrap", "--allow-shared",
+                )["data"]
+                self.assertNotIn("instructions", shared)
+                self.assertEqual(agents.read_bytes(), before)
 
 
 if __name__ == "__main__":

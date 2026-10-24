@@ -102,7 +102,7 @@ Follow `st-board-ops` and `st-okf-memory`. In order:
 7. Detect the Requirement issue type, or create the `requirement` label as a
    fallback. Record which.
 8. Create the remaining labels.
-9. Write the pointer section into `AGENTS.md`.
+9. Append the Software Team pointer section into `AGENTS.md` if missing, preserving all existing text and the helper-managed Memory section.
 10. Append to `.gitignore`: `.scrum/`, `.worktrees/`. Append to `.gitattributes`:
     union merge for `.project-memory/log.md` and `.software-team/**/ledger.md`.
 11. Normalise the log, append a Bootstrap entry, and report a checklist.
@@ -115,6 +115,9 @@ plugin's installation directory is the repository. The helper must verify the
 narrow `/.maruti/memory/local/` ignore rule before writing local content.
 Report any helper error; do not invent a store, ignore a failure, or overwrite an
 existing root. This local store is separate from committed `.project-memory/`.
+Local helper bootstrap also creates or appends its own managed `AGENTS.md`
+section automatically; preserve that block and append the separate team pointer
+without replacing other instructions. Report reconciliation or partial errors.
 The team bootstrap's auth pre-flight still applies to its GitHub work; generic
 Memory bootstrap alone never requires GitHub authentication.
 

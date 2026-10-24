@@ -16,6 +16,11 @@ repair the ignore rule before subsequent local writes or staging.
 Optional curated shared memory lives at `.maruti/memory/shared/`. A compatible
 helper bootstrap enables local capture; merely discovering a directory does not.
 Capture useful findings during enabled work, not every interaction.
+Authorized local bootstrap also maintains a small managed `AGENTS.md` pointer
+by default; no hand-written instructions or separate pointer approval are
+required. Preserve existing project text and ownership. Conflicting managed
+content needs explicit reconciliation, not an overwrite. This is workspace-only:
+shared bootstrap and global host instructions are not instruction-edit targets.
 
 Read relevant accessible records, but write only paths authorized for the actual
 writer. Apply an installed ownership adapter before mutations. Existing

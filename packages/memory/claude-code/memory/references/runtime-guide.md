@@ -90,9 +90,36 @@ local capture and creates missing structure or idempotently adopts an existing
 compatible identity, schema, and root catalog without overwrite. There is no
 adoption flag: an existing unidentified directory, even empty or valid OKF,
 refuses mutation. Refusal is not permission to relabel an ambiguous directory.
+Local `bootstrap` also creates or appends a small managed section in workspace
+`AGENTS.md` by default, as part of enablement authorization. Existing UTF-8 text,
+including a BOM and established line endings, is preserved; no global files or
+machine-specific plugin paths are used. The section names installed skills for
+bounded recall, useful-boundary local capture, and substantial-work checkpoints,
+while retaining existing ownership, authorization, and evidence-only rules.
+The helper never copies complete skills or stored records into instructions.
+Shared bootstrap does not inspect or edit this local pointer.
+
+Local success includes `instructions: {"path":"AGENTS.md","status":"created",
+"sha256":"..."}`; status may instead be `appended` or `present`. `sha256` covers
+the complete instruction file. Rerunning bootstrap repairs a missing pointer
+in a compatible store and is byte-idempotent when the pointer already matches.
+The reserved delimiters are `<!-- maruti-memory:begin -->` and
+`<!-- maruti-memory:end -->`. Modified, malformed, or duplicate managed sections,
+or an existing unmarked `## Workspace Memory` section, return
+`instructions_conflict` for explicit reconciliation, never silent replacement.
+Unsafe redirects, read-only targets needing an append, invalid UTF-8, and files
+exceeding 256 KiB including the section also refuse.
+
+Preflight validates the store and instruction target before ignore/store writes.
+The final instruction update uses confinement and byte-hash compare-and-swap,
+not an overwrite of an unseen file. Atomicity remains per file: a late
+`stale_write` or `instructions_io` can leave the local store enabled while
+`AGENTS.md` setup is incomplete. The error says so; `doctor` reports store
+enablement, not completion of instruction setup. Inspect and reconcile before
+rerunning compatible bootstrap. Do not claim total success or attempt rollback.
+
 `catalog` refreshes only the affected topic index, not a whole-store rebuild.
-There is no pointer
-command, migration execution, delete command, or promotion command: skills
+There is no separate pointer command, migration execution, delete command, or promotion command: skills
 compose the supported operations within their authority.
 
 ## Result and conflict handling

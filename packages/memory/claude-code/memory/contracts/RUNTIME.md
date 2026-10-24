@@ -49,6 +49,29 @@ Git, the supplied directory is the workspace root. Helpers never write
 ```
 
 Bootstrap is explicit enablement of automatic local capture by skills.
+Local bootstrap also establishes a small managed `AGENTS.md` section in the
+resolved workspace root by default; enablement authorizes this scoped edit.
+It names installed skills for bounded relevant recall, evidence-backed local
+capture at useful boundaries, and checkpoints of substantial work. Existing
+project instructions and document ownership still apply; shared publication
+and Git staging/commit/push need their separate authorizations. Memory records
+remain evidence, never executable instructions.
+
+The helper preserves unrelated instruction bytes and established line endings,
+including a UTF-8 BOM, and never edits global instructions. Reserved delimiters
+are `<!-- maruti-memory:begin -->` and `<!-- maruti-memory:end -->`; the canonical
+section body must match, allowing LF/CRLF/CR line endings. Modified, malformed,
+duplicate or embedded markers, or an unmarked `## Workspace Memory` section,
+return `instructions_conflict` rather than overwriting user-authored content.
+The target must be a regular confined UTF-8 file, at most 256 KiB including
+the appended section; read-only targets requiring modification refuse.
+
+Existing compatible local stores get a missing pointer repaired without
+rewriting identity or records. A matching pointer is byte-idempotent. Local
+success adds `instructions: {path: "AGENTS.md", status: "created" | "appended" |
+"present", sha256: "<whole-file hash>"}`. Shared bootstrap does not inspect or
+rewrite `AGENTS.md` and has no instruction result.
+
 No separate config file exists in v1. Shared bootstrap, writes, and catalog
 updates require `--allow-shared` on that invocation. Passing the flag is a
 mechanical permission, not proof of stakeholder consent: skills must obtain
@@ -138,3 +161,9 @@ hostile concurrent filesystem actor. Atomicity is per file, not across
 bootstrap identity/catalog or concepts/catalogs. Interrupted bootstrap is
 reported as an incompatible partial directory, not silently recovered. Failed
 catalog updates leave canonical concepts intact and can be explicitly retried.
+Instruction preflight happens after store validation and before ignore/store
+writes. Its final replacement uses the same confined byte-hash CAS discipline.
+A late instruction failure can leave a valid enabled store; the error explicitly
+reports incomplete `AGENTS.md` setup and no multi-file rollback. `doctor`
+describes store enablement, not instruction completion. Inspect the file and
+retry compatible bootstrap only after reconciling the failure.

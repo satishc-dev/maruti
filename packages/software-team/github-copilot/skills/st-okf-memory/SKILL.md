@@ -30,6 +30,9 @@ Memory skills and invoke Python directly on
 Bootstrap must verify the narrow `/.maruti/memory/local/` ignore rule before
 writing content. It needs no GitHub authentication. Preserve and report existing
 roots; do not migrate `.project-memory/` or replace team contracts.
+Local bootstrap also maintains its own managed `AGENTS.md` section by default.
+Keep that block and the separate Software Team pointer intact; do not replace
+either section or bypass a reconciliation error.
 
 Workers capture observations in ignored `.maruti/memory/local/` or send
 `memory_proposals[]` through the team handoff. Generic shared promotion requires

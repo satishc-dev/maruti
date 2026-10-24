@@ -23,6 +23,10 @@ Do this after the team auth pre-flight passes and before reporting bootstrap
 complete. The helper verifies `/.maruti/memory/local/` is ignored before local
 content is written. Preserve existing roots and report any error rather than
 inventing content, overwriting, or claiming success.
+Local helper bootstrap also establishes its own delimited Memory section in
+workspace `AGENTS.md` automatically. Preserve it when appending the separate
+Software Team pointer below; do not replace the file or edit the helper's block.
+Report a conflicting block or partial instruction-write failure explicitly.
 
 Generic Memory alone does **not** require `gh` auth; the pre-flight below belongs
 only to Software Team's GitHub integration. `.maruti/memory/local/` is private
@@ -290,7 +294,7 @@ Every new GitHub Project is created with a built-in single-select `Status` field
    ```
 5. Idempotency predicate: required repository labels exist by exact name.
 ## 12. Write pointers and merge rules
-1. Create `AGENTS.md` if missing. Append one `## Software Team` section only if absent.
+1. Create `AGENTS.md` if missing. Append one `## Software Team` section only if absent, preserving all existing bytes and line endings, including the helper-managed Memory section. Never rebuild the file or replace either section.
 2. Pointer section lists `.software-team/contracts/ROLES.md`, `.software-team/contracts/GLOSSARY.md`, `.software-team/contracts/MEMORY-SCHEMA.md`, `.software-team/contracts/GITHUB-INTEGRATION.md`, `.software-team/contracts/OKF-PROFILE.md`, `.software-team/contracts/LIFECYCLE.md`, `.software-team/contracts/ARTIFACTS.md`, `.project-memory/`, and `.software-team/`.
 3. Include: `Project-Lead is the only board writer. Other teams request board changes through handoff envelopes.`
 4. Append to `.gitignore` only if absent:

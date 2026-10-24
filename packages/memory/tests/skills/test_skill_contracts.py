@@ -190,8 +190,21 @@ class SkillContractTests(unittest.TestCase):
     def test_bootstrap_does_not_claim_or_migrate_existing_memory(self):
         text = self.skill("memory-bootstrap")
         for token in ("adopt", "ambiguous", "overwrite", ".project-memory/",
-                      "global", "pointer", "approved"):
+                      "global", "pointer", "authorized"):
             self.assertIn(token, text)
+
+    def test_bootstrap_establishes_project_instructions_without_manual_pointer_step(self):
+        text = self.skill("memory-bootstrap")
+        for token in ("automatically", "AGENTS.md", "No manual copy-paste",
+                      "byte-idempotent", "instructions_conflict", "Shared bootstrap",
+                      "incomplete", "global"):
+            self.assertIn(token, text)
+        self.assertNotIn("pointer is optional", text)
+        guide = self.reference("runtime-guide.md")
+        for token in ("maruti-memory:begin", "maruti-memory:end",
+                      "instructions_io", "sha256", "appended", "present",
+                      "256 KiB", "compare-and-swap"):
+            self.assertIn(token, guide)
 
     def test_nongit_does_not_claim_active_ignore_protection(self):
         for text in (

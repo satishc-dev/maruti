@@ -216,6 +216,8 @@ class SoftwareTeamWiringTests(unittest.TestCase):
             self.assertIn("/.maruti/memory/local/", content)
             self.assertIn("memory_proposals[]", content)
             self.assertIn(".project-memory/", content)
+            self.assertIn("AGENTS.md", content)
+            self.assertIn("managed Memory section", content)
 
     def test_adapter_preserves_ownership_and_separates_generic_capability(self):
         content = (
@@ -228,6 +230,7 @@ class SoftwareTeamWiringTests(unittest.TestCase):
         self.assertIn("It needs no GitHub authentication", content)
         self.assertIn("not approval to stage, commit, or push", content)
         self.assertIn("When board and documents disagree, documents win", content)
+        self.assertIn("managed `AGENTS.md` section by default", content)
 
     def test_marketplaces_publish_complete_independent_memory_roots(self):
         copilot = json.loads((ROOT / ".github/plugin/marketplace.json").read_text())

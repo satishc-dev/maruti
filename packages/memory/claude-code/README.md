@@ -11,6 +11,12 @@ and find the helper at `<plugin-root>\memory\runtime\memory.py`.
 Do not assume the marketplace name or an installation under a particular home
 directory. Invoke Python directly; no shell wrapper or MCP service is needed.
 
+Local bootstrap automatically creates or appends a small managed `AGENTS.md`
+section in the consuming workspace, preserving existing instructions and line
+endings. Modified managed content refuses rather than being overwritten. Whether
+a host automatically loads `AGENTS.md` is host-specific; the helper does not
+modify `CLAUDE.md` or global instructions.
+
 This directory is the complete install unit. Its generated `memory/` payload and
 `skills/` need no files from a sibling checkout or separately installed plugin.
 If copying skills into a repository rather than installing the plugin, copy the

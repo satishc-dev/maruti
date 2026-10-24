@@ -49,6 +49,16 @@ Portability is intended but Linux/macOS support is unverified.
 ## Use
 
 In the consuming workspace, ask the agent to load `memory-bootstrap` first.
+Authorized local bootstrap automatically creates or appends a small managed
+section in workspace `AGENTS.md`; no hand-written instructions are required.
+It points future agents to bounded recall before rediscovery, useful-boundary
+evidence-backed local capture, and checkpoints for substantial work. Existing
+instructions, line endings, and Software Team ownership are preserved.
+Rerun bootstrap to add a missing section to an already enabled store; an
+unchanged section is byte-idempotent. Modified/malformed managed content or an
+unmarked `## Workspace Memory` section produces an explicit reconciliation
+error, never an overwrite. Shared bootstrap does not edit the local pointer.
+
 Select the actual discovered skill from the intended plugin; do not guess a
 host-specific namespace. Then use these focused skills as needed:
 
@@ -64,6 +74,9 @@ host-specific namespace. Then use these focused skills as needed:
 These are explicit agent workflows, not guaranteed host lifecycle hooks or
 automatic context compaction. Missing Python or a helper refusal is a blocker,
 not permission to download dependencies or write directly into the store.
+If an instruction write fails after store enablement, bootstrap reports that
+partial outcome explicitly. Inspect the error and `AGENTS.md` before retrying;
+`doctor` reporting an enabled store does not mean instruction setup completed.
 
 ## Storage and safety
 
