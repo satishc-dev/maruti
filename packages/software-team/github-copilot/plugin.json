@@ -1,0 +1,10 @@
+{
+  "name": "software-team",
+  "version": "0.3.0",
+  "description": "A software organisation with Project Lead, Research, Architect, PM, Dev and UX teams, independent reviewers, and bundled offline OKF Memory.",
+  "author": {
+    "name": "satishc-dev"
+  },
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

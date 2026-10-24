@@ -12,6 +12,24 @@ consumer package install, or network access is required.
 | GitHub Copilot CLI | `copilot plugin marketplace add satishc-dev/maruti`, then `copilot plugin install memory@maruti` |
 | Claude Code | `/plugin marketplace add satishc-dev/maruti`, then `/plugin install memory@maruti` |
 
+### Try this local checkout before publication
+
+From the root of this checkout:
+
+```text
+copilot --plugin-dir ".\packages\memory\github-copilot" plugin list --json
+copilot --plugin-dir ".\packages\memory\github-copilot" skill list --json
+copilot --plugin-dir ".\packages\memory\github-copilot"
+```
+
+The first command must include `memory`, version `0.1.0`, enabled, with source
+`external`. The second must show all six `memory-*` skills with source `plugin`.
+The last command starts an interactive session with that local plugin mounted.
+A mount applies only to that process: it does not install globally, alter an
+already running session, or publish the marketplace. Restart using the flag to
+see the local plugin in the interactive plugin dashboard. The marketplace
+commands above read the published repository, not these unpushed changes.
+
 The install roots are [github-copilot](github-copilot/) and
 [claude-code](claude-code/). Software Team includes the **same** canonical
 capability in its own Copilot plugin; it does not rely on installing another
@@ -122,6 +140,9 @@ python -m unittest discover -s packages\memory\tests\packaging -v
 
 No generalized migration execution, multi-file recovery framework, automatic
 deletion, recurring automation, or token benchmark harness ships in this lean
-release. Automated Windows validation and host installation/discovery are
-different checks: do not infer a tested host installation from a passing helper
-test or from the presence of a package manifest.
+release. Windows Copilot CLI 1.0.103 local `--plugin-dir` plugin and skill
+discovery has been exercised, including relocated install units outside the
+repository mirrors. The live discovery regression runs when Copilot is installed
+and otherwise skips explicitly. Persistent marketplace installation and
+interactive agent execution are separate checks, not implied by helper or
+discovery tests.

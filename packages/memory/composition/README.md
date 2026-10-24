@@ -14,6 +14,13 @@ The generated `.memory-package.json` inventories every copied file by SHA-256;
 its plugin version is independent of store schema version 1 and OKF 0.2.
 Unknown files and locally edited generated files are never overwritten.
 
+Copilot install roots also require an authored root `plugin.json`, separate
+from the copied-payload inventory and marketplace catalog. The build command
+checks its name, version and component paths against the catalog. These use the
+[legacy Copilot manifest format](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference)
+with explicit `skills/` and, for Software Team, `agents/`; adding an Agent Plugins
+`$schema` would change layout semantics and requires a deliberate migration.
+
 Use `--output-root <temporary-directory>` to stage initial builds away from the
 checkout, and `--check` to detect drift without changing files. Rebuild after
 editing canonical sources; commit the canonical and generated changes together.

@@ -10,6 +10,21 @@ copilot plugin marketplace add satishc-dev/maruti
 copilot plugin install software-team@maruti
 ```
 
+For this unpublished local checkout, run from its repository root:
+
+```text
+copilot --plugin-dir ".\packages\software-team\github-copilot" plugin list --json
+copilot --plugin-dir ".\packages\software-team\github-copilot" skill list --json
+copilot --plugin-dir ".\packages\software-team\github-copilot"
+```
+
+The mount is process-local; restart with that flag rather than expecting an
+already running session to change. The root `plugin.json` explicitly selects
+`agents/` and `skills/`. Its version must match the marketplace; a marketplace
+entry alone is insufficient for local plugin discovery. Windows CLI 1.0.103
+recognizes the local plugin as `software-team` version `0.3.0`, source
+`external`, and discovers both its team and generic Memory skills.
+
 Or, from a local clone, copy this platform directory's content as real files
 into the consuming repository's `.github/` directory, preserving the layout.
 Do not copy Maruti's managed symlink mirrors or only the agent files:

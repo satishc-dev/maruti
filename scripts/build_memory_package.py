@@ -21,6 +21,30 @@ INSTALL_ROOTS = (
 MANIFEST = ".memory-package.json"
 
 
+def validate_copilot_manifests(repo_root: Path) -> None:
+    """Require real loader manifests, not only marketplace catalog entries."""
+    catalog = json.loads(
+        (repo_root / ".github" / "plugin" / "marketplace.json").read_text(encoding="utf-8")
+    )
+    for install in INSTALL_ROOTS:
+        if not install.endswith("/github-copilot"):
+            continue
+        root = repo_root / install
+        name = root.parent.name
+        manifest = json.loads((root / "plugin.json").read_text(encoding="utf-8"))
+        entries = [entry for entry in catalog["plugins"] if entry["name"] == name]
+        if not isinstance(manifest, dict) or len(entries) != 1 or (
+            manifest.get("name") != name
+            or manifest.get("version") != entries[0].get("version")
+            or entries[0].get("source") not in (install, f"./{install}")
+            or manifest.get("skills") != "./skills/"
+            or "$schema" in manifest
+            or (name == "memory" and manifest.get("version") != VERSION)
+            or (name == "software-team" and manifest.get("agents") != "./agents/")
+        ):
+            raise ValueError(f"Invalid Copilot loader manifest or catalog mismatch: {root}")
+
+
 def _json_bytes(value: object) -> bytes:
     return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
@@ -215,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args(argv)
     try:
+        validate_copilot_manifests(REPO_ROOT)
         changes = compose(REPO_ROOT, args.output_root.resolve(), check=args.check)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         print(f"Memory composition failed: {exc}", file=sys.stderr)

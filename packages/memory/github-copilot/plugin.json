@@ -1,0 +1,9 @@
+{
+  "name": "memory",
+  "version": "0.1.0",
+  "description": "Offline OKF memory: local capture and recall, checkpoints, topic consolidation, and explicitly authorized shared promotion.",
+  "author": {
+    "name": "satishc-dev"
+  },
+  "skills": "./skills/"
+}

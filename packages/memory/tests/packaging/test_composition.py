@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -245,6 +246,46 @@ class SoftwareTeamWiringTests(unittest.TestCase):
         ).read_text())
         self.assertEqual(manifest["name"], "memory")
         self.assertEqual(manifest["version"], build.VERSION)
+
+    def test_copilot_install_units_have_loader_manifests_matching_marketplace(self):
+        build.validate_copilot_manifests(ROOT)
+        marketplace = json.loads((ROOT / ".github/plugin/marketplace.json").read_text())
+        for name in ("memory", "software-team"):
+            entry = next(item for item in marketplace["plugins"] if item["name"] == name)
+            root = ROOT / entry["source"]
+            manifest = json.loads((root / "plugin.json").read_text())
+            self.assertEqual(manifest["name"], name)
+            self.assertEqual(manifest["version"], entry["version"])
+            self.assertNotIn("$schema", manifest)
+            self.assertEqual(manifest["skills"], "./skills/")
+            self.assertTrue((root / manifest["skills"]).is_dir())
+            self.assertNotIn("dependencies", manifest)
+            if name == "software-team":
+                self.assertEqual(manifest["agents"], "./agents/")
+                self.assertTrue((root / manifest["agents"]).is_dir())
+            else:
+                self.assertEqual(manifest["version"], build.VERSION)
+
+    def test_composition_rejects_missing_or_mismatched_loader_manifest(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog = root / ".github/plugin/marketplace.json"
+            catalog.parent.mkdir(parents=True)
+            shutil.copyfile(ROOT / ".github/plugin/marketplace.json", catalog)
+            for install in build.INSTALL_ROOTS:
+                if install.endswith("/github-copilot"):
+                    plugin = root / install
+                    (plugin / "skills").mkdir(parents=True)
+                    shutil.copyfile(ROOT / install / "plugin.json", plugin / "plugin.json")
+            build.validate_copilot_manifests(root)
+            manifest = root / "packages/memory/github-copilot/plugin.json"
+            original = manifest.read_bytes()
+            manifest.unlink()
+            with self.assertRaises(FileNotFoundError):
+                build.validate_copilot_manifests(root)
+            manifest.write_bytes(original.replace(b'"0.1.0"', b'"0.9.0"'))
+            with self.assertRaisesRegex(ValueError, "catalog mismatch"):
+                build.validate_copilot_manifests(root)
 
     def test_installed_readme_links_do_not_depend_on_sibling_checkout_files(self):
         for install in build.INSTALL_ROOTS:

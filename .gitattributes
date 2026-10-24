@@ -9,3 +9,4 @@ packages/memory/** text=auto eol=lf
 packages/software-team/github-copilot/memory/** text=auto eol=lf
 packages/software-team/github-copilot/skills/memory*/** text=auto eol=lf
 packages/software-team/github-copilot/.memory-package.json text eol=lf
+packages/software-team/github-copilot/plugin.json text eol=lf
