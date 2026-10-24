@@ -572,6 +572,128 @@ class GitTransitionTests(unittest.TestCase):
         self.assertEqual(self.snapshot(), original)
 
 
+class GrowingStoreTests(unittest.TestCase):
+    """Keep privacy and exact recall usable as unrelated history accumulates."""
+
+    setUp = RuntimeTests.setUp
+    tearDown = RuntimeTests.tearDown
+    call = RuntimeTests.call
+    bootstrap = RuntimeTests.bootstrap
+    write = RuntimeTests.write
+
+    def populate_history(self):
+        self.bootstrap()
+        for topic in range(12):
+            directory = self.store / "topics" / f"history-{topic:02}"
+            directory.mkdir()
+            for page in range(48):
+                (directory / f"page-{page:02}.md").write_bytes(concept().encode())
+        self.write("topics/relevant/target.md", concept("Relevant current evidence"))
+
+    def test_exact_topic_scope_bypasses_unrelated_records_and_reports_scope(self):
+        self.populate_history()
+        traversed = []
+        original_entries = memory.entries
+
+        def record_entries(path):
+            traversed.append(path.relative_to(self.store).as_posix())
+            return original_entries(path)
+
+        with patch.object(memory, "entries", side_effect=record_entries):
+            data = self.call("discover", "--query", "target", "--topic", "relevant")
+        self.assertEqual(traversed, ["topics/relevant"])
+        self.assertEqual(data["scope"], {"group": "topics", "name": "relevant"})
+        self.assertEqual([item["path"] for item in data["candidates"]], ["topics/relevant/target.md"])
+        self.assertLessEqual(sum(len(item["content"]) for item in data["candidates"]), 16000)
+        self.assertLessEqual(len(data["candidates"]), 8)
+
+    def test_broad_search_over_budget_is_explicitly_incomplete_and_can_be_narrowed(self):
+        self.populate_history()
+        error = self.call("discover", "--query", "page", ok=False)
+        self.assertEqual(error["code"], "discovery_limit")
+        self.assertIn("--topic", error["message"])
+        narrowed = self.call("discover", "--query", "page", "--topic", "history-11")
+        self.assertEqual(len(narrowed["candidates"]), 8)
+        self.assertTrue(narrowed["more_candidates"])
+
+    def test_exact_scope_does_not_enumerate_an_oversized_namespace(self):
+        self.bootstrap()
+        topics = self.store / "topics"
+        for i in range(memory.MAX_ENTRIES + 1):
+            (topics / f"topic-{i:03}").mkdir()
+        self.write("topics/relevant/target.md")
+        self.assertEqual(self.call("discover", "--query", "target", ok=False)["code"], "discovery_limit")
+        result = self.call("discover", "--query", "target", "--topic", "relevant")
+        self.assertEqual(len(result["candidates"]), 1)
+
+    def test_exact_session_scope_is_bounded_and_needs_no_write_permission(self):
+        self.populate_history()
+        self.write("sessions/task-a/checkpoint.md", None, "missing", "--session", "task-a")
+        result = self.call("discover", "--query", "checkpoint", "--session", "task-a")
+        self.assertEqual(result["scope"], {"group": "sessions", "name": "task-a"})
+        self.assertEqual([item["path"] for item in result["candidates"]], ["sessions/task-a/checkpoint.md"])
+        self.assertEqual(self.call("discover", "--query", "checkpoint", "--session", "../escape", ok=False)["code"],
+                         "arguments")
+        self.assertEqual(self.call("discover", "--query", "target", "--topic", "missing", ok=False)["code"],
+                         "not_found")
+        self.assertEqual(self.call("discover", "--query", "target", "--topic", "relevant",
+                                   "--session", "task-a", ok=False)["code"], "arguments")
+
+    def test_oversized_single_topic_remains_readable_with_known_path(self):
+        self.bootstrap()
+        directory = self.store / "topics" / "large"
+        directory.mkdir()
+        for i in range(memory.MAX_ENTRIES + 1):
+            (directory / f"page-{i:03}.md").write_bytes(concept().encode())
+        self.write("topics/large/new.md")
+        error = self.call("discover", "--query", "new", "--topic", "large", ok=False)
+        self.assertEqual(error["code"], "discovery_limit")
+        self.assertIn("read --path", error["message"])
+        read = self.call("read", "--path", "topics/large/new.md")
+        self.assertEqual(read["content"], concept())
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required for privacy growth tests")
+    def test_git_privacy_and_new_writes_stay_usable_above_512_ignored_records(self):
+        initialized = subprocess.run(
+            ["git", "-C", str(self.root), "init", "--quiet"],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(initialized.returncode, 0, initialized.stderr)
+        self.populate_history()
+        with patch.object(memory, "entries", side_effect=AssertionError("privacy must not enumerate ignored knowledge")):
+            self.assertTrue(self.call("doctor")["enabled"])
+            self.call("bootstrap")
+            self.write("topics/relevant/next.md")
+        self.call("catalog", "--topic", "relevant")
+        result = self.call("discover", "--query", "relevant", "--topic", "relevant")
+        self.assertEqual(len(result["candidates"]), 2)
+        status = subprocess.run(
+            ["git", "-C", str(self.root), "status", "--porcelain", "--untracked-files=all"],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(status.returncode, 0, status.stderr)
+        self.assertNotIn(".maruti/memory/local", status.stdout)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required for privacy growth tests")
+    def test_effective_unignored_inspection_failure_refuses_new_capture(self):
+        initialized = subprocess.run(
+            ["git", "-C", str(self.root), "init", "--quiet"],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(initialized.returncode, 0, initialized.stderr)
+        self.bootstrap()
+        original_git = memory.git
+
+        def failed_unignored(root, *args, **kwargs):
+            if "--others" in args:
+                return subprocess.CompletedProcess(args, 1, stdout="", stderr="inspection failed")
+            return original_git(root, *args, **kwargs)
+
+        with patch.object(memory, "git", side_effect=failed_unignored):
+            self.assertEqual(self.write("topics/relevant/new.md", ok=False)["code"], "git_error")
+        self.assertFalse((self.store / "topics" / "relevant" / "new.md").exists())
+
+
 @unittest.skipUnless(shutil.which("git"), "Git is required for privacy integration tests")
 class GitPrivacyTests(RuntimeTests):
     """Repeat runtime coverage inside a real Git repository, plus ignore checks."""

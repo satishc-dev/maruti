@@ -11,7 +11,7 @@ calling skill as an explicit prerequisite, not repaired automatically.
 ```text
 python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] doctor
 python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] bootstrap [--allow-shared]
-python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] discover --query <text>
+python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] discover --query <text> [--topic <exact-slug> | --session <exact-id>]
 python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] read --path <relative.md>
 python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] write --path <relative.md> --input <utf8-file> --expected <sha256|missing> [--session <id>] [--allow-shared]
 python <install-root>/runtime/memory.py --root <workspace> [--role local|shared] catalog --topic <slug> [--allow-shared]
@@ -85,18 +85,36 @@ failure. Every local mutation rechecks effective exclusion and tracked content;
 rerunning compatible local bootstrap may establish the anchored ignore rule
 after a non-Git workspace becomes a Git repository, without rewriting the
 store identity or knowledge. Non-Git bootstrap never creates `.gitignore`.
-existing local paths are also checked, with an explicit 512-entry/16-level
-privacy-inspection limit rather than silently skipping an oversized tree.
+Existing effective-unignored local content is checked with
+`git ls-files --others --exclude-standard --directory --no-empty-directory`.
+Git prunes ignored directories and collapses untracked directories; the
+helper does not walk every ignored concept or impose a total store-size cap.
+Inspection errors/timeouts refuse mutation, not success. Path confinement
+checks still apply to every artifact actually read or written.
 Git-ignored means ignored in that Git worktree, not encrypted or private from
 other processes, filesystem users, backups, or consumer tools.
 
 All store paths are confined, reject traversal, Windows device names and
 alternate streams, and reject symbolic links/junctions/reparse redirects.
 Concept files have a 256 KiB UTF-8 limit; metadata and catalog work are bounded.
-Discovery searches only named topic/session directories matching query tokens,
-not the whole repository or all concept bodies. At most 8 candidates and
+Discovery searches names in topic/session directories, not the whole
+repository or all concept bodies. At most 8 candidates and
 16,000 total content characters are returned, with explicit truncation flags.
 No match means no candidates; it does not fall back to broad loading.
+Without a selector, discovery checks directory and concept filenames across
+both namespaces with a 512-entry directory/leaf scan budget. An exceeded
+budget returns `discovery_limit` explaining that the search is incomplete;
+it never returns a partial list as an exhaustive success. Use
+`discover --query <text> --topic <exact-slug>` or
+`discover --query <text> --session <exact-id>` to inspect exactly one directory
+without enumerating the namespace or unrelated topics/sessions. These
+mutually exclusive selectors are per-verb options and retain the same
+candidate/content budgets. A scoped result includes
+`scope: {"group":"topics","name":"<slug>"}` (or `sessions`); `scope: null`
+means the broad search. `scan_complete: true` means the selected name search
+finished; `more_candidates` still reports candidate-output truncation.
+For a selected directory exceeding 512 entries, read a known artifact with
+`read --path` rather than treating an incomplete scan as empty recall.
 
 Writes need the SHA-256 returned by `read`, or literal `missing` for creation.
 The helper locks the selected store, rechecks the expected bytes, validates the

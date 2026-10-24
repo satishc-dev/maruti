@@ -39,5 +39,8 @@ Project-Lead and is outside these writable roots.
 
 There is no global capture log, automatic pruning, external embedding service,
 recurring automation, model/runtime download, or implicit Git operation.
+Total ignored store size does not gate privacy or writes. Recall has separate
+scan/output budgets: exact topic/session selectors bypass unrelated history,
+and incomplete scans fail explicitly instead of claiming there is no memory.
 Any future schema migration must be separately reviewed; the v1 preview never
 executes a migration, adopts an unknown directory, or rewrites old history.

@@ -396,27 +396,17 @@ def privacy(root, is_git, *, prepare=False, target=None):
     ]
     if target:
         probes.append(".maruti/memory/local/" + target)
-    store = store_path(root, "local")
-    pending = [""]
-    inspected = 0
-    while store.exists() and pending:
-        prefix = pending.pop()
-        directory = store if not prefix else confined(store, prefix)
-        for name in entries(directory):
-            relative = f"{prefix}/{name}" if prefix else name
-            path = confined(store, relative)
-            inspected += 1
-            if inspected > MAX_ENTRIES or len(relative.split("/")) > 16:
-                fail("privacy_limit", "Local store exceeds the bounded privacy-inspection budget.")
-            if path.is_dir():
-                pending.append(relative)
-            else:
-                probes.append(".maruti/memory/local/" + relative)
     result = git(root, "check-ignore", "--no-index", "-z", "--stdin", input_text="\x00".join(probes) + "\x00")
     if result.returncode not in (0, 1):
         fail("git_error", "Git ignore verification failed.")
     if set(result.stdout.rstrip("\x00").split("\x00")) != set(probes):
         fail("privacy_not_ignored", "Local Memory is not effectively ignored; resolve ignore negations before capture.")
+    unignored = git(root, "ls-files", "--others", "--exclude-standard", "--directory",
+                    "--no-empty-directory", "-z", "--", ".maruti/memory/local")
+    if unignored.returncode:
+        fail("git_error", "Effective local Memory exclusions could not be inspected.")
+    if unignored.stdout:
+        fail("privacy_not_ignored", "Existing local Memory content is not effectively ignored; resolve ignore negations before capture.")
 
 
 def reject_tracked_local(root):
@@ -595,7 +585,7 @@ def entries(path):
         for item in listing:
             result.append(item.name)
             if len(result) > MAX_ENTRIES:
-                fail("discovery_limit", "Directory exceeds the 512-entry discovery budget; narrow its organization.")
+                fail("discovery_limit", "Incomplete listing: directory exceeds 512 entries. Use discover --topic <slug> or --session <id>; for oversized topics use read --path <concept.md>.")
     return sorted(result)
 
 
@@ -608,22 +598,34 @@ def discover(root, args):
     store = store_path(root, args.role)
     candidates = []
     inspected = 0
-    for group in ("topics", "sessions"):
-        base = confined(store, group)
-        for name in entries(base):
-            directory = confined(store, f"{group}/{name}")
-            if not directory.is_dir():
-                continue
-            matches_directory = any(token in name.lower() for token in tokens)
-            for leaf in entries(directory):
-                inspected += 1
-                if inspected > MAX_ENTRIES:
-                    fail("discovery_limit", "Discovery exceeded its 512-entry path budget; use more specific topics.")
-                relative = f"{group}/{name}/{leaf}"
-                if leaf.endswith(".md") and leaf != "index.md" and (
-                    matches_directory or any(token in leaf.lower() for token in tokens)
-                ):
-                    candidates.append(relative)
+    scope = None
+    if args.topic is not None or args.session is not None:
+        group, name = ("topics", args.topic) if args.topic is not None else ("sessions", args.session)
+        if not SLUG.fullmatch(name):
+            fail("arguments", "Discovery scope must be a portable topic/session slug of at most 80 characters.")
+        if not confined(store, f"{group}/{name}").is_dir():
+            fail("not_found", "The selected topic or session does not exist.")
+        scope = {"group": group, "name": name}
+        directories = [(group, name)]
+    else:
+        directories = (
+            (group, name) for group in ("topics", "sessions")
+            for name in entries(confined(store, group))
+        )
+    for group, name in directories:
+        directory = confined(store, f"{group}/{name}")
+        if not directory.is_dir():
+            continue
+        matches_directory = any(token in name.lower() for token in tokens)
+        for leaf in entries(directory):
+            inspected += 1
+            if inspected > MAX_ENTRIES:
+                fail("discovery_limit", "Incomplete search: discovery exceeded 512 entries. Retry with --topic <exact-slug> or --session <exact-id> to bypass unrelated directories.")
+            relative = f"{group}/{name}/{leaf}"
+            if leaf.endswith(".md") and leaf != "index.md" and (
+                matches_directory or any(token in leaf.lower() for token in tokens)
+            ):
+                candidates.append(relative)
     selected = sorted(candidates)[:MAX_CANDIDATES]
     result = []
     remaining = MAX_RECALL_CHARS
@@ -637,7 +639,7 @@ def discover(root, args):
             "path": relative, "content": excerpt, "sha256": digest(content),
             "truncated": len(excerpt) < len(text),
         })
-    return {"candidates": result, "candidate_limit": MAX_CANDIDATES,
+    return {"candidates": result, "scope": scope, "scan_complete": True, "candidate_limit": MAX_CANDIDATES,
             "character_limit": MAX_RECALL_CHARS, "more_candidates": len(candidates) > MAX_CANDIDATES}
 
 
@@ -735,6 +737,9 @@ def arguments(argv):
     commands.add_parser("bootstrap").add_argument("--allow-shared", action="store_true")
     recall = commands.add_parser("discover")
     recall.add_argument("--query", required=True)
+    recall_scope = recall.add_mutually_exclusive_group()
+    recall_scope.add_argument("--topic")
+    recall_scope.add_argument("--session")
     reader = commands.add_parser("read")
     reader.add_argument("--path", required=True)
     writer = commands.add_parser("write")
