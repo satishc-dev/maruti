@@ -9,7 +9,8 @@ Repeated or expanded reads still consume characters. Count unique candidate
 records across all local/shared results; helper limits are per call, not a
 license to reload eight records from every store.
 
-Start with one focused helper `discover --query` and keep its returned
+Start with one focused helper `discover --query`, adding `--topic <exact-slug>`
+or `--session <exact-id>` when the exact directory is known, and keep its returned
 omission/truncation information. Do not load catalogs first merely as ceremony.
 If local discovery consumes the budget, do not load another full shared result.
 Where multiple stores matter, choose the most relevant store first and request
@@ -21,6 +22,16 @@ If a complete size bound is unavailable, do not issue an unbounded follow-up
 read within the pass: use the available excerpt and flag the limitation. Reserve
 the full per-call discovery allowance before querying another store; do not
 assume its actual result will be small enough for a partially spent budget.
+
+Inspect `scope` to confirm the intended broad or exact-directory search and
+`scan_complete` to distinguish completed name search from incomplete discovery.
+Even a completed scan can omit candidates through `more_candidates`.
+Broad searches exceeding the 512-entry directory/leaf budget fail with
+`discovery_limit`; this is incomplete evidence, never proof of no matches.
+Recover by narrowing to one exact topic/session selector, not by retrying a
+broad full-store scan. If that directory also exceeds 512 entries, read an
+already known artifact only when its size fits the remaining budget; otherwise
+report the unresolved lookup. Do not enumerate or dump the store as a workaround.
 
 Do not start repeated "passes" to evade the cap. A genuinely new task question
 may start another pass, with the new question and narrowed scope made explicit.

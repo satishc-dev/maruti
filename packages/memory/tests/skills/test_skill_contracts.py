@@ -93,6 +93,7 @@ class SkillContractTests(unittest.TestCase):
         seen = set()
         shared_mutations = set()
         session_verbs = set()
+        discovery_selectors = set()
         for command in commands:
             with self.subTest(command=command):
                 arguments = shlex.split(command)
@@ -111,6 +112,11 @@ class SkillContractTests(unittest.TestCase):
                     self.assertNotIn(flag, flags)
                     flags[flag] = True if flag == "--allow-shared" else arguments.pop(0)
                 required = expected_flags[verb].copy()
+                if verb == "discover":
+                    selectors = set(flags) & {"--topic", "--session"}
+                    self.assertLessEqual(len(selectors), 1)
+                    required.update(selectors)
+                    discovery_selectors.update(selectors)
                 if str(flags.get("--path", "")).startswith("sessions/"):
                     session_verbs.add(verb)
                     if verb == "write":
@@ -124,6 +130,7 @@ class SkillContractTests(unittest.TestCase):
         self.assertEqual(seen, set(expected_flags))
         self.assertEqual(shared_mutations, {"bootstrap", "write", "catalog"})
         self.assertEqual(session_verbs, {"read", "write"})
+        self.assertEqual(discovery_selectors, {"--topic", "--session"})
         for token in ("3.10", "--expected", "--input", "--allow-shared",
                       "sha256", "missing", "exit", "ok", "16000"):
             self.assertIn(token, text)
@@ -204,6 +211,20 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn("no `.gitignore`", text)
             self.assertIn("git: false", text)
             self.assertIn("or staging", text)
+
+    def test_discovery_limits_require_scoped_recovery_not_absence(self):
+        for name in ("runtime-guide.md", "recall-guide.md", "maintenance-guide.md"):
+            with self.subTest(reference=name):
+                text = self.reference(name)
+                for token in ("--topic", "--session", "discovery_limit",
+                              "scan_complete", "scope", "512"):
+                    self.assertIn(token, text)
+                self.assertIn("incomplete", text)
+        text = self.reference("runtime-guide.md")
+        for token in ('"group":"topics"', '"group":"sessions"', '"name":"<slug>"',
+                      '"name":"<id>"', "scope: null", "more_candidates",
+                      "mutually exclusive"):
+            self.assertIn(token, text)
 
 
 if __name__ == "__main__":

@@ -5,8 +5,15 @@
 Default to advisory review of one named topic. Explicit local-apply scope can
 authorize a bounded set of local changes after enablement; it never authorizes
 shared edits. State the scope and use the [recall budget](recall-guide.md).
-Use helper `doctor` for store checks, `discover` for relevant candidates, and
-`read` only when needed. A report is not a promise the whole store was audited.
+Use helper `doctor` for store checks, `discover --query <text> --topic <exact-slug>`
+for the named topic, or `--session <exact-id>` for a specific session review.
+Inspect result `scope` and `scan_complete`; completed name search can still
+omit output candidates. `discovery_limit` means an incomplete scan exceeded
+the 512-entry budget, not that the topic has no evidence. Narrow a broad search
+with an exact selector rather than retrying the broad scan; if the selected
+directory also exceeds that limit, use `read --path` only for a known artifact
+within the recall budget, or report the unresolved review. Do not load the
+whole store. A report is not a promise the whole store was audited.
 
 Prioritize outdated load-bearing constraints, contradictions, duplicate claims,
 missing source targets, and misleading applicability. Cosmetic omissions and

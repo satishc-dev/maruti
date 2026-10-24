@@ -32,6 +32,8 @@ filename containing a space.
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" doctor
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" bootstrap
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" discover --query "<focused question>"
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" discover --query "<focused question>" --topic "<exact-slug>"
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" discover --query "<focused question>" --session "<exact-id>"
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" read --path "topics/<slug>/<record>.md"
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" write --path "topics/<slug>/<record>.md" --input "<private UTF-8 input file>" --expected "<sha256 or missing>"
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" catalog --topic "<slug>"
@@ -54,6 +56,26 @@ the store. Session writes use `--path "sessions/<session-id>/checkpoint.md"` or
 `observations.md` and require per-write `--session "<session-id>"` matching the
 path. Session reads do not take `--session`. Use the real session identity, not
 an invented shared identifier.
+
+Discovery searches directory/concept filenames, not all record bodies.
+Its mutually exclusive per-verb selectors `--topic <exact-slug>` and
+`--session <exact-id>` inspect one exact directory without enumerating unrelated
+topics/sessions. These read selectors do not authorize session writes and do
+not change the 8-candidate/16000-character budgets.
+
+Successful results include `scope: {"group":"topics","name":"<slug>"}` or
+`scope: {"group":"sessions","name":"<id>"}` for a selected directory;
+`scope: null` means broad discovery. `scan_complete: true` means the selected
+name search finished, not that all matching records fit the output:
+`more_candidates` still signals candidate-output truncation.
+
+Broad discovery has a 512-entry directory/leaf scan budget. Exceeding it returns
+`discovery_limit`, an explicit incomplete-scan error, not successful empty recall.
+Narrow with an exact topic/session selector instead of retrying a broad scan.
+If the selected directory itself exceeds 512 entries, use `read --path` for an
+already known artifact within the recall budget; otherwise report the unresolved
+lookup. Never interpret incomplete discovery as absence or bypass it by loading
+the full store.
 
 `--root` and `--role` are global options **before the verb**. Use `--role shared`
 only for the optional shared store. Its `bootstrap`, `write`, and `catalog`
