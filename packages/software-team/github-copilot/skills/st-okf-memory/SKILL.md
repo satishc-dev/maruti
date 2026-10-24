@@ -12,10 +12,12 @@ For full detail, read `.software-team/contracts/OKF-PROFILE.md`, `.software-team
 
 Software Team bundles the same canonical Memory skills and helper as the
 standalone plugin, not a divergent implementation. Resolve this loaded skill's
-real path (following symlinks), then take its plugin root. Generic contracts and
-references are under `<plugin-root>/memory/`; load the shared OKF format contract
-from its `contracts/` directory before authoring. Do not assume the repository
-cwd is the plugin root or depend on an installed sibling `memory` plugin.
+real path (following symlinks), then take its plugin root. Read
+`<plugin-root>/memory/references/operating-policy.md` and
+`<plugin-root>/memory/references/record-guide.md` for the shared OKF format and
+evidence rules. Use `runtime-guide.md` in that same directory before invoking the
+helper. Do not assume the repository cwd is the plugin root or depend on an
+installed sibling `memory` plugin.
 
 The canonical format rules cover index/concept frontmatter, unknown-key
 preservation, actors and timestamps, ordinary Markdown links, source/footnote

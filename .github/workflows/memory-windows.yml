@@ -38,5 +38,7 @@ jobs:
         run: python scripts\build_memory_package.py --check
       - name: Packaging and collision regressions
         run: python -m unittest discover -s packages\memory\tests\packaging -v
+      - name: Canonical skill contracts
+        run: python -m unittest discover -s packages\memory\tests\skills -v
       - name: Isolated installed-payload smoke scenarios
         run: python -m unittest discover -s packages\memory\tests\scenarios -v

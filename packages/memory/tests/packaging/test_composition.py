@@ -148,6 +148,26 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsafe"):
             build.compose(self.root, self.output)
 
+    def test_malformed_manifest_is_reported(self):
+        build.compose(self.root, self.output)
+        path = self.output / build.INSTALL_ROOTS[0] / build.MANIFEST
+        path.write_text("[]", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Unknown composition manifest"):
+            build.compose(self.root, self.output)
+
+    def test_modified_obsolete_file_is_preserved(self):
+        source = self.write("packages/memory/runtime/obsolete.txt", "old")
+        build.compose(self.root, self.output)
+        source.unlink()
+        path = self.write(
+            "packages/memory/github-copilot/memory/runtime/obsolete.txt",
+            "important local change",
+            output=True,
+        )
+        with self.assertRaisesRegex(ValueError, "remove edited"):
+            build.compose(self.root, self.output)
+        self.assertEqual(path.read_text(), "important local change")
+
     def test_stale_generated_file_is_removed_only_if_unmodified(self):
         source = self.write("packages/memory/runtime/obsolete.txt", "old")
         build.compose(self.root, self.output)

@@ -17,6 +17,12 @@ The install roots are [github-copilot](github-copilot/) and
 capability in its own Copilot plugin; it does not rely on installing another
 plugin transitively.
 
+If both plugins are installed, their generic skill names intentionally overlap.
+They contain identical capability bytes; select the skill from the intended
+plugin using the host's actual discovery result rather than assuming a particular
+namespacing syntax or precedence. Repository mirrors explicitly choose the
+standalone Memory copy and reject any divergent alias.
+
 Requires Python 3.10 or later. The helper includes a licensed pure-Python YAML
 parser. Python 3.14 remains Maruti's development standard; the standalone helper's
 lower minimum is intentional. Windows is the first-release validation target.
