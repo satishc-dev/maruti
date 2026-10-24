@@ -91,19 +91,39 @@ class SkillContractTests(unittest.TestCase):
             "migration-preview": set(),
         }
         seen = set()
+        shared_mutations = set()
+        session_verbs = set()
         for command in commands:
             with self.subTest(command=command):
                 arguments = shlex.split(command)
                 self.assertEqual(arguments[:2], ["--root", "<workspace>"])
-                verb = arguments[2]
+                arguments = arguments[2:]
+                shared = arguments[:2] == ["--role", "shared"]
+                if shared:
+                    arguments = arguments[2:]
+                verb = arguments[0]
                 self.assertIn(verb, expected_flags)
-                self.assertEqual(
-                    {argument for argument in arguments[3:] if argument.startswith("--")},
-                    expected_flags[verb],
-                )
-                self.assertEqual(len(arguments[3:]), 2 * len(expected_flags[verb]))
+                arguments = arguments[1:]
+                flags = {}
+                while arguments:
+                    flag = arguments.pop(0)
+                    self.assertTrue(flag.startswith("--"))
+                    self.assertNotIn(flag, flags)
+                    flags[flag] = True if flag == "--allow-shared" else arguments.pop(0)
+                required = expected_flags[verb].copy()
+                if str(flags.get("--path", "")).startswith("sessions/"):
+                    session_verbs.add(verb)
+                    if verb == "write":
+                        required.add("--session")
+                        self.assertEqual(flags["--session"], "<session-id>")
+                if shared and verb in {"bootstrap", "write", "catalog"}:
+                    required.add("--allow-shared")
+                    shared_mutations.add(verb)
+                self.assertEqual(set(flags), required)
                 seen.add(verb)
         self.assertEqual(seen, set(expected_flags))
+        self.assertEqual(shared_mutations, {"bootstrap", "write", "catalog"})
+        self.assertEqual(session_verbs, {"read", "write"})
         for token in ("3.10", "--expected", "--input", "--allow-shared",
                       "sha256", "missing", "exit", "ok", "16000"):
             self.assertIn(token, text)

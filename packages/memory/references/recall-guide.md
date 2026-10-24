@@ -17,6 +17,10 @@ another only if remaining capacity permits its results to stay bounded; otherwis
 report that store omitted. Never read a whole store and summarize it afterward.
 Before a helper `read`, account for the candidate size already returned; if a
 full read would exceed the remaining budget, omit it and report why.
+If a complete size bound is unavailable, do not issue an unbounded follow-up
+read within the pass: use the available excerpt and flag the limitation. Reserve
+the full per-call discovery allowance before querying another store; do not
+assume its actual result will be small enough for a partially spent budget.
 
 Do not start repeated "passes" to evade the cap. A genuinely new task question
 may start another pass, with the new question and narrowed scope made explicit.

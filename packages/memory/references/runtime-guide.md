@@ -36,6 +36,13 @@ filename containing a space.
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" write --path "topics/<slug>/<record>.md" --input "<private UTF-8 input file>" --expected "<sha256 or missing>"
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" catalog --topic "<slug>"
 "<python>" "<support-root>/runtime/memory.py" --root "<workspace>" migration-preview
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" read --path "sessions/<session-id>/checkpoint.md"
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" write --path "sessions/<session-id>/checkpoint.md" --input "<private UTF-8 input file>" --expected "<sha256 or missing>" --session "<session-id>"
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" --role shared doctor
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" --role shared bootstrap --allow-shared
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" --role shared read --path "topics/<slug>/<record>.md"
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" --role shared write --path "topics/<slug>/<record>.md" --input "<private UTF-8 input file>" --expected "<sha256 or missing>" --allow-shared
+"<python>" "<support-root>/runtime/memory.py" --root "<workspace>" --role shared catalog --topic "<slug>" --allow-shared
 ```
 
 The default role is `local`. `discover` returns at most 8 candidates and 16000
@@ -44,19 +51,25 @@ the aggregate pass budget across stores and follow-up reads. `read` returns
 content and its `sha256`. `write` requires `--expected` equal to that hash or
 `missing` for a new path; `--input` is a complete UTF-8 document prepared outside
 the store. Session writes use `--path "sessions/<session-id>/checkpoint.md"` or
-`observations.md`, with `--session "<session-id>"` where required by the helper.
-Use the real session identity, not an invented shared identifier.
+`observations.md` and require per-write `--session "<session-id>"` matching the
+path. Session reads do not take `--session`. Use the real session identity, not
+an invented shared identifier.
 
-Use `--role shared` only for the optional shared store. Shared mutations also
-require `--allow-shared`, plus the actual authorization/ownership checks in the
-[sharing guide](sharing-guide.md); a CLI flag is not user authorization.
-Inspect the installed helper's `--help` for option placement before adding
-role/authorization flags; never guess a new verb or an unsupported option.
+`--root` and `--role` are global options **before the verb**. Use `--role shared`
+only for the optional shared store. Its `bootstrap`, `write`, and `catalog`
+mutations require per-verb `--allow-shared`, plus the actual authorization/
+ownership checks in the [sharing guide](sharing-guide.md); a CLI flag is not
+user authorization.
+Read-only shared operations do not need `--allow-shared`. Never guess a new verb
+or an unsupported option.
 
 `doctor` and `migration-preview` are read-only. `bootstrap` enables compatible
-local capture and creates/adopts compatible structure without overwrite;
-refusal is not permission to relabel an ambiguous directory. `catalog` refreshes
-only the affected topic index, not a whole-store rebuild. There is no pointer
+local capture and creates missing structure or idempotently adopts an existing
+compatible identity, schema, and root catalog without overwrite. There is no
+adoption flag: an existing unidentified directory, even empty or valid OKF,
+refuses mutation. Refusal is not permission to relabel an ambiguous directory.
+`catalog` refreshes only the affected topic index, not a whole-store rebuild.
+There is no pointer
 command, migration execution, delete command, or promotion command: skills
 compose the supported operations within their authority.
 
