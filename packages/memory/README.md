@@ -54,11 +54,14 @@ In the consuming workspace, ask the agent to load `memory-bootstrap` first.
 Authorized local bootstrap automatically creates or appends a small managed
 section in workspace `AGENTS.md`; no hand-written instructions are required.
 It points future agents to bounded recall before rediscovery, useful-boundary
-evidence-backed local capture, and checkpoints for substantial work. Existing
+evidence-backed local capture, and checkpoints for substantial work. It includes
+all six skills, with bounded topic maintenance when needed and selective sharing
+proposals or explicitly authorized promotion, not scheduled maintenance or
+automatic sharing. Existing
 instructions, line endings, and existing document ownership are preserved.
 Rerun bootstrap to add a missing section to an already enabled store; an
-unchanged section is byte-idempotent. The exact previously generated section
-upgrades safely in place to the current generic instructions, preserving
+unchanged section is byte-idempotent. Both exact previously generated sections
+upgrade safely in place to the current generic instructions, preserving
 surrounding bytes; bootstrap reports `instructions.status: "upgraded"`.
 Modified/malformed managed content or an
 unmarked `## Workspace Memory` section produces an explicit reconciliation

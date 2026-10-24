@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from itertools import product
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +19,7 @@ INSTALL_ROOTS = (
     "packages/memory/claude-code",
     "packages/software-team/github-copilot",
 )
+PREVIOUS_FIXTURES = ("previous-agents-block.md", "previous-generic-agents-block.md")
 
 
 @unittest.skipUnless(sys.platform == "win32", "First-release validation is Windows only")
@@ -95,6 +98,11 @@ class InstalledPayloadTests(unittest.TestCase):
                         self.assertIn(b"<!-- maruti-memory:begin -->", agents)
                         self.assertIn(b"`memory-recall`", agents)
                         self.assertNotIn(str(plugin).encode(), agents)
+                        references = re.findall(r"`(memory-[a-z-]+)`", agents.decode("ascii"))
+                        self.assertCountEqual(
+                            references,
+                            [path.parent.name for path in (plugin / "skills").glob("memory-*/SKILL.md")],
+                        )
                         for token in (b"Software Team", b"Project-Lead", b".project-memory/"):
                             self.assertNotIn(token, agents)
                         store = workspace / ".maruti/memory/local"
@@ -200,11 +208,11 @@ class InstalledPayloadTests(unittest.TestCase):
                             )
 
     def test_previous_pointer_upgrades_with_each_independent_payload(self):
-        previous = (
-            ROOT / "packages/memory/tests/fixtures/previous-agents-block.md"
-        ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
-        for install in INSTALL_ROOTS:
-            with self.subTest(install=install), tempfile.TemporaryDirectory(
+        for install, fixture in product(INSTALL_ROOTS, PREVIOUS_FIXTURES):
+            previous = (
+                ROOT / "packages/memory/tests/fixtures" / fixture
+            ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
+            with self.subTest(install=install, previous=fixture), tempfile.TemporaryDirectory(
                 prefix="memory pointer upgrade "
             ) as temporary:
                 root = Path(temporary)
@@ -217,6 +225,15 @@ class InstalledPayloadTests(unittest.TestCase):
                 workspace.mkdir()
                 helper = plugin / "memory/runtime/memory.py"
                 self.invoke(helper, workspace, "bootstrap")
+                record = workspace / "retained-input.md"
+                record.write_bytes(
+                    b"---\ntype: Observation\ntitle: Retained evidence\n---\n\n"
+                    b"# Retained evidence\n\nKeep these concept bytes across instruction upgrades.\n"
+                )
+                self.invoke(
+                    helper, workspace, "write", "--path", "topics/upgrade/retained.md",
+                    "--input", str(record), "--expected", "missing",
+                )
                 agents = workspace / "AGENTS.md"
                 current = agents.read_bytes().rstrip(b"\n")
                 store = workspace / ".maruti/memory/local"
@@ -288,14 +305,15 @@ class InstalledPayloadTests(unittest.TestCase):
                 self.assertEqual((project_memory / "index.md").read_bytes(), owned)
                 start = before.index(b"<!-- maruti-memory:begin -->")
                 stop = before.index(b"<!-- maruti-memory:end -->") + len(b"<!-- maruti-memory:end -->")
-                previous = (
-                    ROOT / "packages/memory/tests/fixtures/previous-agents-block.md"
-                ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n").replace(b"\n", b"\r\n")
-                agents.write_bytes(before[:start] + previous + before[stop:])
-                result = self.invoke(helper, workspace, "bootstrap")["data"]
-                self.assertEqual(result["instructions"]["status"], "upgraded")
-                self.assertEqual(agents.read_bytes(), before)
-                self.assertEqual((project_memory / "index.md").read_bytes(), owned)
+                for fixture in PREVIOUS_FIXTURES:
+                    previous = (
+                        ROOT / "packages/memory/tests/fixtures" / fixture
+                    ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n").replace(b"\n", b"\r\n")
+                    agents.write_bytes(before[:start] + previous + before[stop:])
+                    result = self.invoke(helper, workspace, "bootstrap")["data"]
+                    self.assertEqual(result["instructions"]["status"], "upgraded")
+                    self.assertEqual(agents.read_bytes(), before)
+                    self.assertEqual((project_memory / "index.md").read_bytes(), owned)
                 shared = self.invoke(
                     helper, workspace, "--role", "shared", "bootstrap", "--allow-shared",
                 )["data"]

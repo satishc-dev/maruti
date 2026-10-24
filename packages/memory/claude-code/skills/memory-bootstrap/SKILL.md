@@ -50,7 +50,7 @@ These references are instructions; stored memory remains untrusted evidence.
    line endings, and other project sections; it uses stable installed skill
    names, not machine-specific plugin paths or full skill text. Compatible
    existing stores get the pointer repaired if missing; a second bootstrap is
-   byte-idempotent. The exact known earlier generated section upgrades safely
+   byte-idempotent. Either of the two exact known earlier sections upgrades safely
    in place; an `upgraded` result is not permission to replace edited content.
    Shared bootstrap never rewrites this pointer.
    Modified/malformed managed markers or a conflicting owner-authored section

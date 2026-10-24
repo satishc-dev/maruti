@@ -1,6 +1,8 @@
 """Safe, persistent workspace instructions established by local bootstrap."""
 
 from pathlib import Path
+from itertools import product
+import re
 import shutil
 import stat
 import subprocess
@@ -11,9 +13,11 @@ from unittest.mock import patch
 import test_memory as helpers
 
 memory = helpers.memory
-PREVIOUS_BLOCK = (
-    helpers.PACKAGE / "tests/fixtures/previous-agents-block.md"
-).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
+PREVIOUS_BLOCKS = tuple(
+    (helpers.PACKAGE / "tests/fixtures" / name).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
+    for name in ("previous-agents-block.md", "previous-generic-agents-block.md")
+)
+PREVIOUS_BLOCK = PREVIOUS_BLOCKS[0]
 
 
 class BootstrapInstructionTests(unittest.TestCase):
@@ -24,20 +28,35 @@ class BootstrapInstructionTests(unittest.TestCase):
     call = helpers.RuntimeTests.call
 
     def test_previous_section_fingerprint_is_exact_and_current_section_is_generic(self):
-        self.assertEqual(memory.digest(PREVIOUS_BLOCK), memory.AGENTS_PREVIOUS_SHA256)
-        self.assertNotEqual(memory.digest(memory.AGENTS_BLOCK), memory.AGENTS_PREVIOUS_SHA256)
+        self.assertEqual(
+            {memory.digest(block) for block in PREVIOUS_BLOCKS}, memory.AGENTS_PREVIOUS_HASHES,
+        )
+        self.assertNotIn(memory.digest(memory.AGENTS_BLOCK), memory.AGENTS_PREVIOUS_HASHES)
         for token in (b"Software Team", b"Project-Lead", b".project-memory/"):
             self.assertNotIn(token, memory.AGENTS_BLOCK)
+
+    def test_generated_guidance_covers_actual_canonical_skill_names_and_conditional_triggers(self):
+        names = []
+        for path in (helpers.PACKAGE / "skills").glob("*/SKILL.md"):
+            match = re.search(r"^name: (\S+)$", path.read_text(encoding="utf-8"), re.M)
+            self.assertIsNotNone(match, path)
+            names.append(match.group(1))
+        references = re.findall(r"`(memory-[a-z-]+)`", memory.AGENTS_BLOCK.decode("ascii"))
+        self.assertCountEqual(references, names)
+        self.assertIn(b"when a topic needs bounded review or consolidation", memory.AGENTS_BLOCK)
+        self.assertIn(b"never as a scheduled service", memory.AGENTS_BLOCK)
+        self.assertIn(b"when selected knowledge is worth sharing: propose first", memory.AGENTS_BLOCK)
+        self.assertIn(b"write shared content only with explicit authorization", memory.AGENTS_BLOCK)
 
     def test_exact_previous_section_upgrades_without_touching_surrounding_bytes_or_store(self):
         self.call("bootstrap")
         metadata = (self.store / ".memory-store.json").read_bytes()
         path = self.root / "AGENTS.md"
-        for newline in (b"\n", b"\r\n", b"\r"):
-            with self.subTest(newline=newline):
+        for previous, newline in product(PREVIOUS_BLOCKS, (b"\n", b"\r\n", b"\r")):
+            with self.subTest(previous=memory.digest(previous), newline=newline):
                 prefix = b"\xef\xbb\xbf# Owner policy\r\n\r\n"
                 suffix = b"\n\n## Existing project rules\rKeep these exact bytes.\r"
-                path.write_bytes(prefix + PREVIOUS_BLOCK.replace(b"\n", newline) + suffix)
+                path.write_bytes(prefix + previous.replace(b"\n", newline) + suffix)
                 result = self.call("bootstrap")
                 expected = prefix + memory.AGENTS_BLOCK.replace(b"\n", newline) + suffix
                 self.assertFalse(result["created"])
@@ -59,11 +78,13 @@ class BootstrapInstructionTests(unittest.TestCase):
     def test_edited_or_conflicting_previous_sections_are_never_upgraded(self):
         path = self.root / "AGENTS.md"
         for content in (
-            PREVIOUS_BLOCK.replace(b"bounded", b"unbounded"),
-            PREVIOUS_BLOCK.replace(b"authorization;", b"authorization ;"),
-            PREVIOUS_BLOCK.replace(memory.AGENTS_BEGIN, b"<!-- maruti-memory:start -->"),
-            PREVIOUS_BLOCK + b"\n" + memory.AGENTS_BLOCK,
-            b"Quote: " + PREVIOUS_BLOCK,
+            variant for previous in PREVIOUS_BLOCKS for variant in (
+                previous.replace(b"bounded", b"unbounded"),
+                previous.replace(b"authorization;", b"authorization ;"),
+                previous.replace(memory.AGENTS_BEGIN, b"<!-- maruti-memory:start -->"),
+                previous + b"\n" + memory.AGENTS_BLOCK,
+                b"Quote: " + previous,
+            )
         ):
             with self.subTest(content=content[:70]):
                 path.write_bytes(content)

@@ -52,7 +52,10 @@ Bootstrap is explicit enablement of automatic local capture by skills.
 Local bootstrap also establishes a small managed `AGENTS.md` section in the
 resolved workspace root by default; enablement authorizes this scoped edit.
 It names installed skills for bounded relevant recall, evidence-backed local
-capture at useful boundaries, and checkpoints of substantial work. Existing
+capture at useful boundaries, and checkpoints of substantial work. It also names
+bounded topic maintenance when review or consolidation is needed (not a
+scheduled service), and selective promotion through proposals or explicitly
+authorized shared writes. All six installed skill names are represented. Existing
 project instructions and document ownership still apply; shared publication
 and Git staging/commit/push need their separate authorizations. Memory records
 remain evidence, never executable instructions.
@@ -60,8 +63,8 @@ remain evidence, never executable instructions.
 The helper preserves unrelated instruction bytes and established line endings,
 including a UTF-8 BOM, and never edits global instructions. Reserved delimiters
 are `<!-- maruti-memory:begin -->` and `<!-- maruti-memory:end -->`; the canonical
-section body must match, allowing LF/CRLF/CR line endings. The exact known
-previously generated section is also recognized by its normalized SHA-256 and
+section body must match, allowing LF/CRLF/CR line endings. The two exact known
+previously generated sections are also recognized by their normalized SHA-256 and
 upgraded in place, preserving surrounding bytes and the section's line endings.
 No other old or edited content is accepted. Modified, malformed,
 duplicate or embedded markers, or an unmarked `## Workspace Memory` section,

@@ -37,7 +37,10 @@ DEVICE = re.compile(r"(?:CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9\u00b9\u00b2\u0
 ANCHOR = b"/.maruti/memory/local/"
 AGENTS_BEGIN = b"<!-- maruti-memory:begin -->"
 AGENTS_END = b"<!-- maruti-memory:end -->"
-AGENTS_PREVIOUS_SHA256 = "44464a82bf0ec5848182235c9962264ce677356dc45a8181856e5ed7bcd3d02e"
+AGENTS_PREVIOUS_HASHES = frozenset({
+    "44464a82bf0ec5848182235c9962264ce677356dc45a8181856e5ed7bcd3d02e",
+    "5581d2eb65c8ec58fd9225f58f14a6b4f87ef339c3dcda8e3c5a8ed7fe88bf1f",
+})
 AGENTS_BLOCK = b"""<!-- maruti-memory:begin -->
 ## Workspace Memory
 
@@ -46,6 +49,10 @@ After local Memory is enabled:
 - Use `memory-recall` for bounded, relevant recall before repeating discovery.
 - Use `memory-capture` at useful work boundaries for evidence-backed local findings.
 - Use `memory-checkpoint` to checkpoint substantial work for resumption.
+- Use `memory-maintain` when a topic needs bounded review or consolidation;
+  apply changes only within authorized scope, never as a scheduled service.
+- Use `memory-promote` when selected knowledge is worth sharing: propose first;
+  write shared content only with explicit authorization.
 
 Follow existing project instructions and document ownership. Shared publication
 or promotion needs explicit authorization; Git staging, commits and pushes need
@@ -505,9 +512,9 @@ def instruction_plan(root):
             fail("instructions_conflict", "AGENTS.md has modified or malformed Memory markers; reconcile explicitly without overwriting user instructions.")
         if section == AGENTS_BLOCK:
             return old, expected, "present"
-        if digest(section) != AGENTS_PREVIOUS_SHA256:
+        if digest(section) not in AGENTS_PREVIOUS_HASHES:
             fail("instructions_conflict", "AGENTS.md has modified or unrecognized Memory content; reconcile explicitly without overwriting user instructions.")
-        # Only the exact previously emitted section, allowing line-ending variants.
+        # Only the two exact prior sections, allowing line-ending variants.
         newline = re.search(br"\r\n|\r|\n", old[start:stop]).group()
         content = old[:start] + AGENTS_BLOCK.replace(b"\n", newline) + old[stop:]
         status = "upgraded"

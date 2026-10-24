@@ -94,8 +94,11 @@ Local `bootstrap` also creates or appends a small managed section in workspace
 `AGENTS.md` by default, as part of enablement authorization. Existing UTF-8 text,
 including a BOM and established line endings, is preserved; no global files or
 machine-specific plugin paths are used. The section names installed skills for
-bounded recall, useful-boundary local capture, and substantial-work checkpoints,
-while retaining existing ownership, authorization, and evidence-only rules.
+bootstrap/inspection, bounded recall, useful-boundary local capture,
+substantial-work checkpoints, bounded topic maintenance when needed, and
+selective sharing proposals or explicitly authorized promotion. Maintenance
+is not a scheduled service and promotion is not automatically authorized.
+Existing ownership, authorization, and evidence-only rules still apply.
 The helper never copies complete skills or stored records into instructions.
 Shared bootstrap does not inspect or edit this local pointer.
 
@@ -103,15 +106,15 @@ Local success includes `instructions: {"path":"AGENTS.md","status":"created",
 "sha256":"..."}`; status may instead be `appended`, `present`, or `upgraded`. `sha256` covers
 the complete instruction file. Rerunning bootstrap repairs a missing pointer
 in a compatible store and is byte-idempotent when the pointer already matches.
-The exact known earlier generated section upgrades in place to the current
-generic instructions, preserving surrounding bytes and its line endings.
-Recognition uses a fixed normalized fingerprint, not a broad text replacement;
+Either of the two exact known earlier generated sections upgrades in place to
+the current generic instructions, preserving surrounding bytes and its line endings.
+Recognition uses two fixed normalized fingerprints, not a broad text replacement;
 arbitrary edits or unknown old sections still refuse.
 The reserved delimiters are `<!-- maruti-memory:begin -->` and
 `<!-- maruti-memory:end -->`. Modified, malformed, or duplicate managed sections,
 or an existing unmarked `## Workspace Memory` section, return
 `instructions_conflict` for explicit reconciliation, never silent replacement.
-Unsafe redirects, read-only targets needing an append, invalid UTF-8, and files
+Unsafe redirects, read-only targets needing an update, invalid UTF-8, and files
 exceeding 256 KiB including the section also refuse.
 
 Preflight validates the store and instruction target before ignore/store writes.
