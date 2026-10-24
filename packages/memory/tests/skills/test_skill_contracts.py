@@ -186,6 +186,23 @@ class SkillContractTests(unittest.TestCase):
                       "global", "pointer", "approved"):
             self.assertIn(token, text)
 
+    def test_nongit_does_not_claim_active_ignore_protection(self):
+        for text in (
+            self.skill("memory-bootstrap"),
+            self.skill("memory-capture"),
+            self.reference("operating-policy.md"),
+        ):
+            with self.subTest(text=text[:80]):
+                self.assertIn("nonGit", text)
+                self.assertIn("no active ignore verification", text)
+                self.assertIn("git init", text)
+                self.assertIn("bootstrap", text)
+        for text in (
+            self.skill("memory-bootstrap"),
+            self.reference("operating-policy.md"),
+        ):
+            self.assertIn("no `.gitignore`", text)
+
 
 if __name__ == "__main__":
     unittest.main()

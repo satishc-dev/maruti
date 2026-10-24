@@ -8,7 +8,11 @@ record contains it.
 
 ## Scope, enablement, and ownership
 
-Standalone local memory lives at `.maruti/memory/local/` and must be Git-ignored.
+Standalone local memory lives at `.maruti/memory/local/` and must be Git-ignored
+when the workspace is a Git repository. In a non-Git workspace, `nonGit` means
+no active ignore verification: create no `.gitignore` before Git exists and
+do not claim Git protection. After `git init`, rerun helper `bootstrap` to
+repair the ignore rule before subsequent local writes.
 Optional curated shared memory lives at `.maruti/memory/shared/`. A compatible
 helper bootstrap enables local capture; merely discovering a directory does not.
 Capture useful findings during enabled work, not every interaction.
