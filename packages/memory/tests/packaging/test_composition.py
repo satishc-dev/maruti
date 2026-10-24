@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
 import unittest
@@ -97,6 +98,17 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unknown file"):
             build.compose(self.root, self.output, check=True)
         self.assertEqual(path.read_text(), "do not delete")
+
+    def test_unknown_mirror_declaration_is_not_overwritten(self):
+        path = self.write(
+            "packages/memory/composition/mirrors.json",
+            '{"schema_version": 1, "groups": []}',
+            output=True,
+        )
+        with self.assertRaisesRegex(ValueError, "Unknown composed mirror"):
+            build.compose(self.root, self.output)
+        self.assertEqual(json.loads(path.read_text())["groups"], [])
+        self.assertFalse((self.output / build.INSTALL_ROOTS[0]).exists())
 
     def test_canonical_change_regenerates_and_check_is_read_only(self):
         build.compose(self.root, self.output)
@@ -215,6 +227,36 @@ class SoftwareTeamWiringTests(unittest.TestCase):
         self.assertIn("It needs no GitHub authentication", content)
         self.assertIn("not approval to stage, commit, or push", content)
         self.assertIn("When board and documents disagree, documents win", content)
+
+    def test_marketplaces_publish_complete_independent_memory_roots(self):
+        copilot = json.loads((ROOT / ".github/plugin/marketplace.json").read_text())
+        entries = [entry for entry in copilot["plugins"] if entry["name"] == "memory"]
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["source"], "./packages/memory/github-copilot")
+        self.assertEqual(entries[0]["version"], build.VERSION)
+        claude = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+        entries += [entry for entry in claude["plugins"] if entry["name"] == "memory"]
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[1]["source"]["path"], "packages/memory/claude-code")
+        for entry in entries:
+            self.assertNotIn("dependencies", entry)
+        manifest = json.loads((
+            ROOT / "packages/memory/claude-code/.claude-plugin/plugin.json"
+        ).read_text())
+        self.assertEqual(manifest["name"], "memory")
+        self.assertEqual(manifest["version"], build.VERSION)
+
+    def test_installed_readme_links_do_not_depend_on_sibling_checkout_files(self):
+        for install in build.INSTALL_ROOTS:
+            root = (ROOT / install).resolve()
+            content = (root / "README.md").read_text(encoding="utf-8")
+            for target in re.findall(r"\[[^\]\n]+\]\(([^)\n]+)\)", content):
+                if "://" in target or target.startswith("#"):
+                    continue
+                with self.subTest(install=install, target=target):
+                    destination = (root / target.split("#")[0]).resolve()
+                    self.assertTrue(destination.is_relative_to(root))
+                    self.assertTrue(destination.exists())
 
 
 if __name__ == "__main__":

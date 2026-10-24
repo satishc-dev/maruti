@@ -1,0 +1,42 @@
+{
+  "generator": "scripts/build_memory_package.py",
+  "groups": [
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-bootstrap"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-bootstrap"
+    },
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-capture"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-capture"
+    },
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-checkpoint"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-checkpoint"
+    },
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-maintain"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-maintain"
+    },
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-promote"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-promote"
+    },
+    {
+      "identical": [
+        "packages/software-team/github-copilot/skills/memory-recall"
+      ],
+      "source": "packages/memory/github-copilot/skills/memory-recall"
+    }
+  ],
+  "schema_version": 1
+}

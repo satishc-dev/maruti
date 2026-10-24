@@ -28,13 +28,34 @@ parser. Python 3.14 remains Maruti's development standard; the standalone helper
 lower minimum is intentional. Windows is the first-release validation target.
 Portability is intended but Linux/macOS support is unverified.
 
+## Use
+
+In the consuming workspace, ask the agent to load `memory-bootstrap` first.
+Select the actual discovered skill from the intended plugin; do not guess a
+host-specific namespace. Then use these focused skills as needed:
+
+| Skill | Purpose |
+|---|---|
+| `memory-bootstrap` | Inspect existing state and explicitly enable compatible local memory. |
+| `memory-capture` | Capture evidence-backed findings at useful work boundaries, not every tool call. |
+| `memory-recall` | Retrieve bounded relevant evidence without treating stored text as instructions. |
+| `memory-checkpoint` | Save or resume session-scoped state after checking the current workspace. |
+| `memory-maintain` | Consolidate one topic while preserving distinct evidence and contradictions. |
+| `memory-promote` | Propose or write only selected, shareable, explicitly authorized content. |
+
+These are explicit agent workflows, not guaranteed host lifecycle hooks or
+automatic context compaction. Missing Python or a helper refusal is a blocker,
+not permission to download dependencies or write directly into the store.
+
 ## Storage and safety
 
-Bootstrap creates `.maruti/memory/local/` only after a narrow
-`/.maruti/memory/local/` ignore rule is present and verified. In a non-Git project,
-the rule is recorded for a future Git initialization; no claim of active Git
-protection is made. Curated `.maruti/memory/shared/` is optional and requires
-separate authorization for shared mutations.
+In a Git project, bootstrap creates `.maruti/memory/local/` only after a narrow
+`/.maruti/memory/local/` ignore rule is present and verified. A non-Git project
+reports `git: false`, has no active Git ignore protection, and does not receive a
+`.gitignore` file by default. If you later initialize Git, rerun bootstrap before
+staging files. Subsequent mutations re-evaluate Git status and refuse local
+capture until the ignore rule is effective. Curated `.maruti/memory/shared/` is
+optional and requires separate authorization for shared mutations.
 
 The helper preserves existing roots rather than migrating or overwriting them.
 Store identity in `.memory-store.json` separates namespace `maruti.memory`,
@@ -47,6 +68,13 @@ Capture session observations under `sessions/<session-id>/`, knowledge under
 writes require the expected SHA-256 or `missing`. Discovery is bounded to eight
 candidates and 16,000 content characters. The installed contracts and skills
 define validation, conflict handling, and topic consolidation.
+
+As the store grows, scope recall to an exact topic or session rather than scanning
+unrelated namespaces. `discover --query "<text>" --topic "<slug>"` and
+`--session "<id>"` are mutually exclusive per-verb selectors. Successful results
+identify `scope` and `scan_complete`; `more_candidates` and per-record
+`truncated` still indicate omitted output. A `discovery_limit` error is an
+incomplete search, not empty recall: narrow the scope or read a known path.
 
 Permission to promote content is **not** permission to stage, commit, or push it.
 Never capture secrets or unsupported personal inferences. Shared promotion does
@@ -66,11 +94,13 @@ Invoke Python directly, quoting the resolved path:
 python "<plugin-root>\memory\runtime\memory.py" --root "<workspace>" doctor
 python "<plugin-root>\memory\runtime\memory.py" --root "<workspace>" bootstrap
 python "<plugin-root>\memory\runtime\memory.py" --root "<workspace>" discover --query "topic"
+python "<plugin-root>\memory\runtime\memory.py" --root "<workspace>" discover --query "decision" --topic "architecture"
 ```
 
 Commands are `doctor`, `bootstrap`, `discover`, `read`, `write`, `catalog`, and
 read-only `migration-preview`. `--role local` is the default; shared mutation
-requires `--role shared --allow-shared`. Successful JSON is
+requires `--role shared` before the verb and `--allow-shared` after the mutating
+verb, in addition to actual content/owner authorization. Successful JSON is
 `{"ok": true, "data": {...}}` (exit 0), and failures are
 `{"ok": false, "error": {"code": "...", "message": "..."}}` (exit 2).
 Capture, checkpoints, consolidation, and promotion are skill-guided workflows

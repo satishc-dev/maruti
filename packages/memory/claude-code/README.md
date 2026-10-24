@@ -17,5 +17,8 @@ If copying skills into a repository rather than installing the plugin, copy the
 entire payload too, preserving that layout; a skill file alone is not sufficient.
 
 Requires Python 3.10+. Windows is the first-release validation target; actual
-host discovery/installation must be checked separately. See the
-[package README](../README.md) for storage, authorization, limitations, and CLI.
+host discovery/installation must be checked separately. Read the included
+[operating policy](memory/references/operating-policy.md),
+[runtime guide](memory/references/runtime-guide.md), and
+[runtime contract](memory/contracts/RUNTIME.md) for storage, authorization,
+limitations, and CLI details.

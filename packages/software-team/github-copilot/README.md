@@ -1,6 +1,6 @@
 # software-team — GitHub Copilot CLI
 
-The Copilot CLI build of the [`software-team`](../README.md) package. This is the
+The Copilot CLI build of the `software-team` package. This is the
 only platform variant; there is no Claude Code build.
 
 ## Install
@@ -10,12 +10,17 @@ copilot plugin marketplace add satishc-dev/maruti
 copilot plugin install software-team@maruti
 ```
 
-Or, from a local clone, copy what you need into the consuming repository:
+Or, from a local clone, copy this platform directory's content as real files
+into the consuming repository's `.github/` directory, preserving the layout.
+Do not copy Maruti's managed symlink mirrors or only the agent files:
 
 ```
 .github/agents/st-*.agent.md
 .github/skills/st-*/
+.github/skills/memory-*/
 .github/prompts/st-*.prompt.md
+.github/contracts/
+.github/memory/
 ```
 
 ## Use
@@ -35,7 +40,7 @@ Bootstrap also copies the contracts into `.software-team/contracts/`, which ever
 agent reads from. Run it before commissioning any team.
 
 The plugin also includes the same self-contained offline
-[Memory capability](../../memory/README.md) shipped independently as `memory`.
+[Memory capability](memory/references/operating-policy.md) shipped independently as `memory`.
 Bootstrap invokes its helper to create ignored `.maruti/memory/local/` working
 memory; it does not migrate or replace committed `.project-memory/`.
 Workers capture locally or send `memory_proposals[]`; Project-Lead retains
@@ -145,6 +150,6 @@ reliably share a counter — and `list_agents` verifies it at runtime.
 ## Scope
 
 GitHub only; Azure DevOps is not supported. See the
-[package README](../README.md) for the full design and the
+[operating roles](contracts/ROLES.md) for the full design and the
 [contracts](contracts/) for agent behaviour. Those contracts ship with this
 plugin and are copied into each repository at `.software-team/contracts/`.

@@ -8,6 +8,9 @@ on:
       - "packages/software-team/**"
       - "scripts/build_memory_package.py"
       - "scripts/link_packages.py"
+      - ".gitattributes"
+      - ".github/plugin/marketplace.json"
+      - ".claude-plugin/marketplace.json"
       - ".github/workflows/memory-windows.yml"
   pull_request:
     paths:
@@ -15,6 +18,9 @@ on:
       - "packages/software-team/**"
       - "scripts/build_memory_package.py"
       - "scripts/link_packages.py"
+      - ".gitattributes"
+      - ".github/plugin/marketplace.json"
+      - ".claude-plugin/marketplace.json"
       - ".github/workflows/memory-windows.yml"
 
 permissions:
@@ -40,5 +46,7 @@ jobs:
         run: python -m unittest discover -s packages\memory\tests\packaging -v
       - name: Canonical skill contracts
         run: python -m unittest discover -s packages\memory\tests\skills -v
+      - name: Canonical runtime and offline dependency contracts
+        run: python -m unittest discover -s packages\memory\tests\runtime -v
       - name: Isolated installed-payload smoke scenarios
         run: python -m unittest discover -s packages\memory\tests\scenarios -v

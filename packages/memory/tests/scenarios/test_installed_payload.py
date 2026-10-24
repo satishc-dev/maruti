@@ -39,12 +39,14 @@ class InstalledPayloadTests(unittest.TestCase):
             root = Path(temporary)
             repository = root / "repo"
             repository.mkdir()
+            (root / "checkout").mkdir()
             shutil.copyfile(ROOT / ".gitattributes", repository / ".gitattributes")
             paths = [
                 "packages/memory/runtime/check.py",
                 "packages/memory/skills/memory-recall/SKILL.md",
                 *[f"{install}/memory/runtime/check.py" for install in INSTALL_ROOTS],
                 *[f"{install}/skills/memory-recall/SKILL.md" for install in INSTALL_ROOTS],
+                *[f"{install}/.memory-package.json" for install in INSTALL_ROOTS],
             ]
             content = b"line one\nline two\n"
             for relative in paths:
@@ -57,10 +59,11 @@ class InstalledPayloadTests(unittest.TestCase):
                 ["add", "."],
                 ["checkout-index", "--all", f"--prefix={root / 'checkout'}{os.sep}"],
             ]:
-                subprocess.run(
-                    ["git", "-C", str(repository), *arguments], check=True,
+                result = subprocess.run(
+                    ["git", "-C", str(repository), *arguments], check=False,
                     capture_output=True, timeout=30,
                 )
+                self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8"))
             for relative in paths:
                 self.assertEqual((root / "checkout" / relative).read_bytes(), content)
 
@@ -84,7 +87,8 @@ class InstalledPayloadTests(unittest.TestCase):
                                 ["git", "init", "--quiet", str(workspace)],
                                 check=True, capture_output=True, timeout=30,
                             )
-                        self.invoke(helper, workspace, "doctor")
+                        diagnostic = self.invoke(helper, workspace, "doctor")
+                        self.assertIs(diagnostic["data"]["git"], git_project)
                         self.invoke(helper, workspace, "bootstrap")
                         store = workspace / ".maruti/memory/local"
                         metadata_before = (store / ".memory-store.json").read_bytes()
@@ -93,17 +97,19 @@ class InstalledPayloadTests(unittest.TestCase):
                         self.assertEqual(metadata["schema_version"], 1)
                         self.assertEqual(metadata["role"], "local")
                         self.assertEqual(metadata["created_with"], "0.1.0")
-                        self.assertIn(
-                            "/.maruti/memory/local/",
-                            (workspace / ".gitignore").read_text().splitlines(),
-                        )
                         if git_project:
+                            self.assertIn(
+                                "/.maruti/memory/local/",
+                                (workspace / ".gitignore").read_text().splitlines(),
+                            )
                             ignored = subprocess.run(
                                 ["git", "-C", str(workspace), "check-ignore", "--quiet",
                                  ".maruti/memory/local/.memory-store.json"],
                                 check=False, capture_output=True, timeout=30,
                             )
                             self.assertEqual(ignored.returncode, 0)
+                        else:
+                            self.assertFalse((workspace / ".gitignore").exists())
                         self.invoke(helper, workspace, "bootstrap")
                         self.assertEqual(
                             (store / ".memory-store.json").read_bytes(), metadata_before,
@@ -131,9 +137,59 @@ class InstalledPayloadTests(unittest.TestCase):
                             helper, workspace, "discover", "--query", "Packaging sentinel",
                         )
                         self.assertIn("sentinel", json.dumps(recall))
+                        scoped = self.invoke(
+                            helper, workspace, "discover", "--query", "sentinel",
+                            "--topic", "packaging",
+                        )["data"]
+                        self.assertEqual(scoped["scope"], {"group": "topics", "name": "packaging"})
+                        self.assertTrue(scoped["scan_complete"])
+                        self.assertGreater(len(scoped["candidates"]), 0)
+                        self.assertLessEqual(len(scoped["candidates"]), 8)
+                        self.assertLessEqual(
+                            sum(len(item["content"]) for item in scoped["candidates"]), 16000,
+                        )
+                        checkpoint = workspace / "checkpoint-input.md"
+                        checkpoint.write_text(
+                            "---\ntype: Session Checkpoint\ntitle: Smoke checkpoint\n---\n"
+                            "# Smoke checkpoint\n\nObjective: verify installed session recall.\n",
+                            encoding="utf-8",
+                        )
+                        self.invoke(
+                            helper, workspace, "write",
+                            "--path", "sessions/smoke-session/checkpoint.md",
+                            "--input", str(checkpoint), "--expected", "missing",
+                            "--session", "smoke-session",
+                        )
+                        session = self.invoke(
+                            helper, workspace, "discover", "--query", "checkpoint",
+                            "--session", "smoke-session",
+                        )["data"]
+                        self.assertEqual(
+                            session["scope"], {"group": "sessions", "name": "smoke-session"},
+                        )
+                        self.assertTrue(session["scan_complete"])
+                        self.assertIn("Smoke checkpoint", session["candidates"][0]["content"])
                         self.invoke(helper, workspace, "catalog", "--topic", "packaging")
                         self.assertFalse((workspace / ".project-memory").exists())
                         self.assertFalse((workspace / ".maruti/memory/shared").exists())
+                        if not git_project:
+                            subprocess.run(
+                                ["git", "init", "--quiet", str(workspace)],
+                                check=True, capture_output=True, timeout=30,
+                            )
+                            pending = "topics/packaging/after-init.md"
+                            refused = self.invoke(
+                                helper, workspace, "write", "--path", pending,
+                                "--input", str(document), "--expected", "missing",
+                                expect_ok=False,
+                            )
+                            self.assertEqual(refused["error"]["code"], "privacy_not_ignored")
+                            self.assertFalse((store / pending).exists())
+                            self.invoke(helper, workspace, "bootstrap")
+                            self.invoke(
+                                helper, workspace, "write", "--path", pending,
+                                "--input", str(document), "--expected", "missing",
+                            )
 
 
 if __name__ == "__main__":

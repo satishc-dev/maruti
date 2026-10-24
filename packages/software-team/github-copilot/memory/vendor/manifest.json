@@ -1,0 +1,88 @@
+{
+  "upstream": "https://github.com/yaml/pyyaml",
+  "version": "6.0.3",
+  "commit": "49790e73684bebad1df05ef8d828fa12f685bffb",
+  "license_sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4",
+  "files": [
+    {
+      "path": "yaml/__init__.py",
+      "git_blob_sha1": "d58f0891737def7f38e5d86dde2dbf9be0c13dce",
+      "sha256": "b19dfcc333d6a75dfd73073901164507252f271b41d3b5f7d85510033a0547a7"
+    },
+    {
+      "path": "yaml/composer.py",
+      "git_blob_sha1": "6d15cb40e3b4198819c91c6f8d8b32807fcf53b2",
+      "sha256": "fcaa37d16afa783594794a5ab94193dcb720f503c19ce3d59539c8311189f453"
+    },
+    {
+      "path": "yaml/constructor.py",
+      "git_blob_sha1": "619acd3070a4845c653fcf22a626e05158035bc2",
+      "sha256": "90d8247da78b524c10618fd0e857f54f3d97570fe91b5c5513d024ef3faf88b0"
+    },
+    {
+      "path": "yaml/dumper.py",
+      "git_blob_sha1": "6aadba551f3836b02f4752277f4b3027073defad",
+      "sha256": "3cb72d66563064ba7b5e679477046ebf89d8399d940670c8532f3e94a7cb17ea"
+    },
+    {
+      "path": "yaml/emitter.py",
+      "git_blob_sha1": "a664d011162af69184df2f8e59ab7feec818f7c7",
+      "sha256": "8e086d694ede170837d5b1b407b45979aff6f40762f422a65eafd08e04290a44"
+    },
+    {
+      "path": "yaml/error.py",
+      "git_blob_sha1": "b796b4dc519512c4825ff539a2e6aa20f4d370d0",
+      "sha256": "021f73fada072546c4f63f8cf18a7181244ce4280b09cc15cc980b2d1176171a"
+    },
+    {
+      "path": "yaml/events.py",
+      "git_blob_sha1": "f79ad389cb6c9517e391dcd25534866bc9ccd36a",
+      "sha256": "e74fd392c810884e2ea7e94aa3f57e9c1cbeb402319083d0c58e6a0e1282787c"
+    },
+    {
+      "path": "yaml/loader.py",
+      "git_blob_sha1": "e90c11224c38e559cdf0cb205f0692ebd4fb8681",
+      "sha256": "5156becc8aa6905482218abf3e04869b835226db4763645fff3438fdbd5f1cdd"
+    },
+    {
+      "path": "yaml/nodes.py",
+      "git_blob_sha1": "c4f070c41e1fb1bc01af27d69329e92dded38908",
+      "sha256": "80f28d8fca4a09d87677882bde021820d9cf39a3b11a12405226211919cf13ce"
+    },
+    {
+      "path": "yaml/parser.py",
+      "git_blob_sha1": "13a5995d292045d0f865a99abf692bd35dc87814",
+      "sha256": "8a55a9e6fbe0a07146cef3990c8b45a068c3e83e369e1959ad9ca30306b4a09a"
+    },
+    {
+      "path": "yaml/reader.py",
+      "git_blob_sha1": "774b0219b5932a0ee1c27e637371de5ba8d9cb16",
+      "sha256": "d1d9b38ab3a20c6e17a38d519ee412ecaf6b918df18c78956ac7c330d4ea08dc"
+    },
+    {
+      "path": "yaml/representer.py",
+      "git_blob_sha1": "808ca06dfbd60c9a23eb079151b74a82ef688749",
+      "sha256": "22e58ff9c016f6c1ca1274b4802a926bcf78935060e1c813c5a0f021c6d143e6"
+    },
+    {
+      "path": "yaml/resolver.py",
+      "git_blob_sha1": "3522bdaaf6358110b608f4e6503b9d314c82d887",
+      "sha256": "f4bf9561f9b89961f1503d558385fbae30d12bfed565de9bf76c33abb63620a6"
+    },
+    {
+      "path": "yaml/scanner.py",
+      "git_blob_sha1": "de925b07f1eaec33c9c305a8a69f9eb7ac5983c5",
+      "sha256": "60433788b652690c17710460da5d91e0c753d3318fd85f5e1e42862a71f25906"
+    },
+    {
+      "path": "yaml/serializer.py",
+      "git_blob_sha1": "fe911e67ae7a739abb491fbbc6834b9c37bbda4b",
+      "sha256": "0a1b85826854d35863e31808f0668abfabdf33606e8f06bd8bb7761401e3edc0"
+    },
+    {
+      "path": "yaml/tokens.py",
+      "git_blob_sha1": "4d0b48a394ac8c019b401516a12f688df361cf90",
+      "sha256": "953408cd2570f0c83dc2fe39f7e4e388e41eeb05738aa69196a5f6ffcf6ba79e"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# Preserve byte-identical upstream sources and license on every checkout.
+yaml/*.py text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+LICENSE-PyYAML text eol=lf
+manifest.json text eol=lf

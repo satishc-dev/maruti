@@ -97,7 +97,9 @@ def expected_files(repo_root: Path) -> dict[str, bytes]:
             "identical": [f"packages/software-team/github-copilot/skills/{name}"],
         })
     expected["packages/memory/composition/mirrors.json"] = _json_bytes({
-        "schema_version": 1, "groups": groups,
+        "generator": "scripts/build_memory_package.py",
+        "schema_version": 1,
+        "groups": groups,
     })
     return expected
 
@@ -105,6 +107,16 @@ def expected_files(repo_root: Path) -> dict[str, bytes]:
 def compose(repo_root: Path, output_root: Path, *, check: bool = False) -> list[str]:
     """Check or update only generated files; refuse unknown/modified collisions."""
     expected = expected_files(repo_root)
+    declaration = _safe_path(output_root, "packages/memory/composition/mirrors.json")
+    if declaration.exists():
+        if not declaration.is_file():
+            raise ValueError(f"Composed mirror declaration collision: {declaration}")
+        data = json.loads(declaration.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or (
+            data.get("generator") != "scripts/build_memory_package.py"
+            or data.get("schema_version") != 1
+        ):
+            raise ValueError(f"Unknown composed mirror declaration: {declaration}")
     previous = {}
     for install in INSTALL_ROOTS:
         path = _safe_path(output_root, f"{install}/{MANIFEST}")
