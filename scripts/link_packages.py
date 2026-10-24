@@ -33,8 +33,8 @@ Claude Code and Copilot can pick the agents up:
     .github/prompts/<file>.prompt.md    -> ../../packages/<name>/github-copilot/prompts/<file>.prompt.md
 
 If two packages declare artifacts with the same filename in the same primitive
-class, discovery aborts with a collision error — pick unique names per
-primitive across all packages.
+class, discovery aborts with a collision error. The sole exception is an explicit
+composed-source declaration whose entire artifact is byte-identical.
 
 Modes:
     sync    Create or repair publish-target symlinks. Idempotent. Refuses to
@@ -53,6 +53,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -119,6 +120,66 @@ def _check_for_collisions(mirrors: list[Mirror]) -> None:
             lines.append(f"    {candidate.source.relative_to(REPO_ROOT)}")
     print("\n".join(lines), file=sys.stderr)
     sys.exit(1)
+
+
+def _artifact_content(source: Path) -> dict[str, bytes]:
+    """Read exact artifact bytes, rejecting symlinks inside composed payloads."""
+    if source.is_symlink():
+        raise ValueError(f"Composed source must not be a symlink: {source}")
+    if source.is_file():
+        return {"": source.read_bytes()}
+    content = {}
+    for path in sorted(source.rglob("*")):
+        if "__pycache__" in path.parts or path.suffix == ".pyc":
+            continue
+        if path.is_symlink():
+            raise ValueError(f"Composed source contains a symlink: {path}")
+        if path.is_file():
+            content[path.relative_to(source).as_posix()] = path.read_bytes()
+    return content
+
+
+def _coalesce_composed_mirrors(mirrors: list[Mirror]) -> list[Mirror]:
+    """Deduplicate only explicitly declared, byte-identical composed sources."""
+    declaration = PACKAGES_DIR / "memory" / "composition" / "mirrors.json"
+    if not declaration.is_file():
+        return mirrors
+    try:
+        data = json.loads(declaration.read_text(encoding="utf-8"))
+        if data["schema_version"] != 1:
+            raise ValueError("Unsupported composed mirror declaration version")
+        by_source = {mirror.source: mirror for mirror in mirrors}
+        removed = set()
+        declared = set()
+        for group in data["groups"]:
+            sources = []
+            for relative in [group["source"], *group["identical"]]:
+                source = REPO_ROOT / relative
+                if (
+                    not isinstance(relative, str)
+                    or "\\" in relative
+                    or ".." in Path(relative).parts
+                    or not source.resolve().is_relative_to(PACKAGES_DIR.resolve())
+                    or source not in by_source
+                    or source in declared
+                ):
+                    raise ValueError(f"Invalid composed mirror source: {relative}")
+                declared.add(source)
+                sources.append(source)
+            canonical = by_source[sources[0]]
+            canonical_bytes = _artifact_content(canonical.source)
+            for source in sources[1:]:
+                candidate = by_source[source]
+                if (
+                    candidate.link != canonical.link
+                    or _artifact_content(source) != canonical_bytes
+                ):
+                    raise ValueError(f"Composed mirror differs from canonical: {source}")
+                removed.add(source)
+        return [mirror for mirror in mirrors if mirror.source not in removed]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"Invalid composed mirror declaration: {exc}", file=sys.stderr)
+        sys.exit(1)
 
 
 def discover_mirrors() -> list[Mirror]:
@@ -189,6 +250,7 @@ def discover_mirrors() -> list[Mirror]:
                     ),
                 )
 
+    mirrors = _coalesce_composed_mirrors(mirrors)
     _check_for_collisions(mirrors)
     return mirrors
 

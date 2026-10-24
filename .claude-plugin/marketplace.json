@@ -5,6 +5,15 @@
   },
   "plugins": [
     {
+      "name": "memory",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/satishc-dev/maruti.git",
+        "path": "packages/memory/claude-code"
+      },
+      "description": "Offline OKF memory: local capture and recall, checkpoints, topic consolidation, and explicitly authorized shared promotion."
+    },
+    {
       "name": "pm-team",
       "source": {
         "source": "git-subdir",

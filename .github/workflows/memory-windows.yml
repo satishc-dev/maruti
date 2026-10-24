@@ -1,0 +1,42 @@
+name: Memory Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/memory/**"
+      - "packages/software-team/**"
+      - "scripts/build_memory_package.py"
+      - "scripts/link_packages.py"
+      - ".github/workflows/memory-windows.yml"
+  pull_request:
+    paths:
+      - "packages/memory/**"
+      - "packages/software-team/**"
+      - "scripts/build_memory_package.py"
+      - "scripts/link_packages.py"
+      - ".github/workflows/memory-windows.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  memory:
+    name: Offline payloads (Windows, Python ${{ matrix.python }})
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Canonical composition check
+        run: python scripts\build_memory_package.py --check
+      - name: Packaging and collision regressions
+        run: python -m unittest discover -s packages\memory\tests\packaging -v
+      - name: Isolated installed-payload smoke scenarios
+        run: python -m unittest discover -s packages\memory\tests\scenarios -v

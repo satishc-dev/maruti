@@ -4,6 +4,12 @@ A simulated software organisation for GitHub Copilot CLI. One stakeholder-facing
 lead, five specialist teams, and a quality gate none of them can talk their way
 past.
 
+The plugin includes the same offline [Memory capability](../memory/) that can
+also be installed separately. Its ignored `.maruti/memory/local/` store is for
+working observations and continuity, not a migration of `.project-memory/`.
+Project-Lead still owns committed Project Memory and canonical projections;
+other teams capture locally or propose through `memory_proposals[]`.
+
 You describe what you want. `St-Project-Lead` researches it, specifies it,
 designs it, builds it in parallel, accepts it against your requirement, and
 merges it — and it is the only agent that ever talks to you.

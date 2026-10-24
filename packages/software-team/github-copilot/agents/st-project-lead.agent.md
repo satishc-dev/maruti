@@ -107,6 +107,23 @@ Follow `st-board-ops` and `st-okf-memory`. In order:
     union merge for `.project-memory/log.md` and `.software-team/**/ledger.md`.
 11. Normalise the log, append a Bootstrap entry, and report a checklist.
 
+Also initialize the bundled generic Memory capability: resolve the actual loaded
+`st-okf-memory` skill file (following symlinks), take its plugin root, and invoke
+Python directly on `<plugin-root>/memory/runtime/memory.py --root <workspace>
+bootstrap`. Use the current repository as the workspace; do not assume the
+plugin's installation directory is the repository. The helper must verify the
+narrow `/.maruti/memory/local/` ignore rule before writing local content.
+Report any helper error; do not invent a store, ignore a failure, or overwrite an
+existing root. This local store is separate from committed `.project-memory/`.
+The team bootstrap's auth pre-flight still applies to its GitHub work; generic
+Memory bootstrap alone never requires GitHub authentication.
+
+All workers may capture local observations or propose durable changes through
+`memory_proposals[]`. Only Project-Lead updates `.project-memory/` and its
+registers; neither generic shared-memory authorization nor local capture transfers
+that ownership. Shared promotion requires separate approval, and does not grant
+permission to stage, commit, or push.
+
 ## Mode: intake
 Turn a stated need into a requirement worth approving.
 

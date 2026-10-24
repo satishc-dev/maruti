@@ -7,6 +7,31 @@ You run as `St-Project-Lead` and assume that agent's authority. Project-Lead is 
 **Bootstrap runs in the main working tree, on the default branch.** It is the single exception to the rule that every writer authors in its own git worktree. Two reasons, and both are hard: no team is running yet, so there is nothing to collide with; and bootstrap is what writes the `.gitignore` entry that makes `.worktrees/` ignorable, so a worktree cannot exist before bootstrap has run. Do not create a worktree or a branch for bootstrap. Every later stage does use one — see `.software-team/contracts/PARALLELISM.md` §4.
 
 Make the repository ready for the software-team. Be fully ordered and idempotent. Report `created` versus `already present`. Never overwrite an existing file; inspect it, preserve it, and report non-conformance.
+
+## Bundled generic Memory
+
+Software Team includes the standalone Memory capability; installing another
+plugin is unnecessary. In addition to the ordered team bootstrap below, locate
+the actual loaded `st-okf-memory/SKILL.md`, follow any repository symlink, and
+resolve its plugin root. Invoke Python directly:
+
+```text
+python "<plugin-root>/memory/runtime/memory.py" --root "<workspace>" bootstrap
+```
+
+Do this after the team auth pre-flight passes and before reporting bootstrap
+complete. The helper verifies `/.maruti/memory/local/` is ignored before local
+content is written. Preserve existing roots and report any error rather than
+inventing content, overwriting, or claiming success.
+
+Generic Memory alone does **not** require `gh` auth; the pre-flight below belongs
+only to Software Team's GitHub integration. `.maruti/memory/local/` is private
+working memory, not a replacement or migration of committed `.project-memory/`.
+Project-Lead retains sole ownership of Project Memory and canonical register
+projections. Workers capture locally or send `memory_proposals[]`; optional
+shared promotion requires explicit authorization separate from Git stage,
+commit, and push permission.
+
 ## 1. Auth pre-flight
 1. Run first, before creating anything:
    ```bash

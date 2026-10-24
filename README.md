@@ -4,7 +4,7 @@ A plugin marketplace for **Claude Code** and **GitHub Copilot CLI** — plus the
 
 Maruti ships:
 
-- **Five installable agent packages** — coordinated subagents, skills, slash commands, chat modes, and prompt files for both Claude Code and Copilot CLI.
+- **Installable agent packages** — coordinated subagents, skills, slash commands, chat modes, and prompt files for Claude Code and Copilot CLI.
 - **Three MCP tools** — self-contained Python MCP servers distributed via `uvx`.
 
 ## Plugin marketplace
@@ -44,6 +44,7 @@ copilot plugin marketplace remove maruti          # remove this marketplace (add
 
 | Plugin | Purpose | Claude Code | Copilot CLI |
 |---|---|:-:|:-:|
+| [`memory`](packages/memory/) | Offline OKF capture/recall, checkpoints, topic consolidation, authorized promotion; also bundled in Software Team | Yes | Yes |
 | [`pm-team`](packages/pm-team/) | Multi-agent PM team: intent → specs → spec PR → Kanban WIs | ✓ | ✓ |
 | [`dev-team`](packages/dev-team/) | Multi-agent dev team: WI → design → parallel impl → review → PR | ✓ | ✓ |
 | [`assistant-wizard`](packages/assistant-wizard/) | Designs and generates new custom agents/skills/commands for either platform | ✓ | ✓ |
@@ -51,6 +52,10 @@ copilot plugin marketplace remove maruti          # remove this marketplace (add
 | [`marketing-guru`](packages/marketing-guru/) | Proactive MBA-grade marketing advisor for a bike-company simulation | ✓ | ✓ |
 
 Each package's own README documents its install variants, layout, and any platform-specific differences.
+
+Memory is independently installable without an MCP service or consumer dependency
+downloads. Its first-release validation target is Windows; Linux/macOS and actual
+host installation are not implied by helper validation.
 
 ## MCP tools
 

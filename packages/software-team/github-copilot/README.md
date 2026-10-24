@@ -34,6 +34,20 @@ non-interactive runs.
 Bootstrap also copies the contracts into `.software-team/contracts/`, which every
 agent reads from. Run it before commissioning any team.
 
+The plugin also includes the same self-contained offline
+[Memory capability](../../memory/README.md) shipped independently as `memory`.
+Bootstrap invokes its helper to create ignored `.maruti/memory/local/` working
+memory; it does not migrate or replace committed `.project-memory/`.
+Workers capture locally or send `memory_proposals[]`; Project-Lead retains
+Project Memory and register ownership. Shared promotion and Git publishing
+require separate authorization.
+
+Generic Memory alone requires Python 3.10+, not GitHub auth or an MCP service.
+Software Team's own GitHub pre-flight below is unchanged. Its copied
+`memory/` payload is part of this install root; when copying repository
+customizations manually, preserve the entire payload and skill layout rather
+than copying only a `SKILL.md`.
+
 Then talk to `St-Project-Lead` in plain language. It is the only agent you address;
 it commissions the rest.
 
@@ -72,6 +86,10 @@ duplicates them.
 | `st-board-ops` | all | Board authority and request queue |
 | `st-cadence` | leads and crew | Cycles, journals, budgets, safety |
 | `st-rubber-duck` | **ducks only** | The review standard |
+
+Canonical Memory skills are generated into this plugin's `skills/` alongside
+these team adapters. Their narratives and helper bytes must not be edited here;
+edit `packages/memory/` canonical sources and rebuild.
 
 `st-rubber-duck` is restricted by design. Lead agents must not load it — see below.
 

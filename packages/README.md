@@ -32,7 +32,10 @@ packages/<name>/
 A package may ship multiple primitives in the same class — e.g. a coordinated
 team of subagents that delegate to each other (see [`dev-team/`](dev-team/)).
 Filenames must be unique per primitive class across **all** packages, since
-the publish target preserves the source filename.
+the publish target preserves the source filename. The sole composition exception
+is an explicitly declared, byte-identical source group in
+[`memory/composition/mirrors.json`](memory/composition/). Memory's generated
+Software Team inclusion uses this declaration; unrelated collisions still fail.
 
 The right primitive for a given package depends on its intent. The
 [`assistant-wizard/`](assistant-wizard/) package picks one for you and explains
@@ -131,6 +134,11 @@ Claude Code and GitHub Copilot CLI. The Claude Code variant typically uses multi
 subagents fanned out by an orchestrator; the Copilot CLI variant collapses that
 orchestration into a single chat-mode agent (or skill) since Copilot's primitive
 model is flatter.
+
+- [`memory/`](memory/) — standalone offline OKF memory for both platforms:
+  local bootstrap, capture/recall, checkpoints, topic consolidation, and
+  separately authorized shared promotion. Generated self-contained copies of the
+  same canonical capability also ship in Software Team's Copilot plugin.
 
 - [`software-team/`](software-team/) — **Copilot CLI only.** A simulated software
   organisation: a stakeholder-facing `St-Project-Lead` plus Research, Architect,

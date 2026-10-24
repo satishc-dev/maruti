@@ -8,6 +8,33 @@ description: 'Use when any software-team agent reads or writes package documents
 Use this skill any time you read or write a document in this package.
 For full detail, read `.software-team/contracts/OKF-PROFILE.md`, `.software-team/contracts/MEMORY-SCHEMA.md`, `.software-team/contracts/ARTIFACTS.md`, and `.software-team/contracts/ROLES.md`. Bootstrap materializes that directory in the repository; if it is absent, say so and treat this skill as the operative summary rather than inventing the missing detail.
 
+## Canonical Memory capability
+
+Software Team bundles the same canonical Memory skills and helper as the
+standalone plugin, not a divergent implementation. Resolve this loaded skill's
+real path (following symlinks), then take its plugin root. Generic contracts and
+references are under `<plugin-root>/memory/`; load the shared OKF format contract
+from its `contracts/` directory before authoring. Do not assume the repository
+cwd is the plugin root or depend on an installed sibling `memory` plugin.
+
+The canonical format rules cover index/concept frontmatter, unknown-key
+preservation, actors and timestamps, ordinary Markdown links, source/footnote
+joins, honesty, and document-trust `status`. This adapter adds the team-specific
+ownership and delivery rules below; it does not redefine the generic format.
+
+For local bootstrap/capture/recall/checkpoints/consolidation, use the bundled
+Memory skills and invoke Python directly on
+`<plugin-root>/memory/runtime/memory.py --root <workspace> ...`.
+Bootstrap must verify the narrow `/.maruti/memory/local/` ignore rule before
+writing content. It needs no GitHub authentication. Preserve and report existing
+roots; do not migrate `.project-memory/` or replace team contracts.
+
+Workers capture observations in ignored `.maruti/memory/local/` or send
+`memory_proposals[]` through the team handoff. Generic shared promotion requires
+explicit authorization but never transfers ownership of `.project-memory/`,
+requirements, lifecycle, board/auth policy, or canonical register projections.
+Approval to promote is not approval to stage, commit, or push.
+
 ## Core rule
 
 Read freely.
@@ -45,88 +72,19 @@ The ledger is append-only; every team appends its own entries and rewrites no ot
 | `.software-team/REQ-NNN/workstreams.md` | Project-Lead | Workstream record. |
 | `.software-team/REQ-NNN/ledger.md` | All teams append | Append only; each team owns its entries. |
 
-## Index rules
+## Team document extensions
 
-| File | Frontmatter | Body |
-|---|---|---|
-| Bundle-root `index.md` | Only `okf_version: "0.2"`. | Grouped catalog of markdown links. |
-| Nested `index.md` | None. | Sparse or generated catalog. |
-| Concept document | Non-empty `type` is required. | Schema-defined content. |
-
-Do not put lifecycle, priority, approval, board state, review state, or progress in a bundle-root `index.md`.
-Do not put frontmatter in a nested `index.md`.
-Do not use reserved names `index.md` or `log.md` for concept documents.
-
-## Concept frontmatter
-
-Every non-reserved concept document has a non-empty `type`.
-Recommended keys are `title`, `description`, `tags`, `generated`, and `status`.
-Unknown extra keys are preserved unless a documented migration rule rewrites them.
+Follow the canonical Memory OKF profile for document format.
 Use `owner:` for accountability.
 Use `workstream:` when an artifact belongs to a delivery slice.
 Do not overload `generated.by` with ownership.
-
-## `generated` rule
-
-If `generated` is present, `generated.by` is mandatory.
-`generated.by` names the writer.
-`generated.at` records the last meaningful content change.
 Use package actors from `.software-team/contracts/OKF-PROFILE.md`.
-Use ISO-8601 timestamps with explicit UTC offsets.
-
-## Timestamps
-
-Every timestamp-valued field uses an explicit UTC offset.
-Valid examples are `2026-09-20T21:57:20Z` and `2026-09-20T14:57:20-07:00`.
-Bare dates are allowed only as log headings: `## YYYY-MM-DD`.
-Apply this to generated, verified, stale, source, usage window, lifecycle, and package extension timestamps.
-
-## Links
-
-Use standard markdown links only.
-Never use wikilinks.
-Same-bundle links begin with `/` and resolve from the bundle root.
-Links leaving the bundle do not begin with `/`.
-Absolute URLs are allowed when stability requires them.
-
-## Footnotes and sources
-
-Footnote labels must match `sources[].id` exactly.
-The label is the join key.
-Do not use positional footnotes.
-Every load-bearing claim based on a source carries a matching footnote.
-Omit `sources` when no real source was used.
-
-## Actor grammar
-
-| Actor kind | Grammar | Example |
-|---|---|---|
-| Agent or tool | `<producer>/<version>` | `software-team-architect/0.1.0` |
-| Human | `human:<id>` | `human:alex-owner` |
-| Team | `team:<id>` | `team:architect-team` |
-| Automation | `process:<id>` | `process:github-merge` |
-
-Use `human:` only for a real human verifier or approver.
 Use `process:software-team-migration` only when historical authorship is genuinely unknown.
-
-## Honesty rules
-
-Never fabricate a human verifier.
-Never fabricate a source.
-Never fabricate an actor.
-Never cite a document you did not read.
-Never present speculation as evidence.
-Omit `verified` when no real verifier exists.
-Omit `sources` when no real source exists.
-Write `unknown` in the body when evidence is unknown.
-Preserve unknown frontmatter keys unless a documented rule changes them.
 
 ## OKF status
 
 OKF `status` is document trust only.
 It is not delivery progress.
-Allowed values are `draft`, `stable`, and `deprecated`.
-Absent means effectively `stable`.
 Do not use OKF `status` for lifecycle, board columns, review state, workstream state, or handoff state.
 
 | System | Field | Owner | Meaning |
