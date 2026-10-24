@@ -507,6 +507,71 @@ class BundledDependencyTests(unittest.TestCase):
             self.assertFalse(list(support.rglob("*.pyc")))
 
 
+@unittest.skipUnless(shutil.which("git"), "Git is required for transition tests")
+class GitTransitionTests(unittest.TestCase):
+    """Preserve non-Git knowledge while explicitly enabling Git privacy."""
+
+    setUp = RuntimeTests.setUp
+    tearDown = RuntimeTests.tearDown
+    call = RuntimeTests.call
+    bootstrap = RuntimeTests.bootstrap
+    write = RuntimeTests.write
+
+    def initialize_git(self):
+        result = subprocess.run(
+            ["git", "-C", str(self.root), "init", "--quiet"],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def snapshot(self):
+        return {path.relative_to(self.store): path.read_bytes()
+                for path in self.store.rglob("*") if path.is_file()}
+
+    def test_explicit_bootstrap_repairs_privacy_after_git_init_without_rewriting_store(self):
+        self.bootstrap()
+        first = self.write("topics/test/existing.md")
+        original = self.snapshot()
+        self.assertFalse((self.root / ".gitignore").exists())
+        self.initialize_git()
+        self.assertEqual(self.write("topics/test/new.md", ok=False)["code"], "privacy_not_ignored")
+        ignore = self.root / ".gitignore"
+        ignore.write_bytes(b"# Preserve existing rules\r\n*.scratch")
+        data = self.call("bootstrap")
+        self.assertFalse(data["created"])
+        self.assertEqual(ignore.read_bytes(), b"# Preserve existing rules\r\n*.scratch\n/.maruti/memory/local/\n")
+        self.assertEqual(self.snapshot(), original)
+        self.assertEqual(self.call("read", "--path", "topics/test/existing.md")["sha256"], first["sha256"])
+        self.write("topics/test/new.md")
+        self.assertTrue(self.call("doctor")["enabled"])
+
+    def test_transition_rejects_tracked_contents_before_modifying_ignore_or_store(self):
+        self.bootstrap()
+        self.write("topics/test/existing.md")
+        original = self.snapshot()
+        self.initialize_git()
+        result = subprocess.run(
+            ["git", "-C", str(self.root), "add", ".maruti/memory/local/topics/test/existing.md"],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.call("bootstrap", ok=False)["code"], "tracked_local")
+        self.assertFalse((self.root / ".gitignore").exists())
+        self.assertEqual(self.snapshot(), original)
+
+    def test_transition_preserves_conflicting_ignore_rules_and_refuses_bootstrap(self):
+        self.bootstrap()
+        self.write("topics/test/existing.md")
+        original = self.snapshot()
+        self.initialize_git()
+        ignore = self.root / ".gitignore"
+        rules = b"/.maruti/memory/local/\n!/.maruti/memory/local/\n"
+        ignore.write_bytes(rules)
+        self.assertEqual(self.call("bootstrap", ok=False)["code"], "privacy_not_ignored")
+        self.assertEqual(ignore.read_bytes(), rules)
+        self.assertEqual(self.snapshot(), original)
+
+
 @unittest.skipUnless(shutil.which("git"), "Git is required for privacy integration tests")
 class GitPrivacyTests(RuntimeTests):
     """Repeat runtime coverage inside a real Git repository, plus ignore checks."""

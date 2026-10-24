@@ -488,7 +488,7 @@ def bootstrap(root, is_git, args):
                 reject_tracked_local(root)
             data = require_store(root, args.role, mutation=True)
             if args.role == "local":
-                privacy(root, is_git)
+                privacy(root, is_git, prepare=True)
             return {"enabled": True, "created": False, "metadata": data}
         if args.role == "local":
             privacy(root, is_git, prepare=True)

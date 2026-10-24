@@ -82,6 +82,9 @@ preserving all existing bytes and rules. It rejects tracked local content
 and proves effective exclusion with `git check-ignore` **before** creating
 private content. An existing anchor with a later negation is an explicit
 failure. Every local mutation rechecks effective exclusion and tracked content;
+rerunning compatible local bootstrap may establish the anchored ignore rule
+after a non-Git workspace becomes a Git repository, without rewriting the
+store identity or knowledge. Non-Git bootstrap never creates `.gitignore`.
 existing local paths are also checked, with an explicit 512-entry/16-level
 privacy-inspection limit rather than silently skipping an oversized tree.
 Git-ignored means ignored in that Git worktree, not encrypted or private from
