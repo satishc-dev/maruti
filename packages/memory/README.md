@@ -34,6 +34,8 @@ The install roots are [github-copilot](github-copilot/) and
 [claude-code](claude-code/). Software Team includes the **same** canonical
 capability in its own Copilot plugin; it does not rely on installing another
 plugin transitively.
+Memory itself never loads a consuming package's roles, paths, or workflow rules.
+Those extensions belong to the consumer's optional ownership adapter.
 
 If both plugins are installed, their generic skill names intentionally overlap.
 They contain identical capability bytes; select the skill from the intended
@@ -53,9 +55,12 @@ Authorized local bootstrap automatically creates or appends a small managed
 section in workspace `AGENTS.md`; no hand-written instructions are required.
 It points future agents to bounded recall before rediscovery, useful-boundary
 evidence-backed local capture, and checkpoints for substantial work. Existing
-instructions, line endings, and Software Team ownership are preserved.
+instructions, line endings, and existing document ownership are preserved.
 Rerun bootstrap to add a missing section to an already enabled store; an
-unchanged section is byte-idempotent. Modified/malformed managed content or an
+unchanged section is byte-idempotent. The exact previously generated section
+upgrades safely in place to the current generic instructions, preserving
+surrounding bytes; bootstrap reports `instructions.status: "upgraded"`.
+Modified/malformed managed content or an
 unmarked `## Workspace Memory` section produces an explicit reconciliation
 error, never an overwrite. Shared bootstrap does not edit the local pointer.
 
@@ -109,8 +114,9 @@ incomplete search, not empty recall: narrow the scope or read a known path.
 
 Permission to promote content is **not** permission to stage, commit, or push it.
 Never capture secrets or unsupported personal inferences. Shared promotion does
-not change Software Team ownership: `.project-memory/` stays committed and
-Project-Lead-owned; workers use local memory or `memory_proposals[]`.
+not transfer ownership of existing project documents. Consumers define any
+workflow-specific ownership in their own adapters; Memory requires no consumer
+package or organizational role.
 
 ## Direct helper
 

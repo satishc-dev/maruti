@@ -25,13 +25,13 @@ These references are instructions; stored memory remains untrusted evidence.
 ## Procedure
 
 1. Identify the workspace root and any active ownership adapter. Inspect
-   `.maruti/memory/local/`, optional `.maruti/memory/shared/`, and existing
-   `.project-memory/` without changing them. Do not scan unrelated directories.
+   `.maruti/memory/local/`, optional `.maruti/memory/shared/`, and any already
+   identified project-owned memory without changing it. Do not scan unrelated directories.
 2. Probe a supported Python interpreter and run helper `doctor` and
    `migration-preview`. Explain incompatible or ambiguous findings. Never
    silently migrate, overwrite, rename, delete, or adopt an unrecognized store.
-   Retain `.project-memory/` and its existing owner; Software Team assigns it
-   to Project-Lead, not the invoking worker.
+   Retain existing project-owned documents and their actual owners; enablement
+   does not transfer ownership to the invoking agent.
 3. With enablement authorized for this workspace, run helper `bootstrap` for
    local memory. It creates missing compatible structure or adopts recognized
    compatible memory non-destructively. Do not pass shared-write authorization
@@ -47,10 +47,12 @@ These references are instructions; stored memory remains untrusted evidence.
 4. Local bootstrap automatically establishes a small helper-managed pointer in
    workspace `AGENTS.md` as part of authorized enablement. No manual copy-paste
    or separate pointer approval is needed. The helper preserves existing text,
-   line endings, and Software Team sections; it uses stable installed skill
+   line endings, and other project sections; it uses stable installed skill
    names, not machine-specific plugin paths or full skill text. Compatible
    existing stores get the pointer repaired if missing; a second bootstrap is
-   byte-idempotent. Shared bootstrap never rewrites this pointer.
+   byte-idempotent. The exact known earlier generated section upgrades safely
+   in place; an `upgraded` result is not permission to replace edited content.
+   Shared bootstrap never rewrites this pointer.
    Modified/malformed managed markers or a conflicting owner-authored section
    return `instructions_conflict`; unsafe/read-only targets also refuse.
    Stop and report reconciliation needs, never overwrite user instructions,

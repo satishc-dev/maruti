@@ -1,8 +1,8 @@
 # Generic Memory OKF profile
 
-Memory uses Open Knowledge Format **0.2**. This extracts format rules from
-Software Team's OKF profile; it does not inherit its teams, workflow, board,
-ledger, `.project-memory/` ownership, or document tree.
+Memory uses Open Knowledge Format **0.2** independently of any consuming
+workflow, organizational roles, or project-specific document tree. Consumers
+may add their own ownership adapters without changing this generic format.
 
 The root `index.md` has exactly `okf_version: "0.2"` in YAML frontmatter.
 Nested `index.md` files have no frontmatter. `index.md` and `log.md` are

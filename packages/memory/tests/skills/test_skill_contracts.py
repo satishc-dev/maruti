@@ -189,9 +189,21 @@ class SkillContractTests(unittest.TestCase):
 
     def test_bootstrap_does_not_claim_or_migrate_existing_memory(self):
         text = self.skill("memory-bootstrap")
-        for token in ("adopt", "ambiguous", "overwrite", ".project-memory/",
+        for token in ("adopt", "ambiguous", "overwrite", "project-owned",
                       "global", "pointer", "authorized"):
             self.assertIn(token, text)
+
+    def test_generic_operating_surfaces_do_not_depend_on_consumer_workflows(self):
+        for directory in ("runtime", "contracts", "templates", "skills", "references"):
+            for path in (PACKAGE / directory).rglob("*"):
+                if path.suffix not in (".md", ".py", ".json"):
+                    continue
+                with self.subTest(path=path.relative_to(PACKAGE)):
+                    text = path.read_text(encoding="utf-8").lower()
+                    for token in ("software-team", "software team", "project-lead",
+                                  ".project-memory", "memory_proposals"):
+                        self.assertNotIn(token, text)
+        self.assertIn("required for standalone use", self.reference("operating-policy.md"))
 
     def test_bootstrap_establishes_project_instructions_without_manual_pointer_step(self):
         text = self.skill("memory-bootstrap")

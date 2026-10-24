@@ -100,9 +100,13 @@ The helper never copies complete skills or stored records into instructions.
 Shared bootstrap does not inspect or edit this local pointer.
 
 Local success includes `instructions: {"path":"AGENTS.md","status":"created",
-"sha256":"..."}`; status may instead be `appended` or `present`. `sha256` covers
+"sha256":"..."}`; status may instead be `appended`, `present`, or `upgraded`. `sha256` covers
 the complete instruction file. Rerunning bootstrap repairs a missing pointer
 in a compatible store and is byte-idempotent when the pointer already matches.
+The exact known earlier generated section upgrades in place to the current
+generic instructions, preserving surrounding bytes and its line endings.
+Recognition uses a fixed normalized fingerprint, not a broad text replacement;
+arbitrary edits or unknown old sections still refuse.
 The reserved delimiters are `<!-- maruti-memory:begin -->` and
 `<!-- maruti-memory:end -->`. Modified, malformed, or duplicate managed sections,
 or an existing unmarked `## Workspace Memory` section, return

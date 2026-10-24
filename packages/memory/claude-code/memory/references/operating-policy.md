@@ -23,10 +23,13 @@ content needs explicit reconciliation, not an overwrite. This is workspace-only:
 shared bootstrap and global host instructions are not instruction-edit targets.
 
 Read relevant accessible records, but write only paths authorized for the actual
-writer. Apply an installed ownership adapter before mutations. Existing
-`.project-memory/` is retained; with Software Team it remains Project-Lead-owned.
-Other teams propose changes to its owner, not through a generic write bypass.
-Standalone use does not require GitHub, board access, or a team persona.
+writer. Honor any active consumer-provided ownership adapter; no adapter is
+required for standalone use. Existing project-owned memory and documents retain
+their actual owners.
+Propose changes to an owner when direct edits exceed the writer's authority;
+there is no generic write bypass. Consumer-specific ownership rules belong in
+the consumer's own adapter, not this package. Standalone use requires neither
+GitHub access nor an organizational role.
 
 No implicit Git stage/commit/push, visibility changes, network publication,
 global instruction edits, migration, or ownership transfer. Do not capture

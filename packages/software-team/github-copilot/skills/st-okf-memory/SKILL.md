@@ -23,6 +23,8 @@ The canonical format rules cover index/concept frontmatter, unknown-key
 preservation, actors and timestamps, ordinary Markdown links, source/footnote
 joins, honesty, and document-trust `status`. This adapter adds the team-specific
 ownership and delivery rules below; it does not redefine the generic format.
+Memory is an independent capability consumed here. Its runtime, generic skills,
+and managed instruction section do not depend on this adapter or its team roles.
 
 For local bootstrap/capture/recall/checkpoints/consolidation, use the bundled
 Memory skills and invoke Python directly on

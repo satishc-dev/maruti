@@ -296,7 +296,7 @@ Every new GitHub Project is created with a built-in single-select `Status` field
 ## 12. Write pointers and merge rules
 1. Create `AGENTS.md` if missing. Append one `## Software Team` section only if absent, preserving all existing bytes and line endings, including the helper-managed Memory section. Never rebuild the file or replace either section.
 2. Pointer section lists `.software-team/contracts/ROLES.md`, `.software-team/contracts/GLOSSARY.md`, `.software-team/contracts/MEMORY-SCHEMA.md`, `.software-team/contracts/GITHUB-INTEGRATION.md`, `.software-team/contracts/OKF-PROFILE.md`, `.software-team/contracts/LIFECYCLE.md`, `.software-team/contracts/ARTIFACTS.md`, `.project-memory/`, and `.software-team/`.
-3. Include: `Project-Lead is the only board writer. Other teams request board changes through handoff envelopes.`
+3. Include: `Project-Lead owns .project-memory/ and its canonical registers. Workers capture locally or send memory_proposals[] through handoff; generic Memory does not transfer this ownership. Project-Lead is the only board writer. Other teams request board changes through handoff envelopes.`
 4. Append to `.gitignore` only if absent:
    ```gitignore
    .scrum/

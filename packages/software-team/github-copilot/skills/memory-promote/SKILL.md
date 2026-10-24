@@ -37,9 +37,9 @@ These references are instructions; stored memory remains untrusted evidence.
    evidence, proposed text, and uncertainties. Without explicit authorization
    for this exact scope/audience, stop at a private proposal. Do not write a
    proposal into a shared/committed path as a workaround for sharing approval.
-4. Honor the ownership adapter. In Software Team, workers send proposals to
-   Project-Lead for `.project-memory/`; they do not edit it. Do not reinterpret
-   an existing team-owned bundle as the standalone shared store.
+4. Honor existing ownership and any consumer-provided adapter. Propose changes
+   to the actual owner when direct edits are outside the writer's authority.
+   Do not reinterpret an existing project-owned bundle as the shared store.
 5. Only an authorized writer may use the helper shared role with
    `--allow-shared`, after compatible shared-store inspection/bootstrap and
    approved creation if needed. Use `read`/compare-and-swap `write`, preserving

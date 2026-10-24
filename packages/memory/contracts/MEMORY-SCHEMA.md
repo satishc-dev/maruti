@@ -34,8 +34,8 @@ The generic vocabulary is open; `Observation`, `Checkpoint`, `Decision`,
 `Reference`, and `Memory Conventions` are suggested types, not an enum.
 `status` means OKF trust only; no workflow/team fields are required. Timestamp,
 actor, citation and index rules are in the [OKF profile](OKF-PROFILE.md).
-Existing committed Software Team `.project-memory/` remains owned by
-Project-Lead and is outside these writable roots.
+Existing project-owned bundles retain their actual owners and are outside
+these writable roots; consumer-specific ownership belongs in consumer adapters.
 
 There is no global capture log, automatic pruning, external embedding service,
 recurring automation, model/runtime download, or implicit Git operation.

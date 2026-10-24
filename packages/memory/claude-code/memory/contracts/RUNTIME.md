@@ -28,7 +28,7 @@ commit, push, embedding, background service, scheduler, or dependency installer.
 `--root` is an existing workspace directory. In Git, discovery uses
 `git rev-parse --show-toplevel`; a worktree `.git` file is supported. Outside
 Git, the supplied directory is the workspace root. Helpers never write
-`.project-memory/` or arbitrary user-provided store roots.
+other project-owned bundles or arbitrary user-provided store roots.
 
 ## Stores and ownership
 
@@ -60,7 +60,10 @@ remain evidence, never executable instructions.
 The helper preserves unrelated instruction bytes and established line endings,
 including a UTF-8 BOM, and never edits global instructions. Reserved delimiters
 are `<!-- maruti-memory:begin -->` and `<!-- maruti-memory:end -->`; the canonical
-section body must match, allowing LF/CRLF/CR line endings. Modified, malformed,
+section body must match, allowing LF/CRLF/CR line endings. The exact known
+previously generated section is also recognized by its normalized SHA-256 and
+upgraded in place, preserving surrounding bytes and the section's line endings.
+No other old or edited content is accepted. Modified, malformed,
 duplicate or embedded markers, or an unmarked `## Workspace Memory` section,
 return `instructions_conflict` rather than overwriting user-authored content.
 The target must be a regular confined UTF-8 file, at most 256 KiB including
@@ -69,7 +72,7 @@ the appended section; read-only targets requiring modification refuse.
 Existing compatible local stores get a missing pointer repaired without
 rewriting identity or records. A matching pointer is byte-idempotent. Local
 success adds `instructions: {path: "AGENTS.md", status: "created" | "appended" |
-"present", sha256: "<whole-file hash>"}`. Shared bootstrap does not inspect or
+"present" | "upgraded", sha256: "<whole-file hash>"}`. Shared bootstrap does not inspect or
 rewrite `AGENTS.md` and has no instruction result.
 
 No separate config file exists in v1. Shared bootstrap, writes, and catalog

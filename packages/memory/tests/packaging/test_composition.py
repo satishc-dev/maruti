@@ -231,6 +231,11 @@ class SoftwareTeamWiringTests(unittest.TestCase):
         self.assertIn("not approval to stage, commit, or push", content)
         self.assertIn("When board and documents disagree, documents win", content)
         self.assertIn("managed `AGENTS.md` section by default", content)
+        self.assertIn("Memory is an independent capability consumed here", content)
+        prompt = (
+            ROOT / "packages/software-team/github-copilot/prompts/st-bootstrap.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Project-Lead owns .project-memory/ and its canonical registers", prompt)
 
     def test_marketplaces_publish_complete_independent_memory_roots(self):
         copilot = json.loads((ROOT / ".github/plugin/marketplace.json").read_text())

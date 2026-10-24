@@ -11,6 +11,9 @@ from unittest.mock import patch
 import test_memory as helpers
 
 memory = helpers.memory
+PREVIOUS_BLOCK = (
+    helpers.PACKAGE / "tests/fixtures/previous-agents-block.md"
+).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
 
 
 class BootstrapInstructionTests(unittest.TestCase):
@@ -19,6 +22,93 @@ class BootstrapInstructionTests(unittest.TestCase):
     setUp = helpers.RuntimeTests.setUp
     tearDown = helpers.RuntimeTests.tearDown
     call = helpers.RuntimeTests.call
+
+    def test_previous_section_fingerprint_is_exact_and_current_section_is_generic(self):
+        self.assertEqual(memory.digest(PREVIOUS_BLOCK), memory.AGENTS_PREVIOUS_SHA256)
+        self.assertNotEqual(memory.digest(memory.AGENTS_BLOCK), memory.AGENTS_PREVIOUS_SHA256)
+        for token in (b"Software Team", b"Project-Lead", b".project-memory/"):
+            self.assertNotIn(token, memory.AGENTS_BLOCK)
+
+    def test_exact_previous_section_upgrades_without_touching_surrounding_bytes_or_store(self):
+        self.call("bootstrap")
+        metadata = (self.store / ".memory-store.json").read_bytes()
+        path = self.root / "AGENTS.md"
+        for newline in (b"\n", b"\r\n", b"\r"):
+            with self.subTest(newline=newline):
+                prefix = b"\xef\xbb\xbf# Owner policy\r\n\r\n"
+                suffix = b"\n\n## Existing project rules\rKeep these exact bytes.\r"
+                path.write_bytes(prefix + PREVIOUS_BLOCK.replace(b"\n", newline) + suffix)
+                result = self.call("bootstrap")
+                expected = prefix + memory.AGENTS_BLOCK.replace(b"\n", newline) + suffix
+                self.assertFalse(result["created"])
+                self.assertEqual(result["instructions"]["status"], "upgraded")
+                self.assertEqual(result["instructions"]["sha256"], memory.digest(expected))
+                self.assertEqual(path.read_bytes(), expected)
+                self.assertEqual((self.store / ".memory-store.json").read_bytes(), metadata)
+                self.assertEqual(self.call("bootstrap")["instructions"]["status"], "present")
+                self.assertEqual(path.read_bytes(), expected)
+
+    def test_previous_section_upgrades_during_new_local_enablement(self):
+        path = self.root / "AGENTS.md"
+        path.write_bytes(PREVIOUS_BLOCK + b"\n")
+        result = self.call("bootstrap")
+        self.assertTrue(result["created"])
+        self.assertEqual(result["instructions"]["status"], "upgraded")
+        self.assertEqual(path.read_bytes(), memory.AGENTS_BLOCK + b"\n")
+
+    def test_edited_or_conflicting_previous_sections_are_never_upgraded(self):
+        path = self.root / "AGENTS.md"
+        for content in (
+            PREVIOUS_BLOCK.replace(b"bounded", b"unbounded"),
+            PREVIOUS_BLOCK.replace(b"authorization;", b"authorization ;"),
+            PREVIOUS_BLOCK.replace(memory.AGENTS_BEGIN, b"<!-- maruti-memory:start -->"),
+            PREVIOUS_BLOCK + b"\n" + memory.AGENTS_BLOCK,
+            b"Quote: " + PREVIOUS_BLOCK,
+        ):
+            with self.subTest(content=content[:70]):
+                path.write_bytes(content)
+                self.assertEqual(self.call("bootstrap", ok=False)["code"], "instructions_conflict")
+                self.assertEqual(path.read_bytes(), content)
+                self.assertFalse(self.store.exists())
+
+    def test_read_only_previous_section_requires_permission_instead_of_upgrade(self):
+        path = self.root / "AGENTS.md"
+        path.write_bytes(PREVIOUS_BLOCK + b"\n")
+        mode = path.stat().st_mode
+        try:
+            path.chmod(stat.S_IREAD)
+            self.assertEqual(self.call("bootstrap", ok=False)["code"], "instructions_read_only")
+            self.assertEqual(path.read_bytes(), PREVIOUS_BLOCK + b"\n")
+            self.assertFalse(self.store.exists())
+        finally:
+            path.chmod(mode)
+
+    def test_previous_section_upgrade_keeps_hash_cas_and_explicit_partial_errors(self):
+        self.call("bootstrap")
+        path = self.root / "AGENTS.md"
+        path.write_bytes(PREVIOUS_BLOCK + b"\n")
+        external = PREVIOUS_BLOCK + b"\n\n## Concurrent owner policy\nKeep this.\n"
+        original = memory.atomic
+
+        def concurrent(target, content, expected):
+            if target == path:
+                path.write_bytes(external)
+            return original(target, content, expected)
+
+        with patch.object(memory, "atomic", side_effect=concurrent):
+            error = self.call("bootstrap", ok=False)
+        self.assertEqual(error["code"], "stale_write")
+        self.assertIn("Bootstrap is incomplete", error["message"])
+        self.assertEqual(path.read_bytes(), external)
+        self.assertTrue(self.call("doctor")["enabled"])
+
+    def test_shared_bootstrap_never_upgrades_previous_local_section(self):
+        path = self.root / "AGENTS.md"
+        path.write_bytes(PREVIOUS_BLOCK + b"\n")
+        result = self.call("--role", "shared", "bootstrap", "--allow-shared")
+        self.assertNotIn("instructions", result)
+        self.assertEqual(path.read_bytes(), PREVIOUS_BLOCK + b"\n")
+        self.assertFalse(self.store.exists())
 
     def test_new_local_bootstrap_creates_instructions_and_is_byte_idempotent(self):
         first = self.call("bootstrap")
@@ -135,7 +225,7 @@ class BootstrapInstructionTests(unittest.TestCase):
 
     def test_user_text_after_valid_section_is_preserved_without_rewrite(self):
         path = self.root / "AGENTS.md"
-        content = memory.AGENTS_BLOCK + b"\n\n## Software Team\r\nKeep ownership.\r\n"
+        content = memory.AGENTS_BLOCK + b"\n\n## Owner policy\r\nKeep ownership.\r\n"
         path.write_bytes(content)
         with patch.object(memory, "atomic", wraps=memory.atomic) as atomic:
             self.call("bootstrap")
@@ -208,7 +298,7 @@ class BootstrapInstructionTests(unittest.TestCase):
     def test_concurrent_instruction_edit_is_preserved_and_partial_outcome_is_explicit(self):
         path = self.root / "AGENTS.md"
         path.write_bytes(b"# Owner\n")
-        external = b"# Owner\n\n## Software Team\nConcurrent owner addition.\n"
+        external = b"# Owner\n\n## Owner policy\nConcurrent owner addition.\n"
         original = memory.atomic
 
         def concurrent(target, content, expected):

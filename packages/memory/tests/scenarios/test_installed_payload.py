@@ -95,6 +95,8 @@ class InstalledPayloadTests(unittest.TestCase):
                         self.assertIn(b"<!-- maruti-memory:begin -->", agents)
                         self.assertIn(b"`memory-recall`", agents)
                         self.assertNotIn(str(plugin).encode(), agents)
+                        for token in (b"Software Team", b"Project-Lead", b".project-memory/"):
+                            self.assertNotIn(token, agents)
                         store = workspace / ".maruti/memory/local"
                         metadata_before = (store / ".memory-store.json").read_bytes()
                         metadata = json.loads(metadata_before)
@@ -197,6 +199,49 @@ class InstalledPayloadTests(unittest.TestCase):
                                 "--input", str(document), "--expected", "missing",
                             )
 
+    def test_previous_pointer_upgrades_with_each_independent_payload(self):
+        previous = (
+            ROOT / "packages/memory/tests/fixtures/previous-agents-block.md"
+        ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n")
+        for install in INSTALL_ROOTS:
+            with self.subTest(install=install), tempfile.TemporaryDirectory(
+                prefix="memory pointer upgrade "
+            ) as temporary:
+                root = Path(temporary)
+                plugin = root / "isolated plugin"
+                shutil.copytree(
+                    ROOT / install, plugin,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+                )
+                workspace = root / "consumer project"
+                workspace.mkdir()
+                helper = plugin / "memory/runtime/memory.py"
+                self.invoke(helper, workspace, "bootstrap")
+                agents = workspace / "AGENTS.md"
+                current = agents.read_bytes().rstrip(b"\n")
+                store = workspace / ".maruti/memory/local"
+                before_store = {
+                    path.relative_to(store): path.read_bytes()
+                    for path in store.rglob("*") if path.is_file()
+                }
+                prefix = b"\xef\xbb\xbf# Owner instructions\r\n\r\n"
+                suffix = b"\r\n\r\n## Custom consumer\nKeep original bytes.\n"
+                agents.write_bytes(prefix + previous.replace(b"\n", b"\r\n") + suffix)
+                result = self.invoke(helper, workspace, "bootstrap")["data"]
+                self.assertFalse(result["created"])
+                self.assertEqual(result["instructions"]["status"], "upgraded")
+                expected = prefix + current.replace(b"\n", b"\r\n") + suffix
+                self.assertEqual(agents.read_bytes(), expected)
+                self.assertEqual(before_store, {
+                    path.relative_to(store): path.read_bytes()
+                    for path in store.rglob("*") if path.is_file()
+                })
+                self.assertEqual(
+                    self.invoke(helper, workspace, "bootstrap")["data"]["instructions"]["status"],
+                    "present",
+                )
+                self.assertEqual(agents.read_bytes(), expected)
+
     def test_software_team_and_memory_instruction_sections_coexist_in_either_order(self):
         for team_first in (False, True):
             with self.subTest(team_first=team_first), tempfile.TemporaryDirectory(
@@ -240,6 +285,16 @@ class InstalledPayloadTests(unittest.TestCase):
                 self.assertEqual(agents.read_bytes(), before)
                 self.assertEqual(before.count(b"## Software Team"), 1)
                 self.assertEqual(before.count(b"<!-- maruti-memory:begin -->"), 1)
+                self.assertEqual((project_memory / "index.md").read_bytes(), owned)
+                start = before.index(b"<!-- maruti-memory:begin -->")
+                stop = before.index(b"<!-- maruti-memory:end -->") + len(b"<!-- maruti-memory:end -->")
+                previous = (
+                    ROOT / "packages/memory/tests/fixtures/previous-agents-block.md"
+                ).read_bytes().replace(b"\r\n", b"\n").rstrip(b"\n").replace(b"\n", b"\r\n")
+                agents.write_bytes(before[:start] + previous + before[stop:])
+                result = self.invoke(helper, workspace, "bootstrap")["data"]
+                self.assertEqual(result["instructions"]["status"], "upgraded")
+                self.assertEqual(agents.read_bytes(), before)
                 self.assertEqual((project_memory / "index.md").read_bytes(), owned)
                 shared = self.invoke(
                     helper, workspace, "--role", "shared", "bootstrap", "--allow-shared",

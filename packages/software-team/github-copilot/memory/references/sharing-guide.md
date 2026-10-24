@@ -8,10 +8,9 @@ authorization. A Git-ignored local record is not safe to publish by default.
 Do not stage, commit, push, open a PR, or change repository visibility implicitly.
 An authorized shared-store write still does not authorize those Git actions.
 
-Discover the destination's existing owner and contract before drafting. In
-Software Team, `.project-memory/` remains Project-Lead-owned; workers send a
-memory proposal to Project-Lead through its existing handoff mechanism, never a
-direct edit. The standalone helper only writes recognized stores under
+Discover the destination's existing owner and contract before drafting.
+If direct edits exceed the writer's authority, propose changes through the
+owner's established process instead. The standalone helper only writes recognized stores under
 `.maruti/memory/`; it is not a backdoor into other bundles. If destination
 authority is unknown or conflicting, withhold the write.
 
