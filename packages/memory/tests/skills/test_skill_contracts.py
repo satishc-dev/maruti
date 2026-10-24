@@ -202,6 +202,8 @@ class SkillContractTests(unittest.TestCase):
             self.reference("operating-policy.md"),
         ):
             self.assertIn("no `.gitignore`", text)
+            self.assertIn("git: false", text)
+            self.assertIn("or staging", text)
 
 
 if __name__ == "__main__":
